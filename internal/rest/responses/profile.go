@@ -1,9 +1,9 @@
 package responses
 
 import (
-	"github.com/umisto/pagi"
-	"github.com/umisto/profiles-svc/internal/domain/models"
-	"github.com/umisto/profiles-svc/resources"
+	"github.com/netbill/pagi"
+	"github.com/netbill/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/resources"
 )
 
 func Profile(m models.Profile) resources.Profile {

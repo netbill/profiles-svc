@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/umisto/profiles-svc/internal/domain/errx"
-	"github.com/umisto/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/domain/errx"
+	"github.com/netbill/profiles-svc/internal/domain/models"
 )
 
 type UpdateParams struct {

@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/umisto/profiles-svc/internal"
-	domain2 "github.com/umisto/profiles-svc/internal/domain/modules/profile"
-	"github.com/umisto/profiles-svc/internal/repository"
+	"github.com/netbill/profiles-svc/internal"
+	domain2 "github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/internal/repository"
 )
 
 // TEST DATABASE CONNECTION

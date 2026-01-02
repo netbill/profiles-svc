@@ -5,18 +5,18 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/umisto/kafkakit/box"
-	"github.com/umisto/logium"
-	"github.com/umisto/profiles-svc/internal"
-	"github.com/umisto/profiles-svc/internal/domain/modules/profile"
-	"github.com/umisto/profiles-svc/internal/messanger/consumer"
-	"github.com/umisto/profiles-svc/internal/messanger/consumer/callback"
-	"github.com/umisto/profiles-svc/internal/messanger/producer"
-	"github.com/umisto/profiles-svc/internal/repository"
-	"github.com/umisto/profiles-svc/internal/rest/middlewares"
+	"github.com/netbill/kafkakit/box"
+	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/internal"
+	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/internal/messanger/consumer"
+	"github.com/netbill/profiles-svc/internal/messanger/consumer/callback"
+	"github.com/netbill/profiles-svc/internal/messanger/producer"
+	"github.com/netbill/profiles-svc/internal/repository"
+	"github.com/netbill/profiles-svc/internal/rest/middlewares"
 
-	"github.com/umisto/profiles-svc/internal/rest"
-	"github.com/umisto/profiles-svc/internal/rest/controller"
+	"github.com/netbill/profiles-svc/internal/rest"
+	"github.com/netbill/profiles-svc/internal/rest/controller"
 )
 
 func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, wg *sync.WaitGroup) {

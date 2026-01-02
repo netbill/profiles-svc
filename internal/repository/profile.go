@@ -6,10 +6,10 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/umisto/pagi"
-	"github.com/umisto/profiles-svc/internal/domain/models"
-	"github.com/umisto/profiles-svc/internal/domain/modules/profile"
-	"github.com/umisto/profiles-svc/internal/repository/pgdb"
+	"github.com/netbill/pagi"
+	"github.com/netbill/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/internal/repository/pgdb"
 )
 
 func (r Repository) CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error) {

@@ -1,5 +1,5 @@
 package errx
 
-import "github.com/umisto/ape"
+import "github.com/netbill/ape"
 
 var ErrorInternal = ape.DeclareError("INTERNAL_ERROR")

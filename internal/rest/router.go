@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/umisto/logium"
-	"github.com/umisto/profiles-svc/internal"
-	"github.com/umisto/profiles-svc/internal/rest/meta"
-	"github.com/umisto/restkit/roles"
+	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/internal"
+	"github.com/netbill/profiles-svc/internal/rest/meta"
+	"github.com/netbill/restkit/roles"
 )
 
 type Handlers interface {

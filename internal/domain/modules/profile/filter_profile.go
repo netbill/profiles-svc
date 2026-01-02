@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/umisto/pagi"
-	"github.com/umisto/profiles-svc/internal/domain/errx"
-	"github.com/umisto/profiles-svc/internal/domain/models"
+	"github.com/netbill/pagi"
+	"github.com/netbill/profiles-svc/internal/domain/errx"
+	"github.com/netbill/profiles-svc/internal/domain/models"
 )
 
 type FilterParams struct {

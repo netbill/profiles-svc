@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/umisto/profiles-svc/cmd/migrations"
+	"github.com/netbill/profiles-svc/cmd/migrations"
 )
 
 const TestDatabaseURL = "postgresql://postgres:postgres@localhost:7777/postgres?sslmode=disable"

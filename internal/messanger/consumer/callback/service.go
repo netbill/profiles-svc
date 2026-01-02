@@ -3,9 +3,9 @@ package callback
 import (
 	"context"
 
+	"github.com/netbill/kafkakit/box"
+	"github.com/netbill/logium"
 	"github.com/segmentio/kafka-go"
-	"github.com/umisto/kafkakit/box"
-	"github.com/umisto/logium"
 )
 
 type Inbox interface {

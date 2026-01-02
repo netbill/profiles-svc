@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/netbill/kafkakit/box"
 	"github.com/segmentio/kafka-go"
-	"github.com/umisto/kafkakit/box"
 )
 
 func (s Service) CreateAccount(ctx context.Context, event kafka.Message) error {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/umisto/profiles-svc/resources"
+	"github.com/netbill/profiles-svc/resources"
 )
 
 func UpdateProfile(r *http.Request) (req resources.UpdateProfile, err error) {

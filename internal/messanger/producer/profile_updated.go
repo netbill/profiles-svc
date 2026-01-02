@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/messanger/contracts"
 	"github.com/segmentio/kafka-go"
-	"github.com/umisto/profiles-svc/internal/domain/models"
-	"github.com/umisto/profiles-svc/internal/messanger/contracts"
 )
 
 func (s Service) WriteProfileUpdated(

@@ -1,7 +1,7 @@
 package pgdb
 
 import (
-	"github.com/umisto/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/domain/models"
 )
 
 func (p Profile) ToModel() models.Profile {

@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/umisto/ape"
-	"github.com/umisto/ape/problems"
-	"github.com/umisto/profiles-svc/internal/domain/errx"
-	"github.com/umisto/profiles-svc/internal/rest/responses"
+	"github.com/netbill/ape"
+	"github.com/netbill/ape/problems"
+	"github.com/netbill/profiles-svc/internal/domain/errx"
+	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 
 func (s Service) GetProfileByUsername(w http.ResponseWriter, r *http.Request) {

@@ -1,6 +1,6 @@
 package contracts
 
-import "github.com/umisto/profiles-svc/internal/domain/models"
+import "github.com/netbill/profiles-svc/internal/domain/models"
 
 const ProfilesTopicV1 = "profiles.v1"
 

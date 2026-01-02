@@ -3,10 +3,10 @@ package consumer
 import (
 	"context"
 
+	"github.com/netbill/kafkakit/subscriber"
+	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/internal/messanger/contracts"
 	"github.com/segmentio/kafka-go"
-	"github.com/umisto/kafkakit/subscriber"
-	"github.com/umisto/logium"
-	"github.com/umisto/profiles-svc/internal/messanger/contracts"
 )
 
 type Service struct {

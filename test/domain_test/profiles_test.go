@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/umisto/profiles-svc/internal/domain/modules/profile"
-	"github.com/umisto/profiles-svc/test"
+	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/test"
 )
 
 func TestProfiles(t *testing.T) {

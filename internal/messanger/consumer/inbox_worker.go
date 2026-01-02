@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/umisto/kafkakit/box"
-	"github.com/umisto/logium"
-	"github.com/umisto/profiles-svc/internal/domain/models"
-	"github.com/umisto/profiles-svc/internal/messanger/contracts"
+	"github.com/netbill/kafkakit/box"
+	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/messanger/contracts"
 )
 
 type InboxWorker struct {
