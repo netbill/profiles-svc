@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/domain/models"
-	"github.com/netbill/profiles-svc/internal/messanger/contracts"
+	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/profiles-svc/internal/messenger/contracts"
 	"github.com/segmentio/kafka-go"
 )
 
-func (s Service) WriteProfileUpdated(
+func (p Producer) WriteProfileUpdated(
 	ctx context.Context,
 	profile models.Profile,
 ) error {
@@ -21,9 +21,8 @@ func (s Service) WriteProfileUpdated(
 		return err
 	}
 
-	_, err = s.outbox.CreateOutboxEvent(
+	_, err = p.outbox.CreateOutboxEvent(
 		ctx,
-		contracts.ProfileUpdatedEvent,
 		kafka.Message{
 			Topic: contracts.ProfileUpdatedEvent,
 			Key:   []byte(profile.AccountID.String()),
@@ -32,7 +31,7 @@ func (s Service) WriteProfileUpdated(
 				{Key: "EventID", Value: []byte(uuid.New().String())}, // Outbox will fill this
 				{Key: "EventType", Value: []byte(contracts.ProfileUpdatedEvent)},
 				{Key: "EventVersion", Value: []byte("1")},
-				{Key: "Producer", Value: []byte(contracts.GroupProfilesSvc)},
+				{Key: "Producer", Value: []byte(contracts.ProfilesSvcGroup)},
 				{Key: "ContentType", Value: []byte("application/json")},
 			},
 		},

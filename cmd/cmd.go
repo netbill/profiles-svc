@@ -8,12 +8,12 @@ import (
 	"github.com/netbill/kafkakit/box"
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal"
-	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
-	"github.com/netbill/profiles-svc/internal/messanger/consumer"
-	"github.com/netbill/profiles-svc/internal/messanger/consumer/callback"
-	"github.com/netbill/profiles-svc/internal/messanger/producer"
+	"github.com/netbill/profiles-svc/internal/core/modules/profile"
+	"github.com/netbill/profiles-svc/internal/messenger/consumer"
+	"github.com/netbill/profiles-svc/internal/messenger/consumer/callback"
+	"github.com/netbill/profiles-svc/internal/messenger/producer"
 	"github.com/netbill/profiles-svc/internal/repository"
-	"github.com/netbill/profiles-svc/internal/rest/middlewares"
+	"github.com/netbill/restkit/mdlv"
 
 	"github.com/netbill/profiles-svc/internal/rest"
 	"github.com/netbill/profiles-svc/internal/rest/controller"
@@ -41,14 +41,14 @@ func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, 
 	profileSvc := profile.New(repo, kafkaProducer)
 
 	ctrl := controller.New(log, profileSvc)
-	mdlv := middlewares.New(log)
+	mdll := mdlv.New(cfg.JWT.User.AccessToken.SecretKey, rest.AccountDataCtxKey)
+	router := rest.New(log, mdll, ctrl)
 
-	kafkaConsumer := consumer.New(log, cfg.Kafka.Brokers, callback.NewService(log, kafkaBox))
-	kafkaInboxWorker := consumer.NewInboxWorker(log, kafkaBox, profileSvc)
+	kafkaConsumer := consumer.New(log, cfg.Kafka.Brokers, box.New(pg), callbacker.New(log, profileSvc))
+
+	run(func() { router.Run(ctx, cfg) })
 
 	run(func() { kafkaConsumer.Run(ctx) })
 
-	run(func() { kafkaInboxWorker.Run(ctx) })
-
-	run(func() { rest.Run(ctx, cfg, log, mdlv, ctrl) })
+	run(func() { kafkaProducer.Run(ctx) })
 }

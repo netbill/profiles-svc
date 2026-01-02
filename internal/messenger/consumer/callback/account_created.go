@@ -1,0 +1,42 @@
+package callbacker
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+
+	"github.com/netbill/kafkakit/box"
+	"github.com/netbill/profiles-svc/internal/core/errx"
+	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+)
+
+func (c Callbacker) AccountCreated(
+	ctx context.Context,
+	event box.InboxEvent,
+) string {
+	var p contracts.AccountCreatedPayload
+	if err := json.Unmarshal(event.Payload, &p); err != nil {
+		c.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
+		return box.InboxStatusFailed
+	}
+	profile := models.Profile{
+		AccountID: p.Account.ID,
+		Username:  p.Account.Username,
+	}
+	if _, err := c.domain.CreateProfile(ctx, profile.AccountID, profile.Username); err != nil {
+		switch {
+		case errors.Is(err, errx.ErrorInternal):
+			c.log.Errorf(
+				"failed to upsert profile due to internal error, key %s, id: %s, error: %v",
+				event.Key, event.ID, err,
+			)
+			return box.InboxStatusPending
+		default:
+			c.log.Errorf("failed to upsert profile, key %s, id: %s, error: %v", event.Key, event.ID, err)
+			return box.InboxStatusFailed
+		}
+	}
+
+	return box.InboxStatusProcessed
+}

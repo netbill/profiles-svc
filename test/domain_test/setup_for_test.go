@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/netbill/profiles-svc/internal"
-	domain2 "github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	domain2 "github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/repository"
 )
 

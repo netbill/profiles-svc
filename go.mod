@@ -20,6 +20,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.49
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.21.0
+	golang.org/x/sync v0.19.0
 )
 
 require (

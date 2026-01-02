@@ -2,7 +2,7 @@ package responses
 
 import (
 	"github.com/netbill/pagi"
-	"github.com/netbill/profiles-svc/internal/domain/models"
+	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/resources"
 )
 

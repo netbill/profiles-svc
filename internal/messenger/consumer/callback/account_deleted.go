@@ -1,0 +1,38 @@
+package callbacker
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+
+	"github.com/netbill/kafkakit/box"
+	"github.com/netbill/profiles-svc/internal/core/errx"
+	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+)
+
+func (c Callbacker) AccountDeleted(
+	ctx context.Context,
+	event box.InboxEvent,
+) string {
+	var p contracts.AccountDeletedPayload
+	if err := json.Unmarshal(event.Payload, &p); err != nil {
+		c.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
+		return box.InboxStatusFailed
+	}
+
+	if err := c.domain.DeleteProfile(ctx, p.Account.ID); err != nil {
+		switch {
+		case errors.Is(err, errx.ErrorInternal):
+			c.log.Errorf(
+				"failed to delete profile due to internal error, key %s, id: %s, error: %v",
+				event.Key, event.ID, err,
+			)
+			return box.InboxStatusPending
+		default:
+			c.log.Errorf("failed to delete profile, key %s, id: %s, error: %v", event.Key, event.ID, err)
+			return box.InboxStatusFailed
+		}
+	}
+
+	return box.InboxStatusProcessed
+}

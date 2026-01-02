@@ -6,13 +6,13 @@ import (
 
 	"github.com/netbill/ape"
 	"github.com/netbill/ape/problems"
-	"github.com/netbill/profiles-svc/internal/domain/errx"
-	"github.com/netbill/profiles-svc/internal/rest/meta"
+	"github.com/netbill/profiles-svc/internal/core/errx"
+	"github.com/netbill/profiles-svc/internal/rest"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 
 func (s Service) GetMyProfile(w http.ResponseWriter, r *http.Request) {
-	initiator, err := meta.AccountData(r.Context())
+	initiator, err := rest.AccountData(r.Context())
 	if err != nil {
 		s.log.WithError(err).Error("failed to get account from context")
 		ape.RenderErr(w, problems.Unauthorized("failed to get account from context"))

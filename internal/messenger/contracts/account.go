@@ -37,5 +37,19 @@ type AccountUsernameChangePayload struct {
 		UpdatedAt         time.Time `json:"updated_at"`
 		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
 	} `json:"account"`
-	Email string `json:"email,omitempty"`
+}
+
+const AccountDeletedEvent = "account.deleted"
+
+type AccountDeletedPayload struct {
+	Account struct {
+		ID       uuid.UUID `json:"id"`
+		Username string    `json:"username"`
+		Role     string    `json:"role"`
+		Status   string    `json:"status"`
+
+		CreatedAt         time.Time `json:"created_at"`
+		UpdatedAt         time.Time `json:"updated_at"`
+		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
+	} `json:"account"`
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/ape"
 	"github.com/netbill/ape/problems"
-	"github.com/netbill/profiles-svc/internal/domain/errx"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 

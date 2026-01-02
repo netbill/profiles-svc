@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
 	"github.com/netbill/pagi"
-	"github.com/netbill/profiles-svc/internal/domain/models"
-	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 )
 
 type Domain interface {

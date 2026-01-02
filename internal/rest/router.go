@@ -9,36 +9,50 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal"
-	"github.com/netbill/profiles-svc/internal/rest/meta"
 	"github.com/netbill/restkit/roles"
 )
 
 type Handlers interface {
 	GetMyProfile(w http.ResponseWriter, r *http.Request)
 
-	//CreateMyProfile(w http.ResponseWriter, r *http.Request)
 	GetProfileByUsername(w http.ResponseWriter, r *http.Request)
 	GetProfileByID(w http.ResponseWriter, r *http.Request)
 
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
 	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	//UpdateMyUsername(w http.ResponseWriter, r *http.Request)
 	UpdateOfficial(w http.ResponseWriter, r *http.Request)
 
 	//ResetProfile(w http.ResponseWriter, r *http.Request)
 }
-
-type Middleware interface {
-	Auth(userCtxKey interface{}, skUser string) func(http.Handler) http.Handler
-	RoleGrant(userCtxKey interface{}, allowedRoles map[string]bool) func(http.Handler) http.Handler
+type Middlewares interface {
+	Auth() func(http.Handler) http.Handler
+	RoleGrant(allowedRoles map[string]bool) func(http.Handler) http.Handler
 }
 
-func Run(ctx context.Context, cfg internal.Config, log logium.Logger, m Middleware, h Handlers) {
-	auth := m.Auth(meta.AccountDataCtxKey, cfg.JWT.User.AccessToken.SecretKey)
-	sysmoder := m.RoleGrant(meta.AccountDataCtxKey, map[string]bool{
-		roles.SystemModer: true,
+type Service struct {
+	handlers    Handlers
+	middlewares Middlewares
+	log         logium.Logger
+}
+
+func New(
+	log logium.Logger,
+	middlewares Middlewares,
+	handlers Handlers,
+) *Service {
+	return &Service{
+		log:         log,
+		middlewares: middlewares,
+		handlers:    handlers,
+	}
+}
+
+func (s *Service) Run(ctx context.Context, cfg internal.Config) {
+	auth := s.middlewares.Auth()
+	sysmoder := s.middlewares.RoleGrant(map[string]bool{
 		roles.SystemAdmin: true,
+		roles.SystemModer: true,
 	})
 
 	r := chi.NewRouter()
@@ -46,19 +60,18 @@ func Run(ctx context.Context, cfg internal.Config, log logium.Logger, m Middlewa
 	r.Route("/profiles-svc", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/profiles", func(r chi.Router) {
-				r.Get("/", h.FilterProfiles)
-				r.Get("/u/{username}", h.GetProfileByUsername)
+				r.Get("/", s.handlers.FilterProfiles)
+				r.Get("/u/{username}", s.handlers.GetProfileByUsername)
 
 				r.With(auth).Route("/me", func(r chi.Router) {
-					r.Get("/", h.GetMyProfile)
-					r.Put("/", h.UpdateMyProfile)
+					r.Get("/", s.handlers.GetMyProfile)
+					r.Put("/", s.handlers.UpdateMyProfile)
 				})
 
 				r.Route("/{user_id}", func(r chi.Router) {
-					r.Get("/", h.GetProfileByID)
+					r.Get("/", s.handlers.GetProfileByID)
 
-					r.With(auth, sysmoder).Patch("/official", h.UpdateOfficial)
-					//r.With(auth, sysmoder).Put("/reset", h.ResetProfile)
+					r.With(auth, sysmoder).Patch("/official", s.handlers.UpdateOfficial)
 				})
 			})
 		})
@@ -73,7 +86,7 @@ func Run(ctx context.Context, cfg internal.Config, log logium.Logger, m Middlewa
 		IdleTimeout:       cfg.Rest.Timeouts.Idle,
 	}
 
-	log.Infof("starting REST service on %s", cfg.Rest.Port)
+	s.log.Infof("starting REST service on %s", cfg.Rest.Port)
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -86,18 +99,18 @@ func Run(ctx context.Context, cfg internal.Config, log logium.Logger, m Middlewa
 
 	select {
 	case <-ctx.Done():
-		log.Info("shutting down REST service...")
+		s.log.Info("shutting down REST service...")
 	case err := <-errCh:
 		if err != nil {
-			log.Errorf("REST server error: %v", err)
+			s.log.Errorf("REST server error: %v", err)
 		}
 	}
 
 	shCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shCtx); err != nil {
-		log.Errorf("REST shutdown error: %v", err)
+		s.log.Errorf("REST shutdown error: %v", err)
 	} else {
-		log.Info("REST server stopped")
+		s.log.Info("REST server stopped")
 	}
 }

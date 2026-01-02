@@ -1,6 +1,6 @@
 package contracts
 
-import "github.com/netbill/profiles-svc/internal/domain/models"
+import "github.com/netbill/profiles-svc/internal/core/models"
 
 const ProfilesTopicV1 = "profiles.v1"
 

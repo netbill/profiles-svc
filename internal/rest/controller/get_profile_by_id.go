@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/ape"
 	"github.com/netbill/ape/problems"
-	"github.com/netbill/profiles-svc/internal/domain/errx"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 

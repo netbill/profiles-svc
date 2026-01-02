@@ -7,7 +7,7 @@ import (
 	"github.com/netbill/ape"
 	"github.com/netbill/ape/problems"
 	"github.com/netbill/pagi"
-	"github.com/netbill/profiles-svc/internal/domain/modules/profile"
+	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 
