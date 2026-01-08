@@ -24,9 +24,9 @@ type AccountCreatedPayload struct {
 	Email string `json:"email,omitempty"`
 }
 
-const AccountUsernameChangeEvent = "account.username.change"
+const AccountUsernameChangedEvent = "account.username.changed"
 
-type AccountUsernameChangePayload struct {
+type AccountUsernameChangedPayload struct {
 	Account struct {
 		ID       uuid.UUID `json:"id"`
 		Username string    `json:"username"`

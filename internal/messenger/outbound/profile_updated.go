@@ -1,17 +1,17 @@
-package producer
+package outbound
 
 import (
 	"context"
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/netbill/kafkakit/header"
+	"github.com/netbill/evebox/header"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/messenger/contracts"
 	"github.com/segmentio/kafka-go"
 )
 
-func (p Producer) WriteProfileUpdated(
+func (p Outbound) WriteProfileUpdated(
 	ctx context.Context,
 	profile models.Profile,
 ) error {

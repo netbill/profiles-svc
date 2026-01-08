@@ -1,4 +1,4 @@
-package callbacker
+package inbound
 
 import (
 	"context"
@@ -8,23 +8,20 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-type Callbacker struct {
+type Inbound struct {
 	log    logium.Logger
-	domain core
+	domain domain
 }
 
-func New(log logium.Logger, core core) Callbacker {
-	return Callbacker{
+func New(log logium.Logger, domain domain) Inbound {
+	return Inbound{
 		log:    log,
-		domain: core,
+		domain: domain,
 	}
 }
 
-type core interface {
+type domain interface {
 	CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
 	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
-	DeleteProfile(
-		ctx context.Context,
-		accountID uuid.UUID,
-	) error
+	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
 }
