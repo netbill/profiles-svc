@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
 const AccountsTopicV1 = "accounts.v1"
@@ -52,4 +53,10 @@ type AccountDeletedPayload struct {
 		UpdatedAt         time.Time `json:"updated_at"`
 		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
 	} `json:"account"`
+}
+
+const AccountProfileUpdatedEvent = "account.profile.updated"
+
+type AccountProfileUpdatedPayload struct {
+	Profile models.Profile `json:"profile"`
 }

@@ -15,7 +15,7 @@ func (p Outbound) WriteProfileUpdated(
 	ctx context.Context,
 	profile models.Profile,
 ) error {
-	payload, err := json.Marshal(contracts.ProfileUpdatedPayload{
+	payload, err := json.Marshal(contracts.AccountProfileUpdatedPayload{
 		Profile: profile,
 	})
 	if err != nil {
@@ -25,12 +25,12 @@ func (p Outbound) WriteProfileUpdated(
 	_, err = p.outbox.CreateOutboxEvent(
 		ctx,
 		kafka.Message{
-			Topic: contracts.ProfilesTopicV1,
+			Topic: contracts.AccountsTopicV1,
 			Key:   []byte(profile.AccountID.String()),
 			Value: payload,
 			Headers: []kafka.Header{
 				{Key: header.EventID, Value: []byte(uuid.New().String())}, // Outbox will fill this
-				{Key: header.EventType, Value: []byte(contracts.ProfileUpdatedEvent)},
+				{Key: header.EventType, Value: []byte(contracts.AccountProfileUpdatedEvent)},
 				{Key: header.EventVersion, Value: []byte("1")},
 				{Key: header.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
 				{Key: header.ContentType, Value: []byte("application/json")},
