@@ -99,7 +99,7 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 
 	select {
 	case <-ctx.Done():
-		s.log.Info("shutting down REST service...")
+		s.log.Warnf("shutting down REST service...")
 	case err := <-errCh:
 		if err != nil {
 			s.log.Errorf("REST server error: %v", err)
@@ -111,6 +111,6 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 	if err := srv.Shutdown(shCtx); err != nil {
 		s.log.Errorf("REST shutdown error: %v", err)
 	} else {
-		s.log.Info("REST server stopped")
+		s.log.Warnf("REST server stopped")
 	}
 }

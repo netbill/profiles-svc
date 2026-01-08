@@ -55,6 +55,8 @@ func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, 
 
 	run(func() { router.Run(ctx, cfg) })
 
+	log.Infof("starting kafka brokers %s", cfg.Kafka.Brokers)
+
 	run(func() { kafkaConsumer.Run(ctx) })
 
 	run(func() { kafkaProducer.Run(ctx) })

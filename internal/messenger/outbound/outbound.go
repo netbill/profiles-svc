@@ -7,14 +7,12 @@ import (
 
 type Outbound struct {
 	log    logium.Logger
-	addr   []string
 	outbox outbox.Box
 }
 
-func New(log logium.Logger, ob outbox.Box, addr ...string) *Outbound {
+func New(log logium.Logger, ob outbox.Box) *Outbound {
 	return &Outbound{
 		log:    log,
-		addr:   addr,
 		outbox: ob,
 	}
 }
