@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal"
-	"github.com/netbill/restkit/roles"
+	"github.com/netbill/restkit/auth/roles"
 )
 
 type Handlers interface {
@@ -21,9 +21,9 @@ type Handlers interface {
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
 	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	UpdateOfficial(w http.ResponseWriter, r *http.Request)
 
-	//ResetProfile(w http.ResponseWriter, r *http.Request)
+	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
+	UpdateProfileUsername(w http.ResponseWriter, r *http.Request)
 }
 type Middlewares interface {
 	Auth() func(http.Handler) http.Handler
@@ -61,17 +61,19 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/profiles", func(r chi.Router) {
 				r.Get("/", s.handlers.FilterProfiles)
+
 				r.Get("/u/{username}", s.handlers.GetProfileByUsername)
 
 				r.With(auth).Route("/me", func(r chi.Router) {
 					r.Get("/", s.handlers.GetMyProfile)
 					r.Put("/", s.handlers.UpdateMyProfile)
+					r.Patch("/username", s.handlers.UpdateProfileUsername)
 				})
 
 				r.Route("/{user_id}", func(r chi.Router) {
 					r.Get("/", s.handlers.GetProfileByID)
 
-					r.With(auth, sysmoder).Patch("/official", s.handlers.UpdateOfficial)
+					r.With(auth, sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
 				})
 			})
 		})

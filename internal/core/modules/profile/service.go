@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/restkit/pagi"
 )
 
 type Service struct {
@@ -21,7 +21,7 @@ func New(db repo, messanger messanger) Service {
 }
 
 type repo interface {
-	CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
+	CreateProfile(ctx context.Context, userID uuid.UUID, params CreateParams) (models.Profile, error)
 
 	GetProfileByAccountID(ctx context.Context, userID uuid.UUID) (models.Profile, error)
 	GetProfileByUsername(ctx context.Context, username string) (models.Profile, error)
@@ -43,5 +43,8 @@ type repo interface {
 }
 
 type messanger interface {
+	WriteProfileCreated(ctx context.Context, profile models.Profile) error
 	WriteProfileUpdated(ctx context.Context, profile models.Profile) error
+	WriteProfileUsernameUpdated(ctx context.Context, profile models.Profile) error
+	WriteProfileOfficialUpdated(ctx context.Context, profile models.Profile) error
 }

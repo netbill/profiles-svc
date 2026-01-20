@@ -16,59 +16,60 @@ import (
 	"fmt"
 )
 
-// checks if the UpdateProfile type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UpdateProfile{}
+// checks if the Errors type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &Errors{}
 
-// UpdateProfile struct for UpdateProfile
-type UpdateProfile struct {
-	Data UpdateProfileData `json:"data"`
+// Errors Standard JSON:API error
+type Errors struct {
+	// Non empty array of errors occurred during request processing
+	Errors []ErrorsErrorsInner `json:"errors"`
 }
 
-type _UpdateProfile UpdateProfile
+type _Errors Errors
 
-// NewUpdateProfile instantiates a new UpdateProfile object
+// NewErrors instantiates a new Errors object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateProfile(data UpdateProfileData) *UpdateProfile {
-	this := UpdateProfile{}
-	this.Data = data
+func NewErrors(errors []ErrorsErrorsInner) *Errors {
+	this := Errors{}
+	this.Errors = errors
 	return &this
 }
 
-// NewUpdateProfileWithDefaults instantiates a new UpdateProfile object
+// NewErrorsWithDefaults instantiates a new Errors object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUpdateProfileWithDefaults() *UpdateProfile {
-	this := UpdateProfile{}
+func NewErrorsWithDefaults() *Errors {
+	this := Errors{}
 	return &this
 }
 
-// GetData returns the Data field value
-func (o *UpdateProfile) GetData() UpdateProfileData {
+// GetErrors returns the Errors field value
+func (o *Errors) GetErrors() []ErrorsErrorsInner {
 	if o == nil {
-		var ret UpdateProfileData
+		var ret []ErrorsErrorsInner
 		return ret
 	}
 
-	return o.Data
+	return o.Errors
 }
 
-// GetDataOk returns a tuple with the Data field value
+// GetErrorsOk returns a tuple with the Errors field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfile) GetDataOk() (*UpdateProfileData, bool) {
+func (o *Errors) GetErrorsOk() ([]ErrorsErrorsInner, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Data, true
+	return o.Errors, true
 }
 
-// SetData sets field value
-func (o *UpdateProfile) SetData(v UpdateProfileData) {
-	o.Data = v
+// SetErrors sets field value
+func (o *Errors) SetErrors(v []ErrorsErrorsInner) {
+	o.Errors = v
 }
 
-func (o UpdateProfile) MarshalJSON() ([]byte, error) {
+func (o Errors) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -76,18 +77,18 @@ func (o UpdateProfile) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o UpdateProfile) ToMap() (map[string]interface{}, error) {
+func (o Errors) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["data"] = o.Data
+	toSerialize["errors"] = o.Errors
 	return toSerialize, nil
 }
 
-func (o *UpdateProfile) UnmarshalJSON(data []byte) (err error) {
+func (o *Errors) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"data",
+		"errors",
 	}
 
 	allProperties := make(map[string]interface{})
@@ -104,53 +105,53 @@ func (o *UpdateProfile) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varUpdateProfile := _UpdateProfile{}
+	varErrors := _Errors{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdateProfile)
+	err = decoder.Decode(&varErrors)
 
 	if err != nil {
 		return err
 	}
 
-	*o = UpdateProfile(varUpdateProfile)
+	*o = Errors(varErrors)
 
 	return err
 }
 
-type NullableUpdateProfile struct {
-	value *UpdateProfile
+type NullableErrors struct {
+	value *Errors
 	isSet bool
 }
 
-func (v NullableUpdateProfile) Get() *UpdateProfile {
+func (v NullableErrors) Get() *Errors {
 	return v.value
 }
 
-func (v *NullableUpdateProfile) Set(val *UpdateProfile) {
+func (v *NullableErrors) Set(val *Errors) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUpdateProfile) IsSet() bool {
+func (v NullableErrors) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUpdateProfile) Unset() {
+func (v *NullableErrors) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUpdateProfile(val *UpdateProfile) *NullableUpdateProfile {
-	return &NullableUpdateProfile{value: val, isSet: true}
+func NewNullableErrors(val *Errors) *NullableErrors {
+	return &NullableErrors{value: val, isSet: true}
 }
 
-func (v NullableUpdateProfile) MarshalJSON() ([]byte, error) {
+func (v NullableErrors) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUpdateProfile) UnmarshalJSON(src []byte) error {
+func (v *NullableErrors) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

@@ -4,15 +4,15 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
+	"github.com/netbill/restkit/ape"
+	"github.com/netbill/restkit/ape/problems"
 )
 
-func (s Service) UpdateOfficial(w http.ResponseWriter, r *http.Request) {
-	req, err := requests.UpdateOfficial(r)
+func (s Service) UpdateProfileOfficial(w http.ResponseWriter, r *http.Request) {
+	req, err := requests.UpdateProfileOfficial(r)
 	if err != nil {
 		s.log.WithError(err).Errorf("invalid update official request")
 		ape.RenderErr(w, problems.BadRequest(err)...)

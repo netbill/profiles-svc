@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
+	"github.com/netbill/restkit/ape"
+	"github.com/netbill/restkit/ape/problems"
+	"github.com/netbill/restkit/pagi"
 )
 
 func (s Service) FilterProfiles(w http.ResponseWriter, r *http.Request) {

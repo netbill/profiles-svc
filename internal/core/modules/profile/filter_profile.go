@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/restkit/pagi"
 )
 
 type FilterParams struct {

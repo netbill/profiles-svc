@@ -4,59 +4,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
 const AccountsTopicV1 = "accounts.v1"
 
-const AccountCreatedEvent = "account.created"
-
-type AccountCreatedPayload struct {
-	Account struct {
-		ID       uuid.UUID `json:"id"`
-		Username string    `json:"username"`
-		Role     string    `json:"role"`
-		Status   string    `json:"status"`
-
-		CreatedAt         time.Time `json:"created_at"`
-		UpdatedAt         time.Time `json:"updated_at"`
-		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
-	} `json:"account"`
-	Email string `json:"email,omitempty"`
-}
-
-const AccountUsernameChangedEvent = "account.username.changed"
-
-type AccountUsernameChangedPayload struct {
-	Account struct {
-		ID       uuid.UUID `json:"id"`
-		Username string    `json:"username"`
-		Role     string    `json:"role"`
-		Status   string    `json:"status"`
-
-		CreatedAt         time.Time `json:"created_at"`
-		UpdatedAt         time.Time `json:"updated_at"`
-		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
-	} `json:"account"`
-}
-
 const AccountDeletedEvent = "account.deleted"
 
 type AccountDeletedPayload struct {
-	Account struct {
-		ID       uuid.UUID `json:"id"`
-		Username string    `json:"username"`
-		Role     string    `json:"role"`
-		Status   string    `json:"status"`
-
-		CreatedAt         time.Time `json:"created_at"`
-		UpdatedAt         time.Time `json:"updated_at"`
-		UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
-	} `json:"account"`
+	Data      AccountDeletedPayloadData `json:"data"`
+	Timestamp time.Time                 `json:"timestamp"`
 }
 
-const AccountProfileUpdatedEvent = "account.profile.updated"
-
-type AccountProfileUpdatedPayload struct {
-	Profile models.Profile `json:"profile"`
+type AccountDeletedPayloadData struct {
+	AccountID uuid.UUID `json:"account_id"`
 }

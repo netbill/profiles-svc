@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
 type Inbound struct {
@@ -21,7 +20,5 @@ func New(log logium.Logger, domain domain) Inbound {
 }
 
 type domain interface {
-	CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
-	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
 	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
 }

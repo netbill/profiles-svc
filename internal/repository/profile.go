@@ -6,17 +6,20 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/repository/pgdb"
+	"github.com/netbill/restkit/pagi"
 )
 
-func (r Repository) CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error) {
+func (r Repository) CreateProfile(ctx context.Context, userID uuid.UUID, params profile.CreateParams) (models.Profile, error) {
 	res, err := r.profilesQ(ctx).Insert(ctx, pgdb.InsertProfileParams{
-		AccountID: userID,
-		Username:  username,
-		Official:  false,
+		AccountID:   userID,
+		Username:    params.Username,
+		Pseudonym:   params.Pseudonym,
+		Description: params.Description,
+		Avatar:      params.Avatar,
+		Official:    false,
 	})
 	if err != nil {
 		return models.Profile{}, err

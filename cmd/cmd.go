@@ -46,7 +46,7 @@ func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, 
 	kafkaInbound := inbound.New(log, profileSvc)
 
 	ctrl := controller.New(log, profileSvc)
-	mdll := mdlv.New(cfg.JWT.User.AccessToken.SecretKey, rest.AccountDataCtxKey)
+	mdll := mdlv.New(cfg.JWT.User.AccessToken.SecretKey, rest.AccountDataCtxKey, log)
 	router := rest.New(log, mdll, ctrl)
 
 	kafkaConsumer := messenger.NewConsumer(log, inBox, kafkaInbound, cfg.Kafka.Brokers...)

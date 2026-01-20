@@ -9,14 +9,13 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/rest"
-	"github.com/netbill/restkit/ape"
-	"github.com/netbill/restkit/ape/problems"
-
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
+	"github.com/netbill/restkit/ape"
+	"github.com/netbill/restkit/ape/problems"
 )
 
-func (s Service) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
+func (s Service) CreateMyProfile(w http.ResponseWriter, r *http.Request) {
 	initiator, err := rest.AccountData(r.Context())
 	if err != nil {
 		s.log.WithError(err).Error("failed to get user from context")
@@ -25,7 +24,7 @@ func (s Service) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := requests.UpdateProfile(r)
+	req, err := requests.CreateProfile(r)
 	if err != nil {
 		s.log.WithError(err).Errorf("invalid create profile request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -34,36 +33,33 @@ func (s Service) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Data.Id != initiator.ID {
-		s.log.WithError(err).Errorf("id in body and initiator id mismatch fir update My profile request")
+		s.log.WithError(err).Errorf("id in body and initiator id mismatch fir create My profile request")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"id": fmt.Errorf(
-				"id in body: %s and initiator id: %s mismatch fir update My profile request",
+				"id in body: %s and initiator id: %s mismatch fir create My profile request",
 				req.Data.Id,
 				initiator.ID,
 			),
 		})...)
 	}
 
-	res, err := s.domain.UpdateProfile(r.Context(), initiator.ID, profile.UpdateParams{
+	res, err := s.domain.CreateProfile(r.Context(), initiator.ID, profile.CreateParams{
 		Pseudonym:   req.Data.Attributes.Pseudonym,
 		Description: req.Data.Attributes.Description,
 		Avatar:      req.Data.Attributes.Avatar,
 	})
 	if err != nil {
-		s.log.WithError(err).Errorf("failed to update profile")
+		s.log.WithError(err).Errorf("failed to create profile")
 		switch {
 		case errors.Is(err, errx.ErrorProfileNotFound):
 			ape.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
-		case errors.Is(err, errx.ErrorUserTooYoung):
-			ape.RenderErr(w, problems.Forbidden("birthday must be at least 12 years ago"))
-		case errors.Is(err, errx.ErrorSexIsNotValid):
+		case errors.Is(err, errx.ErrorUsernameAlreadyTaken):
+			ape.RenderErr(w, problems.Conflict("user name is already taken"))
+		case errors.Is(err, errx.ErrorUsernameIsNotAllowed):
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"sex": fmt.Errorf("sex value is not supported, %s", err),
+				"username": err,
 			})...)
-		case errors.Is(err, errx.ErrorBirthdateIsNotValid):
-			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"birth_date": fmt.Errorf("birth date format is invalid %s", err),
-			})...)
+
 		default:
 			ape.RenderErr(w, problems.InternalError())
 		}

@@ -3,16 +3,16 @@ package responses
 import (
 	"net/http"
 
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/resources"
+	"github.com/netbill/restkit/pagi"
 )
 
 func Profile(m models.Profile) resources.Profile {
 	resp := resources.Profile{
 		Data: resources.ProfileData{
 			Id:   m.AccountID,
-			Type: resources.ProfileType,
+			Type: "profile",
 			Attributes: resources.ProfileAttributes{
 				Username:    m.Username,
 				Pseudonym:   m.Pseudonym,

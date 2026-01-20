@@ -12,15 +12,7 @@ import (
 )
 
 type Outbound interface {
-	AccountCreated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
 	AccountDeleted(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	AccountUsernameChanged(
 		ctx context.Context,
 		event inbox.Event,
 	) inbox.EventStatus
@@ -59,9 +51,7 @@ func (c Consumer) Run(ctx context.Context) {
 
 	accountConsumer := consumer.New(c.log, "profiles-svc-account-consumer", c.inbox)
 
-	accountConsumer.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
 	accountConsumer.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	accountConsumer.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
 
 	inboxer1 := consumer.NewInboxWorker(c.log, c.inbox, consumer.InboxConfigWorker{
 		Name:       "profiles-svc-inbox-worker-1",
@@ -70,9 +60,7 @@ func (c Consumer) Run(ctx context.Context) {
 		MinSleep:   100 * time.Millisecond,
 		MaxSleep:   1 * time.Second,
 	})
-	inboxer1.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
 	inboxer1.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	inboxer1.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
 
 	inboxer2 := consumer.NewInboxWorker(c.log, c.inbox, consumer.InboxConfigWorker{
 		Name:       "profiles-svc-inbox-worker-2",
@@ -81,9 +69,7 @@ func (c Consumer) Run(ctx context.Context) {
 		MinSleep:   100 * time.Millisecond,
 		MaxSleep:   1 * time.Second,
 	})
-	inboxer2.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
 	inboxer2.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	inboxer2.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
 
 	run(func() {
 		accountConsumer.Run(ctx, contracts.ProfilesSvcGroup, contracts.AccountsTopicV1, c.addr...)

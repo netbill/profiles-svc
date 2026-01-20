@@ -5,13 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
-	"github.com/netbill/pagi"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
+	"github.com/netbill/restkit/pagi"
 )
 
 type Domain interface {
-	CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
+	CreateProfile(ctx context.Context, userID uuid.UUID, params profile.CreateParams) (models.Profile, error)
 
 	FilterProfile(
 		ctx context.Context,

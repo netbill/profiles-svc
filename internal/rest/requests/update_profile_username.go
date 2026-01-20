@@ -10,13 +10,7 @@ import (
 	"github.com/netbill/profiles-svc/resources"
 )
 
-func newDecodeError(what string, err error) error {
-	return validation.Errors{
-		what: fmt.Errorf("decode request %s: %w", what, err),
-	}
-}
-
-func UpdateProfileOfficial(r *http.Request) (req resources.UpdateProfileOfficial, err error) {
+func UpdateProfileUsername(r *http.Request) (req resources.UpdateProfileUsername, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = newDecodeError("body", err)
 		return
@@ -24,7 +18,7 @@ func UpdateProfileOfficial(r *http.Request) (req resources.UpdateProfileOfficial
 
 	errs := validation.Errors{
 		"data/id":         validation.Validate(&req.Data.Id, validation.Required),
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("update_profile_official")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("update_profile_username")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
 

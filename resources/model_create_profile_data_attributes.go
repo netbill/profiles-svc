@@ -12,16 +12,15 @@ package resources
 
 import (
 	"encoding/json"
-	"time"
 	"bytes"
 	"fmt"
 )
 
-// checks if the ProfileAttributes type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ProfileAttributes{}
+// checks if the CreateProfileDataAttributes type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &CreateProfileDataAttributes{}
 
-// ProfileAttributes struct for ProfileAttributes
-type ProfileAttributes struct {
+// CreateProfileDataAttributes struct for CreateProfileDataAttributes
+type CreateProfileDataAttributes struct {
 	// Username
 	Username string `json:"username"`
 	// Pseudonym
@@ -30,39 +29,30 @@ type ProfileAttributes struct {
 	Description *string `json:"description,omitempty"`
 	// Avatar URL
 	Avatar *string `json:"avatar,omitempty"`
-	// Is Official Account
-	Official bool `json:"official"`
-	// Updated At
-	UpdatedAt time.Time `json:"updated_at"`
-	// Created At
-	CreatedAt time.Time `json:"created_at"`
 }
 
-type _ProfileAttributes ProfileAttributes
+type _CreateProfileDataAttributes CreateProfileDataAttributes
 
-// NewProfileAttributes instantiates a new ProfileAttributes object
+// NewCreateProfileDataAttributes instantiates a new CreateProfileDataAttributes object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProfileAttributes(username string, official bool, updatedAt time.Time, createdAt time.Time) *ProfileAttributes {
-	this := ProfileAttributes{}
+func NewCreateProfileDataAttributes(username string) *CreateProfileDataAttributes {
+	this := CreateProfileDataAttributes{}
 	this.Username = username
-	this.Official = official
-	this.UpdatedAt = updatedAt
-	this.CreatedAt = createdAt
 	return &this
 }
 
-// NewProfileAttributesWithDefaults instantiates a new ProfileAttributes object
+// NewCreateProfileDataAttributesWithDefaults instantiates a new CreateProfileDataAttributes object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewProfileAttributesWithDefaults() *ProfileAttributes {
-	this := ProfileAttributes{}
+func NewCreateProfileDataAttributesWithDefaults() *CreateProfileDataAttributes {
+	this := CreateProfileDataAttributes{}
 	return &this
 }
 
 // GetUsername returns the Username field value
-func (o *ProfileAttributes) GetUsername() string {
+func (o *CreateProfileDataAttributes) GetUsername() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -73,7 +63,7 @@ func (o *ProfileAttributes) GetUsername() string {
 
 // GetUsernameOk returns a tuple with the Username field value
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetUsernameOk() (*string, bool) {
+func (o *CreateProfileDataAttributes) GetUsernameOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -81,12 +71,12 @@ func (o *ProfileAttributes) GetUsernameOk() (*string, bool) {
 }
 
 // SetUsername sets field value
-func (o *ProfileAttributes) SetUsername(v string) {
+func (o *CreateProfileDataAttributes) SetUsername(v string) {
 	o.Username = v
 }
 
 // GetPseudonym returns the Pseudonym field value if set, zero value otherwise.
-func (o *ProfileAttributes) GetPseudonym() string {
+func (o *CreateProfileDataAttributes) GetPseudonym() string {
 	if o == nil || IsNil(o.Pseudonym) {
 		var ret string
 		return ret
@@ -96,7 +86,7 @@ func (o *ProfileAttributes) GetPseudonym() string {
 
 // GetPseudonymOk returns a tuple with the Pseudonym field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetPseudonymOk() (*string, bool) {
+func (o *CreateProfileDataAttributes) GetPseudonymOk() (*string, bool) {
 	if o == nil || IsNil(o.Pseudonym) {
 		return nil, false
 	}
@@ -104,7 +94,7 @@ func (o *ProfileAttributes) GetPseudonymOk() (*string, bool) {
 }
 
 // HasPseudonym returns a boolean if a field has been set.
-func (o *ProfileAttributes) HasPseudonym() bool {
+func (o *CreateProfileDataAttributes) HasPseudonym() bool {
 	if o != nil && !IsNil(o.Pseudonym) {
 		return true
 	}
@@ -113,12 +103,12 @@ func (o *ProfileAttributes) HasPseudonym() bool {
 }
 
 // SetPseudonym gets a reference to the given string and assigns it to the Pseudonym field.
-func (o *ProfileAttributes) SetPseudonym(v string) {
+func (o *CreateProfileDataAttributes) SetPseudonym(v string) {
 	o.Pseudonym = &v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
-func (o *ProfileAttributes) GetDescription() string {
+func (o *CreateProfileDataAttributes) GetDescription() string {
 	if o == nil || IsNil(o.Description) {
 		var ret string
 		return ret
@@ -128,7 +118,7 @@ func (o *ProfileAttributes) GetDescription() string {
 
 // GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetDescriptionOk() (*string, bool) {
+func (o *CreateProfileDataAttributes) GetDescriptionOk() (*string, bool) {
 	if o == nil || IsNil(o.Description) {
 		return nil, false
 	}
@@ -136,7 +126,7 @@ func (o *ProfileAttributes) GetDescriptionOk() (*string, bool) {
 }
 
 // HasDescription returns a boolean if a field has been set.
-func (o *ProfileAttributes) HasDescription() bool {
+func (o *CreateProfileDataAttributes) HasDescription() bool {
 	if o != nil && !IsNil(o.Description) {
 		return true
 	}
@@ -145,12 +135,12 @@ func (o *ProfileAttributes) HasDescription() bool {
 }
 
 // SetDescription gets a reference to the given string and assigns it to the Description field.
-func (o *ProfileAttributes) SetDescription(v string) {
+func (o *CreateProfileDataAttributes) SetDescription(v string) {
 	o.Description = &v
 }
 
 // GetAvatar returns the Avatar field value if set, zero value otherwise.
-func (o *ProfileAttributes) GetAvatar() string {
+func (o *CreateProfileDataAttributes) GetAvatar() string {
 	if o == nil || IsNil(o.Avatar) {
 		var ret string
 		return ret
@@ -160,7 +150,7 @@ func (o *ProfileAttributes) GetAvatar() string {
 
 // GetAvatarOk returns a tuple with the Avatar field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetAvatarOk() (*string, bool) {
+func (o *CreateProfileDataAttributes) GetAvatarOk() (*string, bool) {
 	if o == nil || IsNil(o.Avatar) {
 		return nil, false
 	}
@@ -168,7 +158,7 @@ func (o *ProfileAttributes) GetAvatarOk() (*string, bool) {
 }
 
 // HasAvatar returns a boolean if a field has been set.
-func (o *ProfileAttributes) HasAvatar() bool {
+func (o *CreateProfileDataAttributes) HasAvatar() bool {
 	if o != nil && !IsNil(o.Avatar) {
 		return true
 	}
@@ -177,83 +167,11 @@ func (o *ProfileAttributes) HasAvatar() bool {
 }
 
 // SetAvatar gets a reference to the given string and assigns it to the Avatar field.
-func (o *ProfileAttributes) SetAvatar(v string) {
+func (o *CreateProfileDataAttributes) SetAvatar(v string) {
 	o.Avatar = &v
 }
 
-// GetOfficial returns the Official field value
-func (o *ProfileAttributes) GetOfficial() bool {
-	if o == nil {
-		var ret bool
-		return ret
-	}
-
-	return o.Official
-}
-
-// GetOfficialOk returns a tuple with the Official field value
-// and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetOfficialOk() (*bool, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Official, true
-}
-
-// SetOfficial sets field value
-func (o *ProfileAttributes) SetOfficial(v bool) {
-	o.Official = v
-}
-
-// GetUpdatedAt returns the UpdatedAt field value
-func (o *ProfileAttributes) GetUpdatedAt() time.Time {
-	if o == nil {
-		var ret time.Time
-		return ret
-	}
-
-	return o.UpdatedAt
-}
-
-// GetUpdatedAtOk returns a tuple with the UpdatedAt field value
-// and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetUpdatedAtOk() (*time.Time, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.UpdatedAt, true
-}
-
-// SetUpdatedAt sets field value
-func (o *ProfileAttributes) SetUpdatedAt(v time.Time) {
-	o.UpdatedAt = v
-}
-
-// GetCreatedAt returns the CreatedAt field value
-func (o *ProfileAttributes) GetCreatedAt() time.Time {
-	if o == nil {
-		var ret time.Time
-		return ret
-	}
-
-	return o.CreatedAt
-}
-
-// GetCreatedAtOk returns a tuple with the CreatedAt field value
-// and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetCreatedAtOk() (*time.Time, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.CreatedAt, true
-}
-
-// SetCreatedAt sets field value
-func (o *ProfileAttributes) SetCreatedAt(v time.Time) {
-	o.CreatedAt = v
-}
-
-func (o ProfileAttributes) MarshalJSON() ([]byte, error) {
+func (o CreateProfileDataAttributes) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -261,7 +179,7 @@ func (o ProfileAttributes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ProfileAttributes) ToMap() (map[string]interface{}, error) {
+func (o CreateProfileDataAttributes) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["username"] = o.Username
 	if !IsNil(o.Pseudonym) {
@@ -273,21 +191,15 @@ func (o ProfileAttributes) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Avatar) {
 		toSerialize["avatar"] = o.Avatar
 	}
-	toSerialize["official"] = o.Official
-	toSerialize["updated_at"] = o.UpdatedAt
-	toSerialize["created_at"] = o.CreatedAt
 	return toSerialize, nil
 }
 
-func (o *ProfileAttributes) UnmarshalJSON(data []byte) (err error) {
+func (o *CreateProfileDataAttributes) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"username",
-		"official",
-		"updated_at",
-		"created_at",
 	}
 
 	allProperties := make(map[string]interface{})
@@ -304,53 +216,53 @@ func (o *ProfileAttributes) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varProfileAttributes := _ProfileAttributes{}
+	varCreateProfileDataAttributes := _CreateProfileDataAttributes{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varProfileAttributes)
+	err = decoder.Decode(&varCreateProfileDataAttributes)
 
 	if err != nil {
 		return err
 	}
 
-	*o = ProfileAttributes(varProfileAttributes)
+	*o = CreateProfileDataAttributes(varCreateProfileDataAttributes)
 
 	return err
 }
 
-type NullableProfileAttributes struct {
-	value *ProfileAttributes
+type NullableCreateProfileDataAttributes struct {
+	value *CreateProfileDataAttributes
 	isSet bool
 }
 
-func (v NullableProfileAttributes) Get() *ProfileAttributes {
+func (v NullableCreateProfileDataAttributes) Get() *CreateProfileDataAttributes {
 	return v.value
 }
 
-func (v *NullableProfileAttributes) Set(val *ProfileAttributes) {
+func (v *NullableCreateProfileDataAttributes) Set(val *CreateProfileDataAttributes) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableProfileAttributes) IsSet() bool {
+func (v NullableCreateProfileDataAttributes) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableProfileAttributes) Unset() {
+func (v *NullableCreateProfileDataAttributes) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableProfileAttributes(val *ProfileAttributes) *NullableProfileAttributes {
-	return &NullableProfileAttributes{value: val, isSet: true}
+func NewNullableCreateProfileDataAttributes(val *CreateProfileDataAttributes) *NullableCreateProfileDataAttributes {
+	return &NullableCreateProfileDataAttributes{value: val, isSet: true}
 }
 
-func (v NullableProfileAttributes) MarshalJSON() ([]byte, error) {
+func (v NullableCreateProfileDataAttributes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableProfileAttributes) UnmarshalJSON(src []byte) error {
+func (v *NullableCreateProfileDataAttributes) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

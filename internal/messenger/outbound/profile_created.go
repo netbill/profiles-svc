@@ -11,12 +11,12 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func (p Outbound) WriteProfileUpdated(
+func (p Outbound) WriteProfileCreated(
 	ctx context.Context,
 	profile models.Profile,
 ) error {
-	payload, err := json.Marshal(contracts.AccountProfileUpdatedPayload{
-		Data: contracts.AccountProfileUpdatedPayloadData{
+	payload, err := json.Marshal(contracts.AccountProfileCreatedPayload{
+		Data: contracts.AccountProfileCreatedPayloadData{
 			AccountID:   profile.AccountID,
 			Username:    profile.Username,
 			Official:    profile.Official,
@@ -24,7 +24,7 @@ func (p Outbound) WriteProfileUpdated(
 			Description: profile.Description,
 			Avatar:      profile.Avatar,
 		},
-		Timestamp: profile.UpdatedAt,
+		Timestamp: profile.CreatedAt,
 	})
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (p Outbound) WriteProfileUpdated(
 			Value: payload,
 			Headers: []kafka.Header{
 				{Key: header.EventID, Value: []byte(eventID)}, // Outbox will fill this
-				{Key: header.EventType, Value: []byte(contracts.ProfileUpdatedEvent)},
+				{Key: header.EventType, Value: []byte(contracts.ProfileCreatedEvent)},
 				{Key: header.EventVersion, Value: []byte("1")},
 				{Key: header.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
 				{Key: header.ContentType, Value: []byte("application/json")},
@@ -48,7 +48,7 @@ func (p Outbound) WriteProfileUpdated(
 		},
 	)
 
-	p.log.Debugf("profile updated event queued, account_id: %s, event_id: %s", profile.AccountID, eventID)
+	p.log.Debugf("profile created event queued, account_id: %s, event_id: %s", profile.AccountID, eventID)
 
 	return err
 }
