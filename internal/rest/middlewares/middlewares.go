@@ -11,7 +11,7 @@ type Service struct {
 	accountAccessSK string
 	uploadFilesSK   string
 
-	log logium.Logger
+	log *logium.Logger
 }
 
 type Config struct {
@@ -20,7 +20,7 @@ type Config struct {
 }
 
 func New(
-	log logium.Logger,
+	log *logium.Logger,
 	cfg Config,
 ) Service {
 	return Service{
@@ -37,9 +37,9 @@ func (s Service) AccountAuth() func(next http.Handler) http.Handler {
 func (s Service) AccountRolesGrant(
 	allowedRoles map[string]bool,
 ) func(http.Handler) http.Handler {
-	return mdlv.AccountRolesGrant(s.log, accountDataCtxKey, allowedRoles)
+	return mdlv.AccountRoleGrant(s.log, accountDataCtxKey, allowedRoles)
 }
 
-func (s Service) UploadFiles(scope string) func(next http.Handler) http.Handler {
-	return mdlv.UploadFiles(s.log, uploadFilesCtxKey, scope, s.uploadFilesSK)
+func (s Service) ConfirmUploadFiles(scope string) func(next http.Handler) http.Handler {
+	return mdlv.ConfirmUploadFiles(s.log, uploadFilesCtxKey, scope, s.uploadFilesSK)
 }

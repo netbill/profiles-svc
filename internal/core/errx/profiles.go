@@ -1,7 +1,7 @@
 package errx
 
 import (
-	"github.com/netbill/restkit/ape"
+	"github.com/netbill/ape"
 )
 
 var ErrorProfileNotFound = ape.DeclareError("PROFILE_NOT_FOUND")

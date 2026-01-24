@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/netbill/ape"
+	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/rest/middlewares"
-	"github.com/netbill/restkit/ape"
-	"github.com/netbill/restkit/ape/problems"
 
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"

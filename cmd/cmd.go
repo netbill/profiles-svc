@@ -24,7 +24,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/controller"
 )
 
-func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, wg *sync.WaitGroup) {
+func StartServices(ctx context.Context, cfg internal.Config, log *logium.Logger, wg *sync.WaitGroup) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {
@@ -89,7 +89,15 @@ func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, 
 
 	msgx := messenger.New(log, pg, cfg.Kafka.Brokers...)
 
-	run(func() { router.Run(ctx, cfg) })
+	run(func() {
+		router.Run(ctx, rest.Config{
+			Port:              cfg.Rest.Port,
+			TimeoutRead:       cfg.Rest.Timeouts.Read,
+			TimeoutReadHeader: cfg.Rest.Timeouts.ReadHeader,
+			TimeoutWrite:      cfg.Rest.Timeouts.Write,
+			TimeoutIdle:       cfg.Rest.Timeouts.Idle,
+		})
+	})
 
 	log.Infof("starting kafka brokers %s", cfg.Kafka.Brokers)
 

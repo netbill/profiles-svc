@@ -1,6 +1,6 @@
 package errx
 
-import "github.com/netbill/restkit/ape"
+import "github.com/netbill/ape"
 
 var (
 	ErrorContentTypeIsNotAllowed = ape.DeclareError("CONTENT_TYPE_IS_NOT_ALLOWED")

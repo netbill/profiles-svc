@@ -22,7 +22,25 @@ func Run(args []string) bool {
 		logrus.Fatalf("failed to load config: %v", err)
 	}
 
-	log := logium.NewLogger(cfg.Log.Level, cfg.Log.Format)
+	log := logium.New()
+
+	lvl, err := logrus.ParseLevel(cfg.Log.Level)
+	if err != nil {
+		lvl = logrus.InfoLevel
+		log.WithField("bad_level", cfg.Log.Level).Warn("unknown log level, fallback to info")
+	}
+	log.SetLevel(lvl)
+
+	switch {
+	case cfg.Log.Format == "json":
+		log.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		log.SetFormatter(&logrus.TextFormatter{
+			FullTimestamp:   true,
+			TimestampFormat: "2006-01-02 15:04:05",
+		})
+	}
+
 	log.Info("Starting server...")
 
 	var (

@@ -9,7 +9,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/internal"
 	"github.com/netbill/restkit/tokens/roles"
 )
 
@@ -32,17 +31,17 @@ type Handlers interface {
 type Middlewares interface {
 	AccountAuth() func(http.Handler) http.Handler
 	AccountRolesGrant(allowedRoles map[string]bool) func(http.Handler) http.Handler
-	UploadFiles(scope string) func(http.Handler) http.Handler
+	ConfirmUploadFiles(scope string) func(http.Handler) http.Handler
 }
 
 type Service struct {
 	handlers    Handlers
 	middlewares Middlewares
-	log         logium.Logger
+	log         *logium.Logger
 }
 
 func New(
-	log logium.Logger,
+	log *logium.Logger,
 	middlewares Middlewares,
 	handlers Handlers,
 ) *Service {
@@ -53,13 +52,21 @@ func New(
 	}
 }
 
-func (s *Service) Run(ctx context.Context, cfg internal.Config) {
+type Config struct {
+	Port              string
+	TimeoutRead       time.Duration
+	TimeoutReadHeader time.Duration
+	TimeoutWrite      time.Duration
+	TimeoutIdle       time.Duration
+}
+
+func (s *Service) Run(ctx context.Context, cfg Config) {
 	auth := s.middlewares.AccountAuth()
 	sysmoder := s.middlewares.AccountRolesGrant(map[string]bool{
 		roles.SystemAdmin: true,
 		roles.SystemModer: true,
 	})
-	uploadProfileAvatar := s.middlewares.UploadFiles("upload_profile_avatar")
+	uploadProfileAvatar := s.middlewares.ConfirmUploadFiles("upload_profile_avatar")
 
 	r := chi.NewRouter()
 
@@ -105,15 +112,15 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 	})
 
 	srv := &http.Server{
-		Addr:              cfg.Rest.Port,
+		Addr:              cfg.Port,
 		Handler:           r,
-		ReadTimeout:       cfg.Rest.Timeouts.Read,
-		ReadHeaderTimeout: cfg.Rest.Timeouts.ReadHeader,
-		WriteTimeout:      cfg.Rest.Timeouts.Write,
-		IdleTimeout:       cfg.Rest.Timeouts.Idle,
+		ReadTimeout:       cfg.TimeoutRead,
+		ReadHeaderTimeout: cfg.TimeoutReadHeader,
+		WriteTimeout:      cfg.TimeoutWrite,
+		IdleTimeout:       cfg.TimeoutIdle,
 	}
 
-	s.log.Infof("starting REST service on %s", cfg.Rest.Port)
+	s.log.Infof("starting REST service on %s", cfg.Port)
 
 	errCh := make(chan error, 1)
 	go func() {

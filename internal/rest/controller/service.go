@@ -44,10 +44,10 @@ type domain interface {
 
 type Service struct {
 	domain domain
-	log    logium.Logger
+	log    *logium.Logger
 }
 
-func New(log logium.Logger, profile domain) Service {
+func New(log *logium.Logger, profile domain) Service {
 	return Service{
 		domain: profile,
 		log:    log,
