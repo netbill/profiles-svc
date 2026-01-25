@@ -1,11 +1,10 @@
-package internal
+package cmd
 
 import (
 	"fmt"
 	"os"
 	"time"
 
-	_ "github.com/lib/pq" // postgres driver don`t delete
 	"github.com/spf13/viper"
 )
 
@@ -61,14 +60,14 @@ type S3Config struct {
 			SecretKey string `mapstructure:"secret_key"`
 		} `mapstructure:"token"`
 
-		Profile struct {
-			Avatar struct {
-				MaxLength         int64         `mapstructure:"max_length"`
-				AllowedExtensions []string      `mapstructure:"allowed_extensions"`
-				UploadTokenScope  string        `mapstructure:"upload_token_scope"`
-				UploadTokenTTL    time.Duration `mapstructure:"upload_token_ttl"`
-			} `mapstructure:"avatar"`
-		} `mapstructure:"profile"`
+		//Profile struct {
+		//	Avatar struct {
+		//		MaxLength         int64         `mapstructure:"max_length"`
+		//		AllowedExtensions []string      `mapstructure:"allowed_extensions"`
+		//		UploadTokenScope  string        `mapstructure:"upload_token_scope"`
+		//		UploadTokenTTL    time.Duration `mapstructure:"upload_token_ttl"`
+		//	} `mapstructure:"avatar"`
+		//} `mapstructure:"profile"`
 	} `mapstructure:"upload"`
 }
 

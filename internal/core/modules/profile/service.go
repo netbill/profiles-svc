@@ -71,7 +71,6 @@ type bucket interface {
 		accountID, sessionID uuid.UUID,
 	) error
 
-	CheckProfileAvatarExtension(link string) (bool, error)
 	AcceptUpdateProfileAvatar(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,

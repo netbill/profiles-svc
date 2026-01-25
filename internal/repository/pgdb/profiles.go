@@ -2,27 +2,27 @@ package pgdb
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	"github.com/netbill/pgx"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/netbill/pgxtx"
 )
 
 const profilesTable = "profiles"
 const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar_url, created_at, updated_at"
 
 type Profile struct {
-	AccountID   uuid.UUID      `db:"account_id"`
-	Username    string         `db:"username"`
-	Official    bool           `db:"official"`
-	Pseudonym   sql.NullString `db:"pseudonym"`
-	Description sql.NullString `db:"description"`
-	AvatarURL   sql.NullString `db:"avatar_url"`
-	CreatedAt   time.Time      `db:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at"`
+	AccountID   uuid.UUID   `db:"account_id"`
+	Username    string      `db:"username"`
+	Official    bool        `db:"official"`
+	Pseudonym   pgtype.Text `db:"pseudonym"`
+	Description pgtype.Text `db:"description"`
+	AvatarURL   pgtype.Text `db:"avatar_url"`
+	CreatedAt   time.Time   `db:"created_at"`
+	UpdatedAt   time.Time   `db:"updated_at"`
 }
 
 func (p *Profile) scan(row sq.RowScanner) error {
@@ -43,7 +43,7 @@ func (p *Profile) scan(row sq.RowScanner) error {
 }
 
 type ProfilesQ struct {
-	db       pgx.DBTX
+	db       pgxtx.DBTX
 	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
 	updater  sq.UpdateBuilder
@@ -51,7 +51,7 @@ type ProfilesQ struct {
 	counter  sq.SelectBuilder
 }
 
-func NewProfilesQ(db pgx.DBTX) ProfilesQ {
+func NewProfilesQ(db pgxtx.DBTX) ProfilesQ {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return ProfilesQ{
 		db:       db,
@@ -67,8 +67,8 @@ type InsertProfileParams struct {
 	AccountID   uuid.UUID
 	Username    string
 	Official    bool
-	Pseudonym   sql.NullString
-	Description sql.NullString
+	Pseudonym   pgtype.Text
+	Description pgtype.Text
 }
 
 func (q ProfilesQ) Insert(ctx context.Context, input InsertProfileParams) (Profile, error) {
@@ -78,52 +78,45 @@ func (q ProfilesQ) Insert(ctx context.Context, input InsertProfileParams) (Profi
 		"official":    input.Official,
 		"pseudonym":   input.Pseudonym,
 		"description": input.Description,
-	}).Suffix("RETURNING profiles.*").ToSql()
+	}).Suffix("RETURNING " + ProfilesColumns).ToSql()
 	if err != nil {
 		return Profile{}, fmt.Errorf("building insert query for %s: %w", profilesTable, err)
 	}
 
 	var out Profile
-	row := q.db.QueryRowContext(ctx, query, args...)
-	if err = out.scan(row); err != nil {
+	if err = out.scan(q.db.QueryRow(ctx, query, args...)); err != nil {
 		return Profile{}, err
 	}
 	return out, nil
 }
 
-func (q ProfilesQ) Update(ctx context.Context) (int64, error) {
+func (q ProfilesQ) UpdateMany(ctx context.Context) (int64, error) {
+	q.updater = q.updater.Set("updated_at", time.Now().UTC())
+
 	query, args, err := q.updater.ToSql()
 	if err != nil {
 		return 0, fmt.Errorf("building update query for %s: %w", profilesTable, err)
 	}
 
-	res, err := q.db.ExecContext(ctx, query, args...)
+	tag, err := q.db.Exec(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("executing update query for %s: %w", profilesTable, err)
+		return 0, err
 	}
-
-	aff, err := res.RowsAffected()
-	if err != nil {
-		return 0, fmt.Errorf("rows affected for %s: %w", profilesTable, err)
-	}
-
-	return aff, nil
+	return tag.RowsAffected(), nil
 }
 
 func (q ProfilesQ) UpdateOne(ctx context.Context) (Profile, error) {
+	q.updater = q.updater.Set("updated_at", time.Now().UTC())
+
 	query, args, err := q.updater.Suffix("RETURNING " + ProfilesColumns).ToSql()
 	if err != nil {
 		return Profile{}, fmt.Errorf("building update query for %s: %w", profilesTable, err)
 	}
 
-	row := q.db.QueryRowContext(ctx, query, args...)
-
 	var p Profile
-	err = p.scan(row)
-	if err != nil {
+	if err = p.scan(q.db.QueryRow(ctx, query, args...)); err != nil {
 		return Profile{}, err
 	}
-
 	return p, nil
 }
 
@@ -137,18 +130,18 @@ func (q ProfilesQ) UpdateOfficial(official bool) ProfilesQ {
 	return q
 }
 
-func (q ProfilesQ) UpdatePseudonym(nullString sql.NullString) ProfilesQ {
-	q.updater = q.updater.Set("pseudonym", nullString)
+func (q ProfilesQ) UpdatePseudonym(v pgtype.Text) ProfilesQ {
+	q.updater = q.updater.Set("pseudonym", v)
 	return q
 }
 
-func (q ProfilesQ) UpdateDescription(description sql.NullString) ProfilesQ {
-	q.updater = q.updater.Set("description", description)
+func (q ProfilesQ) UpdateDescription(v pgtype.Text) ProfilesQ {
+	q.updater = q.updater.Set("description", v)
 	return q
 }
 
-func (q ProfilesQ) UpdateAvatarURL(avatarURL sql.NullString) ProfilesQ {
-	q.updater = q.updater.Set("avatar_url", avatarURL)
+func (q ProfilesQ) UpdateAvatarURL(v pgtype.Text) ProfilesQ {
+	q.updater = q.updater.Set("avatar_url", v)
 	return q
 }
 
@@ -158,14 +151,10 @@ func (q ProfilesQ) Get(ctx context.Context) (Profile, error) {
 		return Profile{}, fmt.Errorf("building get query for %s: %w", profilesTable, err)
 	}
 
-	row := q.db.QueryRowContext(ctx, query, args...)
-
 	var p Profile
-	err = p.scan(row)
-	if err != nil {
+	if err = p.scan(q.db.QueryRow(ctx, query, args...)); err != nil {
 		return Profile{}, err
 	}
-
 	return p, nil
 }
 
@@ -175,34 +164,26 @@ func (q ProfilesQ) Select(ctx context.Context) ([]Profile, error) {
 		return nil, fmt.Errorf("building select query for %s: %w", profilesTable, err)
 	}
 
-	rows, err := q.db.QueryContext(ctx, query, args...)
+	rows, err := q.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var out []Profile
+	out := make([]Profile, 0)
 	for rows.Next() {
 		var p Profile
-		err = p.scan(rows)
-		if err != nil {
+		if err = p.scan(rows); err != nil {
 			return nil, fmt.Errorf("scanning profile: %w", err)
 		}
 		out = append(out, p)
 	}
 
-	return out, nil
-}
-
-func (q ProfilesQ) Delete(ctx context.Context) error {
-	query, args, err := q.deleter.ToSql()
-	if err != nil {
-		return fmt.Errorf("building delete query for %s: %w", profilesTable, err)
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
-	_, err = q.db.ExecContext(ctx, query, args...)
-
-	return err
+	return out, nil
 }
 
 func (q ProfilesQ) FilterAccountID(accountID ...uuid.UUID) ProfilesQ {
@@ -254,7 +235,7 @@ func (q ProfilesQ) Count(ctx context.Context) (uint, error) {
 	}
 
 	var count uint
-	err = q.db.QueryRowContext(ctx, query, args...).Scan(&count)
+	err = q.db.QueryRow(ctx, query, args...).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -265,6 +246,16 @@ func (q ProfilesQ) Count(ctx context.Context) (uint, error) {
 func (q ProfilesQ) Page(limit, offset uint) ProfilesQ {
 	q.selector = q.selector.Limit(uint64(limit)).Offset(uint64(offset))
 	return q
+}
+
+func (q ProfilesQ) Delete(ctx context.Context) error {
+	query, args, err := q.deleter.ToSql()
+	if err != nil {
+		return fmt.Errorf("building delete query for %s: %w", profilesTable, err)
+	}
+
+	_, err = q.db.Exec(ctx, query, args...)
+	return err
 }
 
 func (q ProfilesQ) OrderCreatedAt(ascending bool) ProfilesQ {

@@ -2,26 +2,24 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/netbill/pgx"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/netbill/pgxtx"
 	"github.com/netbill/profiles-svc/internal/repository/pgdb"
 )
 
 type Repository struct {
-	db *sql.DB
+	pool *pgxpool.Pool
 }
 
-func New(db *sql.DB) *Repository {
-	return &Repository{
-		db: db,
-	}
+func New(pool *pgxpool.Pool) Repository {
+	return Repository{pool: pool}
 }
 
 func (r Repository) profilesQ(ctx context.Context) pgdb.ProfilesQ {
-	return pgdb.NewProfilesQ(pgx.Exec(r.db, ctx))
+	return pgdb.NewProfilesQ(pgxtx.Exec(r.pool, ctx))
 }
 
 func (r Repository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	return pgx.Transaction(r.db, ctx, fn)
+	return pgxtx.Transaction(r.pool, ctx, fn)
 }

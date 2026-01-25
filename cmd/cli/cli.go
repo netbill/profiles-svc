@@ -11,13 +11,11 @@ import (
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/cmd"
 	"github.com/netbill/profiles-svc/cmd/migrations"
-	"github.com/netbill/profiles-svc/internal"
-
 	"github.com/sirupsen/logrus"
 )
 
 func Run(args []string) bool {
-	cfg, err := internal.LoadConfig()
+	cfg, err := cmd.LoadConfig()
 	if err != nil {
 		logrus.Fatalf("failed to load config: %v", err)
 	}

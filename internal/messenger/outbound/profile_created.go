@@ -3,6 +3,7 @@ package outbound
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/netbill/evebox/header"
@@ -21,7 +22,7 @@ func (o Outbound) WriteProfileCreated(
 		CreatedAt: profile.CreatedAt,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal profile created payload: %w", err)
 	}
 
 	event, err := o.outbox.CreateOutboxEvent(
@@ -40,10 +41,10 @@ func (o Outbound) WriteProfileCreated(
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create outbox event for profile created: %w", err)
 	}
 
 	o.log.Debugf("profile created event queued, account_id: %s, event_id: %s", profile.AccountID, event.ID)
 
-	return err
+	return nil
 }

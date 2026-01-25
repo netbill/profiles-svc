@@ -35,13 +35,13 @@ func (m Messenger) RunConsumer(ctx context.Context, handlers handlers) {
 		}()
 	}
 
-	accountConsumer := consumer.New(m.log, m.db, "auth-svc-org-consumer", consumer.OnUnknownDoNothing, m.addr...)
+	accountConsumer := consumer.New(m.log, m.pool, "auth-svc-org-consumer", consumer.OnUnknownDoNothing, m.addr...)
 
 	accountConsumer.Handle(contracts.AccountCreatedEvent, handlers.AccountCreated)
 	accountConsumer.Handle(contracts.AccountDeletedEvent, handlers.AccountDeleted)
 	accountConsumer.Handle(contracts.AccountUsernameUpdatedEvent, handlers.AccountUsernameUpdated)
 
-	inboxer1 := consumer.NewInboxer(m.log, m.db, consumer.ConfigInboxer{
+	inboxer1 := consumer.NewInboxer(m.log, m.pool, consumer.ConfigInboxer{
 		Name:       "profiles-svc-inbox-worker-1",
 		BatchSize:  10,
 		RetryDelay: 1 * time.Minute,
@@ -53,14 +53,14 @@ func (m Messenger) RunConsumer(ctx context.Context, handlers handlers) {
 	inboxer1.Handle(contracts.AccountDeletedEvent, handlers.AccountDeleted)
 	inboxer1.Handle(contracts.AccountUsernameUpdatedEvent, handlers.AccountUsernameUpdated)
 
-	inboxer2 := consumer.NewInboxer(m.log, m.db, consumer.ConfigInboxer{
+	inboxer2 := consumer.NewInboxer(m.log, m.pool, consumer.ConfigInboxer{
 		Name:       "profiles-svc-inbox-worker-2",
 		BatchSize:  10,
 		RetryDelay: 1 * time.Minute,
 		MinSleep:   100 * time.Millisecond,
 		MaxSleep:   1 * time.Second,
 	})
-	
+
 	inboxer2.Handle(contracts.AccountCreatedEvent, handlers.AccountCreated)
 	inboxer2.Handle(contracts.AccountDeletedEvent, handlers.AccountDeleted)
 	inboxer2.Handle(contracts.AccountUsernameUpdatedEvent, handlers.AccountUsernameUpdated)

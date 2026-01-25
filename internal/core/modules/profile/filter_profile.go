@@ -2,9 +2,7 @@ package profile
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/restkit/pagi"
 )
@@ -22,9 +20,7 @@ func (s Service) FilterProfile(
 ) (pagi.Page[[]models.Profile], error) {
 	collection, err := s.repo.FilterProfiles(ctx, params, limit, offset)
 	if err != nil {
-		return pagi.Page[[]models.Profile]{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("getting profile with username '%s': %w", *params.UsernamePrefix, err),
-		)
+		return pagi.Page[[]models.Profile]{}, err
 	}
 
 	return collection, nil

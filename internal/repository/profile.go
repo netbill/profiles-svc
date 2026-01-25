@@ -2,10 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/repository/pgdb"
@@ -18,12 +21,9 @@ func (r Repository) InsertProfile(ctx context.Context, accountID uuid.UUID, user
 		Username:  username,
 	})
 	if err != nil {
-		return models.Profile{}, err
-	}
-
-	res, err = r.profilesQ(ctx).FilterAccountID(accountID).Get(ctx)
-	if err != nil {
-		return models.Profile{}, err
+		return models.Profile{}, fmt.Errorf(
+			"failed to insert profile for account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -32,10 +32,14 @@ func (r Repository) InsertProfile(ctx context.Context, accountID uuid.UUID, user
 func (r Repository) GetProfileByAccountID(ctx context.Context, accountId uuid.UUID) (models.Profile, error) {
 	row, err := r.profilesQ(ctx).FilterAccountID(accountId).Get(ctx)
 	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		return models.Profile{}, nil
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to get profile by account id %s, cause: %w", accountId, err),
+		)
 	case err != nil:
-		return models.Profile{}, err
+		return models.Profile{}, fmt.Errorf(
+			"failed to get profile by account id %s, cause: %w", accountId, err,
+		)
 	}
 
 	return row.ToModel(), nil
@@ -44,10 +48,14 @@ func (r Repository) GetProfileByAccountID(ctx context.Context, accountId uuid.UU
 func (r Repository) GetProfileByUsername(ctx context.Context, username string) (models.Profile, error) {
 	row, err := r.profilesQ(ctx).FilterUsername(username).Get(ctx)
 	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		return models.Profile{}, nil
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to get profile by username %s, cause: %w", username, err),
+		)
 	case err != nil:
-		return models.Profile{}, err
+		return models.Profile{}, fmt.Errorf(
+			"failed to get profile by username %s, cause: %w", username, err,
+		)
 	}
 
 	return row.ToModel(), nil
@@ -59,15 +67,14 @@ func (r Repository) UpdateProfile(
 	input profile.UpdateParams,
 ) (models.Profile, error) {
 	q := r.profilesQ(ctx).FilterAccountID(accountID)
-
 	if input.Pseudonym != nil {
 		if *input.Pseudonym == "" {
-			q = q.UpdatePseudonym(sql.NullString{
+			q = q.UpdatePseudonym(pgtype.Text{
 				String: "",
 				Valid:  false,
 			})
 		} else {
-			q = q.UpdatePseudonym(sql.NullString{
+			q = q.UpdatePseudonym(pgtype.Text{
 				String: *input.Pseudonym,
 				Valid:  true,
 			})
@@ -75,12 +82,12 @@ func (r Repository) UpdateProfile(
 	}
 	if input.Description != nil {
 		if *input.Description == "" {
-			q = q.UpdateDescription(sql.NullString{
+			q = q.UpdateDescription(pgtype.Text{
 				String: "",
 				Valid:  false,
 			})
 		} else {
-			q = q.UpdateDescription(sql.NullString{
+			q = q.UpdateDescription(pgtype.Text{
 				String: *input.Description,
 				Valid:  true,
 			})
@@ -88,8 +95,15 @@ func (r Repository) UpdateProfile(
 	}
 
 	res, err := q.UpdateOne(ctx)
-	if err != nil {
-		return models.Profile{}, err
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to update profile by account id %s, cause: %w", accountID, err),
+		)
+	case err != nil:
+		return models.Profile{}, fmt.Errorf(
+			"failed to update profile by account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -104,8 +118,15 @@ func (r Repository) UpdateProfileUsername(
 		FilterAccountID(accountID).
 		UpdateUsername(username).
 		UpdateOne(ctx)
-	if err != nil {
-		return models.Profile{}, err
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to update profile username by account id %s, cause: %w", accountID, err),
+		)
+	case err != nil:
+		return models.Profile{}, fmt.Errorf(
+			"failed to update profile username by account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -120,8 +141,15 @@ func (r Repository) UpdateProfileOfficial(
 		FilterAccountID(accountID).
 		UpdateOfficial(official).
 		UpdateOne(ctx)
-	if err != nil {
-		return models.Profile{}, err
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to update profile official by account id %s, cause: %w", accountID, err),
+		)
+	case err != nil:
+		return models.Profile{}, fmt.Errorf(
+			"failed to update profile official by account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -134,13 +162,20 @@ func (r Repository) UpdateProfileAvatar(
 ) (models.Profile, error) {
 	res, err := r.profilesQ(ctx).
 		FilterAccountID(accountID).
-		UpdateAvatarURL(sql.NullString{
+		UpdateAvatarURL(pgtype.Text{
 			String: avatarURL,
 			Valid:  true,
 		}).
 		UpdateOne(ctx)
-	if err != nil {
-		return models.Profile{}, err
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to update profile avatar by account id %s, cause: %w", accountID, err),
+		)
+	case err != nil:
+		return models.Profile{}, fmt.Errorf(
+			"failed to update profile avatar by account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -152,13 +187,20 @@ func (r Repository) DeleteProfileAvatar(
 ) (models.Profile, error) {
 	res, err := r.profilesQ(ctx).
 		FilterAccountID(accountID).
-		UpdateAvatarURL(sql.NullString{
+		UpdateAvatarURL(pgtype.Text{
 			String: "",
 			Valid:  false,
 		}).
 		UpdateOne(ctx)
-	if err != nil {
-		return models.Profile{}, err
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+			fmt.Errorf("failed to delete profile official by account id %s, cause: %w", accountID, err),
+		)
+	case err != nil:
+		return models.Profile{}, fmt.Errorf(
+			"failed to delete profile official by account id %s, cause: %w", accountID, err,
+		)
 	}
 
 	return res.ToModel(), nil
@@ -170,12 +212,17 @@ func (r Repository) FilterProfilesByUsername(
 	offset uint,
 	limit uint,
 ) (pagi.Page[[]models.Profile], error) {
-	rows, err := r.profilesQ(ctx).
-		FilterLikeUsername(prefix).
-		Page(limit, offset).
-		Select(ctx)
+	q := r.profilesQ(ctx).FilterLikeUsername(prefix)
+
+	if limit == 0 {
+		limit = 10
+	}
+
+	rows, err := q.Page(limit, offset).Select(ctx)
 	if err != nil {
-		return pagi.Page[[]models.Profile]{}, err
+		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
+			"failed to filter profiles by username with prefix %s: %w", prefix, err,
+		)
 	}
 
 	collection := make([]models.Profile, 0, len(rows))
@@ -183,11 +230,11 @@ func (r Repository) FilterProfilesByUsername(
 		collection = append(collection, row.ToModel())
 	}
 
-	total, err := r.profilesQ(ctx).
-		FilterLikeUsername(prefix).
-		Count(ctx)
+	total, err := q.Count(ctx)
 	if err != nil {
-		return pagi.Page[[]models.Profile]{}, err
+		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
+			"failed to count profiles by username with prefix %s: %w", prefix, err,
+		)
 	}
 
 	return pagi.Page[[]models.Profile]{
@@ -218,7 +265,9 @@ func (r Repository) FilterProfiles(
 
 	rows, err := q.Page(limit, offset).Select(ctx)
 	if err != nil {
-		return pagi.Page[[]models.Profile]{}, err
+		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
+			"failed to filter profiles: %w", err,
+		)
 	}
 
 	collection := make([]models.Profile, 0, len(rows))
@@ -228,7 +277,9 @@ func (r Repository) FilterProfiles(
 
 	total, err := q.Count(ctx)
 	if err != nil {
-		return pagi.Page[[]models.Profile]{}, err
+		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
+			"failed to count profiles: %w", err,
+		)
 	}
 
 	return pagi.Page[[]models.Profile]{

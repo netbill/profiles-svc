@@ -1,29 +1,22 @@
 package tokenmanager
 
 import (
-	"time"
-
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/bucket"
 	"github.com/netbill/restkit/tokens"
 )
 
 type Manager struct {
 	issuer   string
 	uploadSK string
-
-	config Config
 }
 
-type Config struct {
-	UploadProfileAvatarScope string
-	UploadProfileAvatarTtl   time.Duration
-}
+const UploadProfileAvatarScope = "upload:profile_avatar"
 
-func New(issuer, uploadSK string, cfg Config) Manager {
+func New(issuer, uploadSK string) Manager {
 	return Manager{
 		issuer:   issuer,
 		uploadSK: uploadSK,
-		config:   cfg,
 	}
 }
 
@@ -35,7 +28,7 @@ func (m Manager) NewUploadProfileAvatarToken(
 			SessionID: sessionID,
 			Issuer:    m.issuer,
 			Audience:  []string{m.issuer},
-			Scope:     m.config.UploadProfileAvatarScope,
-			Ttl:       m.config.UploadProfileAvatarTtl,
+			Scope:     UploadProfileAvatarScope,
+			Ttl:       bucket.ProfileAvatarUploadTTL,
 		}, m.uploadSK)
 }

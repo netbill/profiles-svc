@@ -3,6 +3,7 @@ package outbound
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,7 +21,7 @@ func (o Outbound) WriteProfileDeleted(
 		DeletedAt: time.Now().UTC(),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal profile deleted payload, cause: %w", err)
 	}
 
 	event, err := o.outbox.CreateOutboxEvent(
@@ -39,10 +40,10 @@ func (o Outbound) WriteProfileDeleted(
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create outbox event for profile deleted, cause: %w", err)
 	}
 
 	o.log.Debugf("profile deleted event queued, account_id: %s, event_id: %s", accountID.String(), event.ID)
 
-	return err
+	return nil
 }

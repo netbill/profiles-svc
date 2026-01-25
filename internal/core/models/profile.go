@@ -27,3 +27,6 @@ type UpdateProfileAvatar struct {
 	GetURL      string `json:"get_url"`
 	UploadToken string `json:"upload_token"`
 }
+
+type ProfileAvatar struct {
+}

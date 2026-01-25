@@ -2,15 +2,14 @@ package cmd
 
 import (
 	"context"
-	"database/sql"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/netbill/imgx"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/netbill/awsx"
 	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/internal"
 	"github.com/netbill/profiles-svc/internal/bucket"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/messenger"
@@ -24,7 +23,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/controller"
 )
 
-func StartServices(ctx context.Context, cfg internal.Config, log *logium.Logger, wg *sync.WaitGroup) {
+func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync.WaitGroup) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {
@@ -33,13 +32,9 @@ func StartServices(ctx context.Context, cfg internal.Config, log *logium.Logger,
 		}()
 	}
 
-	pg, err := sql.Open("postgres", cfg.Database.SQL.URL)
+	pool, err := pgxpool.New(ctx, cfg.Database.SQL.URL)
 	if err != nil {
 		log.Fatal("failed to connect to database", "error", err)
-	}
-
-	if err != nil {
-		log.Fatal("failed to load aws config", "error", err)
 	}
 
 	awsCfg := aws.Config{
@@ -54,29 +49,19 @@ func StartServices(ctx context.Context, cfg internal.Config, log *logium.Logger,
 	s3Client := s3.NewFromConfig(awsCfg)
 	presignClient := s3.NewPresignClient(s3Client)
 
-	imgxSvc := imgx.New(
+	awsxSvc := awsx.New(
 		cfg.S3.AWS.BucketName,
 		s3Client,
 		presignClient,
 	)
 
-	s3Bucket := bucket.New(
-		imgxSvc,
-		bucket.Config{
-			ProfileAvatarUploadTTL:  cfg.S3.Upload.Profile.Avatar.UploadTokenTTL,
-			ProfileAvatarMaxLength:  cfg.S3.Upload.Profile.Avatar.MaxLength,
-			ProfileAvatarAllowedExt: cfg.S3.Upload.Profile.Avatar.AllowedExtensions,
-		},
-	)
+	s3Bucket := bucket.New(awsxSvc)
 
-	repo := repository.New(pg)
+	repo := repository.New(pool)
 
-	kafkaOutbound := outbound.New(log, pg)
+	kafkaOutbound := outbound.New(log, pool)
 
-	tokenManager := tokenmanager.New(cfg.Service.Name, cfg.S3.Upload.Token.SecretKey, tokenmanager.Config{
-		UploadProfileAvatarScope: cfg.S3.Upload.Profile.Avatar.UploadTokenScope,
-		UploadProfileAvatarTtl:   cfg.S3.Upload.Profile.Avatar.UploadTokenTTL,
-	})
+	tokenManager := tokenmanager.New(cfg.Service.Name, cfg.S3.Upload.Token.SecretKey)
 
 	profileSvc := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
@@ -87,7 +72,7 @@ func StartServices(ctx context.Context, cfg internal.Config, log *logium.Logger,
 	})
 	router := rest.New(log, mdll, ctrl)
 
-	msgx := messenger.New(log, pg, cfg.Kafka.Brokers...)
+	msgx := messenger.New(log, pool, cfg.Kafka.Brokers...)
 
 	run(func() {
 		router.Run(ctx, rest.Config{

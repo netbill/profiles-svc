@@ -7,24 +7,39 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 )
+
+const ProfileAvatarUploadTTL time.Duration = 1 * time.Hour
+const ProfileAvatarMaxLength int64 = 5 * 1024 * 1024 // 5 MB
+
+func CreateTempProfileAvatarKey(accountID, sessionID uuid.UUID) string {
+	return fmt.Sprintf("profile/avatar/%s/temp/%s", accountID, sessionID)
+}
+
+func CreateProfileAvatarKey(accountID uuid.UUID) string {
+	return fmt.Sprintf("profile/avatar/%s", accountID)
+}
+
+var allowedProfileAvatarContentTypes = []string{
+	"image/png",
+	"image/jpeg",
+	"image/jpg",
+	"image/img",
+	"image/gif",
+}
+
+func getAllowedProfileAvatarContentTypes() []string {
+	return allowedProfileAvatarContentTypes
+}
 
 type Bucket struct {
 	awsx3 awsx3
-
-	config Config
 }
 
-type Config struct {
-	ProfileAvatarUploadTTL  time.Duration
-	ProfileAvatarMaxLength  int64
-	ProfileAvatarAllowedExt []string
-}
-
-func New(awsx3 awsx3, cfg Config) Bucket {
+func New(awsx3 awsx3) Bucket {
 	return Bucket{
-		awsx3:  awsx3,
-		config: cfg,
+		awsx3: awsx3,
 	}
 }
 
@@ -41,14 +56,6 @@ type awsx3 interface {
 	DeleteObject(ctx context.Context, key string) error
 }
 
-func CreateTempProfileAvatarKey(accountID, sessionID uuid.UUID) string {
-	return fmt.Sprintf("profile/avatar/%s/temp/%s", accountID, sessionID)
-}
-
-func CreateProfileAvatarKey(accountID uuid.UUID) string {
-	return fmt.Sprintf("profile/avatar/%s", accountID)
-}
-
 func (r Bucket) GetPreloadLinkForUpdateProfileAvatar(
 	ctx context.Context,
 	accountID, sessionID uuid.UUID,
@@ -56,45 +63,55 @@ func (r Bucket) GetPreloadLinkForUpdateProfileAvatar(
 	uploadURL, getURL, err := r.awsx3.PresignPut(
 		ctx,
 		CreateTempProfileAvatarKey(accountID, sessionID),
-		r.config.ProfileAvatarMaxLength,
-		r.config.ProfileAvatarUploadTTL,
+		ProfileAvatarMaxLength,
+		ProfileAvatarUploadTTL,
 	)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf(
+			"failed to presign put object for profile avatar: %w", err,
+		)
 	}
 
 	return uploadURL, getURL, nil
 }
 
-func (r Bucket) AcceptUpdateProfileAvatar(
-	ctx context.Context,
-	accountID, sessionID uuid.UUID,
-) (string, error) {
-	return r.awsx3.CopyObject(ctx,
+func (r Bucket) AcceptUpdateProfileAvatar(ctx context.Context, accountID, sessionID uuid.UUID) (string, error) {
+	obj, err := r.awsx3.HeadObject(ctx, CreateTempProfileAvatarKey(accountID, sessionID))
+	if err != nil {
+		return "", fmt.Errorf(
+			"failed to head object for profile avatar: %w", err,
+		)
+	}
+
+	ct := *obj.ContentType
+
+	allowed := false
+	for _, act := range getAllowedProfileAvatarContentTypes() {
+		if ct == act {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return "", errx.ErrorContentTypeIsNotAllowed.Raise(
+			fmt.Errorf(
+				"profile avatar extension %s not allowed, allowed only: %s",
+				ct, getAllowedProfileAvatarContentTypes(),
+			),
+		)
+	}
+
+	res, err := r.awsx3.CopyObject(ctx,
 		CreateTempProfileAvatarKey(accountID, sessionID),
 		CreateProfileAvatarKey(accountID),
 	)
-}
-
-func (r Bucket) CheckProfileAvatarExtension(link string) (bool, error) {
-	head, err := r.awsx3.HeadObject(context.TODO(), link) // или просто HeadObject внутри bucket
 	if err != nil {
-		return false, err
+		return "", fmt.Errorf(
+			"failed to copy object for profile avatar: %w", err,
+		)
 	}
 
-	ct := ""
-	if head.ContentType != nil {
-		ct = *head.ContentType
-	}
-
-	switch ct {
-	case "image/png", "image/jpeg":
-		// ok
-	default:
-		return false, fmt.Errorf("content type is invalid, allowed only: image/png, image/jpeg")
-	}
-
-	return true, nil
+	return res, nil
 }
 
 func (r Bucket) CancelUpdateProfileAvatar(
@@ -103,7 +120,9 @@ func (r Bucket) CancelUpdateProfileAvatar(
 ) error {
 	err := r.awsx3.DeleteObject(ctx, CreateTempProfileAvatarKey(accountID, sessionID))
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"failed to delete temp object for profile avatar: %w", err,
+		)
 	}
 
 	return nil
