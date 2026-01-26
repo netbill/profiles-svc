@@ -1,7 +1,7 @@
 services:
   profiles-svc:
     build: .
-    container_name: profile-svc
+    container_name: profiles-svc
     environment:
       - KV_VIPER_FILE=./config_docker.yaml
     ports:
@@ -11,7 +11,7 @@ services:
 
   profiles-svc-postgres:
     image: postgres:15
-    container_name: profile-svc-postgres
+    container_name: profiles-svc-postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

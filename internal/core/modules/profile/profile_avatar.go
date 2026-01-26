@@ -78,9 +78,13 @@ func (s Service) DeleteProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) (models.Profile, error) {
+	err := s.bucket.DeleteProfileAvatar(ctx, accountID)
+	if err != nil {
+		return models.Profile{}, err
+	}
+
 	var profile models.Profile
-	err := s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		var err error
+	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
 		profile, err = s.repo.DeleteProfileAvatar(ctx, accountID)
 		if err != nil {
 			return err

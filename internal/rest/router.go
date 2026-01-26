@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/internal/tokenmanager"
 	"github.com/netbill/restkit/tokens/roles"
 )
 
@@ -66,7 +67,7 @@ func (s *Service) Run(ctx context.Context, cfg Config) {
 		roles.SystemAdmin: true,
 		roles.SystemModer: true,
 	})
-	uploadProfileAvatar := s.middlewares.ConfirmUploadFiles("upload_profile_avatar")
+	uploadProfileAvatar := s.middlewares.ConfirmUploadFiles(tokenmanager.UploadProfileAvatarScope)
 
 	r := chi.NewRouter()
 

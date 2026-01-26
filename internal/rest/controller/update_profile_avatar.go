@@ -58,7 +58,19 @@ func (s Service) AcceptUpdateAvatar(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		s.log.WithError(err).Errorf("failed to accept update avatar")
-		ape.RenderErr(w, problems.InternalError())
+		switch {
+		case errors.Is(err, errx.ErrorProfileNotFound):
+			ape.RenderErr(w, problems.NotFound("profile not found"))
+		case errors.Is(err, errx.ErrorNoAvatarUpload):
+			ape.RenderErr(w, problems.Conflict("no avatar uploaded for this session"))
+		case errors.Is(err, errx.ErrorContentTypeIsNotAllowed):
+			ape.RenderErr(w, problems.BadRequest(err)...)
+		case errors.Is(err, errx.ErrorContentLengthExceed):
+			ape.RenderErr(w, problems.BadRequest(err)...)
+
+		default:
+			ape.RenderErr(w, problems.InternalError())
+		}
 
 		return
 	}

@@ -71,6 +71,11 @@ type bucket interface {
 		accountID, sessionID uuid.UUID,
 	) error
 
+	DeleteProfileAvatar(
+		ctx context.Context,
+		accountID uuid.UUID,
+	) error
+
 	AcceptUpdateProfileAvatar(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,
