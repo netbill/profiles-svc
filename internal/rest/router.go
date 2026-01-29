@@ -20,11 +20,11 @@ type Handlers interface {
 
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
-	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
+	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
 
 	OenProfileUpdateSession(w http.ResponseWriter, r *http.Request)
-	CancelUploadProfileAvatar(w http.ResponseWriter, r *http.Request)
+	DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request)
 }
 type Middlewares interface {
 	AccountAuth() func(http.Handler) http.Handler
@@ -87,13 +87,13 @@ func (s *Service) Run(ctx context.Context, cfg Config) {
 
 				r.With(auth).Route("/me", func(r chi.Router) {
 					r.Get("/", s.handlers.GetMyProfile)
-					r.With(updateOwnProfile).Put("/", s.handlers.UpdateMyProfile)
 
 					r.Route("/update-session", func(r chi.Router) {
 						r.Post("/", s.handlers.OenProfileUpdateSession)
 
-						r.With(updateOwnProfile).
-							Delete("/avatar", s.handlers.CancelUploadProfileAvatar)
+						r.With(updateOwnProfile).Put("/confirm", s.handlers.ConfirmUpdateMyProfile)
+
+						r.With(updateOwnProfile).Delete("/avatar", s.handlers.DeleteUploadProfileAvatar)
 					})
 				})
 			})

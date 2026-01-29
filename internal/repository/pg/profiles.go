@@ -1,4 +1,4 @@
-package pgdb
+package pg
 
 import (
 	"context"
@@ -10,8 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/netbill/pgxtx"
+	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/repository"
 )
 
@@ -54,8 +53,7 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 }
 
 type profiles struct {
-	db       pgxtx.DBTX
-	pool     *pgxpool.Pool
+	db       *pgdbx.DB
 	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
 	updater  sq.UpdateBuilder
@@ -63,11 +61,10 @@ type profiles struct {
 	counter  sq.SelectBuilder
 }
 
-func NewProfilesQ(ctx context.Context, pool *pgxpool.Pool) repository.ProfilesQ {
+func NewProfilesQ(pool *pgdbx.DB) repository.ProfilesQ {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return &profiles{
-		db:       pgxtx.Exec(ctx, pool),
-		pool:     pool,
+		db:       pool,
 		selector: builder.Select("profiles.*").From(profilesTable),
 		inserter: builder.Insert(profilesTable),
 		updater:  builder.Update(profilesTable),
@@ -76,8 +73,8 @@ func NewProfilesQ(ctx context.Context, pool *pgxpool.Pool) repository.ProfilesQ 
 	}
 }
 
-func (q *profiles) New(ctx context.Context) repository.ProfilesQ {
-	return NewProfilesQ(ctx, q.pool)
+func (q *profiles) New() repository.ProfilesQ {
+	return NewProfilesQ(q.db)
 }
 
 func (q *profiles) Insert(ctx context.Context, input repository.ProfileRow) (repository.ProfileRow, error) {
@@ -92,13 +89,7 @@ func (q *profiles) Insert(ctx context.Context, input repository.ProfileRow) (rep
 		return repository.ProfileRow{}, fmt.Errorf("building insert query for %s: %w", profilesTable, err)
 	}
 
-	var out repository.ProfileRow
-	out, err = scanProfile(q.db.QueryRow(ctx, query, args...))
-	if err != nil {
-		return repository.ProfileRow{}, err
-	}
-
-	return out, nil
+	return scanProfile(q.db.QueryRow(ctx, query, args...))
 }
 
 func (q *profiles) UpdateMany(ctx context.Context) (int64, error) {
@@ -124,12 +115,7 @@ func (q *profiles) UpdateOne(ctx context.Context) (repository.ProfileRow, error)
 		return repository.ProfileRow{}, fmt.Errorf("building update query for %s: %w", profilesTable, err)
 	}
 
-	res, err := scanProfile(q.db.QueryRow(ctx, query, args...))
-	if err != nil {
-		return repository.ProfileRow{}, err
-	}
-
-	return res, nil
+	return scanProfile(q.db.QueryRow(ctx, query, args...))
 }
 
 func (q *profiles) UpdateUsername(username string) repository.ProfilesQ {
@@ -163,11 +149,7 @@ func (q *profiles) Get(ctx context.Context) (repository.ProfileRow, error) {
 		return repository.ProfileRow{}, fmt.Errorf("building get query for %s: %w", profilesTable, err)
 	}
 
-	res, err := scanProfile(q.db.QueryRow(ctx, query, args...))
-	if err != nil {
-		return repository.ProfileRow{}, err
-	}
-	return res, nil
+	return scanProfile(q.db.QueryRow(ctx, query, args...))
 }
 
 func (q *profiles) Select(ctx context.Context) ([]repository.ProfileRow, error) {
@@ -247,6 +229,7 @@ func (q *profiles) Count(ctx context.Context) (uint, error) {
 	}
 
 	var count uint
+
 	err = q.db.QueryRow(ctx, query, args...).Scan(&count)
 	if err != nil {
 		return 0, err

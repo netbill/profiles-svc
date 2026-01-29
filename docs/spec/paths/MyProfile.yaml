@@ -27,49 +27,49 @@ get:
           schema:
             $ref: "../components/schemas/responses/Errors.yaml"
 
-put:
-  tags:
-    - Profiles
-  summary: Update my profile
-  description: >
-    Updates the current authenticated user's profile.
-    The request body must contain the same `data.id` as the authenticated account id.
-  security:
-    - bearerAuth: []
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: "../components/schemas/requests/UpdateProfile.yaml"
-  responses:
-    "200":
-      description: Profile updated.
-      content:
-        application/json:
-          schema:
-            $ref: "../components/schemas/responses/Profile.yaml"
-    "400":
-      description: Bad request (validation error / invalid payload).
-      content:
-        application/problem+json:
-          schema:
-            $ref: "../components/schemas/responses/Errors.yaml"
-    "401":
-      description: Unauthorized (missing/invalid token or profile does not exist).
-      content:
-        application/problem+json:
-          schema:
-            $ref: "../components/schemas/responses/Errors.yaml"
-    "403":
-      description: Forbidden (user too young).
-      content:
-        application/problem+json:
-          schema:
-            $ref: "../components/schemas/responses/Errors.yaml"
-    "500":
-      description: Internal server error.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "../components/schemas/responses/Errors.yaml"
+#put:
+#  tags:
+#    - Profiles
+#  summary: Update my profile
+#  description: >
+#    Updates the current authenticated user's profile.
+#    The request body must contain the same `data.id` as the authenticated account id.
+#  security:
+#    - bearerAuth: []
+#  requestBody:
+#    required: true
+#    content:
+#      application/json:
+#        schema:
+#          $ref: "../components/schemas/requests/UpdateProfile.yaml"
+#  responses:
+#    "200":
+#      description: Profile updated.
+#      content:
+#        application/json:
+#          schema:
+#            $ref: "../components/schemas/responses/Profile.yaml"
+#    "400":
+#      description: Bad request (validation error / invalid payload).
+#      content:
+#        application/problem+json:
+#          schema:
+#            $ref: "../components/schemas/responses/Errors.yaml"
+#    "401":
+#      description: Unauthorized (missing/invalid token or profile does not exist).
+#      content:
+#        application/problem+json:
+#          schema:
+#            $ref: "../components/schemas/responses/Errors.yaml"
+#    "403":
+#      description: Forbidden (user too young).
+#      content:
+#        application/problem+json:
+#          schema:
+#            $ref: "../components/schemas/responses/Errors.yaml"
+#    "500":
+#      description: Internal server error.
+#      content:
+#        application/problem+json:
+#          schema:
+#            $ref: "../components/schemas/responses/Errors.yaml"

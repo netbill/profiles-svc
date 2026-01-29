@@ -1,0 +1,24 @@
+delete:
+  tags:
+    - Profiles
+  summary: Delete uploaded avatar in session
+  description: >
+    Deletes (cancels) the uploaded profile avatar within the current upload session.
+    Requires a valid access token and a valid upload session context.
+  security:
+    - bearerAuth: []
+  responses:
+    "200":
+      description: Uploaded avatar deleted.
+    "401":
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "500":
+      description: Internal server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"

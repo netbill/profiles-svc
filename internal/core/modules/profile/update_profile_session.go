@@ -13,28 +13,37 @@ import (
 func (s Service) OpenProfileUpdateSession(
 	ctx context.Context,
 	accountID uuid.UUID,
-) (models.UpdateProfileAvatar, error) {
-	sessionID := uuid.New()
+) (models.UpdateProfileMedia, models.Profile, error) {
+	profile, err := s.GetProfileByAccountID(ctx, accountID)
+	if err != nil {
+		return models.UpdateProfileMedia{}, models.Profile{}, err
+	}
+
+	uploadSessionID := uuid.New()
 	uploadURL, getURL, err := s.bucket.GetPreloadLinkForUpdateProfileAvatar(
 		ctx,
 		accountID,
-		sessionID,
+		uploadSessionID,
 	)
 	if err != nil {
-		return models.UpdateProfileAvatar{}, fmt.Errorf("failed to get preload link for avatarKey upload url: %w", err)
+		return models.UpdateProfileMedia{}, models.Profile{}, fmt.Errorf(
+			"failed to get preload link for avatarKey upload url: %w", err,
+		)
 	}
 
-	uploadToken, err := s.token.NewUploadProfileMediaToken(accountID, sessionID)
+	uploadToken, err := s.token.NewUploadProfileMediaToken(accountID, uploadSessionID)
 	if err != nil {
-		return models.UpdateProfileAvatar{}, fmt.Errorf("failed to generate upload token for avatarKey upload url: %w", err)
-
+		return models.UpdateProfileMedia{}, models.Profile{}, fmt.Errorf(
+			"failed to generate upload token for avatarKey upload url: %w", err,
+		)
 	}
 
-	return models.UpdateProfileAvatar{
-		UploadURL:   uploadURL,
-		GetURL:      getURL,
-		UploadToken: uploadToken,
-	}, nil
+	return models.UpdateProfileMedia{
+		UploadSessionID: uploadSessionID,
+		UploadURL:       uploadURL,
+		GetURL:          getURL,
+		UploadToken:     uploadToken,
+	}, profile, nil
 }
 
 type UpdateParams struct {

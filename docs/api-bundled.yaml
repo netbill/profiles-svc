@@ -118,12 +118,71 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
-    put:
+  /profiles-svc/v1/profiles/me/update-session/:
+    post:
+      tags:
+        - Profiles
+      summary: Open profile update session
+      description: |
+        Creates an upload session for updating the current authenticated user's profile media (e.g. avatar) and returns the session resource along with the current profile state. Requires a valid access token.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Update session opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProfileSession'
+        '401':
+          description: Unauthorized.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          description: Profile not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /profiles-svc/v1/profiles/me/update-session/avatar/:
+    delete:
+      tags:
+        - Profiles
+      summary: Delete uploaded avatar in session
+      description: |
+        Deletes (cancels) the uploaded profile avatar within the current upload session. Requires a valid access token and a valid upload session context.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Uploaded avatar deleted.
+        '401':
+          description: Unauthorized.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /profiles-svc/v1/profiles/me/update-session/confirm/:
+    patch:
       tags:
         - Profiles
       summary: Update my profile
       description: |
-        Updates the current authenticated user's profile. The request body must contain the same `data.id` as the authenticated account id.
+        Updates the current authenticated user's profile fields and applies avatar changes from the current upload session (e.g. delete avatar or commit uploaded avatar). Requires a valid access token and a valid upload session context.
       security:
         - bearerAuth: []
       requestBody:
@@ -140,19 +199,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Profile'
         '400':
-          description: Bad request (validation error / invalid payload).
+          description: Bad request.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
         '401':
-          description: Unauthorized (missing/invalid token or profile does not exist).
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '403':
-          description: Forbidden (user too young).
+          description: Unauthorized.
           content:
             application/problem+json:
               schema:
@@ -393,7 +446,7 @@ components:
         official:
           type: boolean
           description: Is Official Account
-        avatar_url:
+        avatar:
           type: string
           format: uri
           description: Avatar URL
@@ -417,6 +470,77 @@ components:
             $ref: '#/components/schemas/ProfileData'
         links:
           $ref: '#/components/schemas/PaginationData'
+    UpdateProfileSession:
+      type: object
+      required:
+        - data
+        - included
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+            - relationships
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Upload session id
+            type:
+              type: string
+              enum:
+                - profile_avatar_upload
+            attributes:
+              type: object
+              required:
+                - upload_token
+                - upload_url
+                - get_url
+                - expires_at
+              properties:
+                upload_token:
+                  type: string
+                  description: JWT upload session token
+                upload_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed PUT URL for avatar upload
+                get_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed GET URL to read uploaded avatar
+                expires_at:
+                  type: string
+                  format: date-time
+                  description: Upload session expiration time
+            relationships:
+              type: object
+              properties:
+                profile:
+                  type: object
+                  required:
+                    - data
+                  properties:
+                    data:
+                      type: object
+                      required:
+                        - id
+                        - type
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: Profile id
+                        type:
+                          type: string
+                          enum:
+                            - profile
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileData'
     Errors:
       description: 'Standard JSON:API error'
       type: object

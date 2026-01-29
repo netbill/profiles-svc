@@ -1,0 +1,35 @@
+post:
+  tags:
+    - Profiles
+  summary: Open profile update session
+  description: >
+    Creates an upload session for updating the current authenticated user's profile media
+    (e.g. avatar) and returns the session resource along with the current profile state.
+    Requires a valid access token.
+  security:
+    - bearerAuth: []
+  responses:
+    "200":
+      description: Update session opened.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/UpdateProfileSession.yaml"
+    "401":
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "404":
+      description: Profile not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "500":
+      description: Internal server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"

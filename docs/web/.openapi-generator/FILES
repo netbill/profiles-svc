@@ -22,6 +22,12 @@ docs/UpdateProfileDataAttributes.md
 docs/UpdateProfileOfficial.md
 docs/UpdateProfileOfficialData.md
 docs/UpdateProfileOfficialDataAttributes.md
+docs/UpdateProfileSession.md
+docs/UpdateProfileSessionData.md
+docs/UpdateProfileSessionDataAttributes.md
+docs/UpdateProfileSessionDataRelationships.md
+docs/UpdateProfileSessionDataRelationshipsProfile.md
+docs/UpdateProfileSessionDataRelationshipsProfileData.md
 git_push.sh
 go.mod
 go.sum
@@ -41,6 +47,12 @@ model_update_profile_data_attributes.go
 model_update_profile_official.go
 model_update_profile_official_data.go
 model_update_profile_official_data_attributes.go
+model_update_profile_session.go
+model_update_profile_session_data.go
+model_update_profile_session_data_attributes.go
+model_update_profile_session_data_relationships.go
+model_update_profile_session_data_relationships_profile.go
+model_update_profile_session_data_relationships_profile_data.go
 response.go
 test/api_profiles_test.go
 utils.go

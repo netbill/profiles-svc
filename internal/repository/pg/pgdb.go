@@ -1,22 +1,22 @@
-package pgdb
+package pg
 
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/netbill/pgxtx"
+	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/repository"
 )
 
 type transaction struct {
-	pool *pgxpool.Pool
+	db *pgdbx.DB
 }
 
-func NewTransaction(pool *pgxpool.Pool) repository.Transactioner {
+func NewTransaction(db *pgdbx.DB) repository.Transactioner {
 	return &transaction{
-		pool: pool,
+		db: db,
 	}
 }
+
 func (q *transaction) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	return pgxtx.Transaction(ctx, q.pool, fn)
+	return q.db.Transaction(ctx, fn)
 }

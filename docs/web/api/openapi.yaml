@@ -128,9 +128,68 @@ paths:
       summary: Get my profile
       tags:
       - Profiles
-    put:
+  /profiles-svc/v1/profiles/me/update-session/:
+    post:
       description: |
-        Updates the current authenticated user's profile. The request body must contain the same `data.id` as the authenticated account id.
+        Creates an upload session for updating the current authenticated user's profile media (e.g. avatar) and returns the session resource along with the current profile state. Requires a valid access token.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateProfileSession"
+          description: Update session opened.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+          description: Unauthorized.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+          description: Profile not found.
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+          description: Internal server error.
+      security:
+      - bearerAuth: []
+      summary: Open profile update session
+      tags:
+      - Profiles
+  /profiles-svc/v1/profiles/me/update-session/avatar/:
+    delete:
+      description: |
+        Deletes (cancels) the uploaded profile avatar within the current upload session. Requires a valid access token and a valid upload session context.
+      responses:
+        "200":
+          description: Uploaded avatar deleted.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+          description: Unauthorized.
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+          description: Internal server error.
+      security:
+      - bearerAuth: []
+      summary: Delete uploaded avatar in session
+      tags:
+      - Profiles
+  /profiles-svc/v1/profiles/me/update-session/confirm/:
+    patch:
+      description: |
+        Updates the current authenticated user's profile fields and applies avatar changes from the current upload session (e.g. delete avatar or commit uploaded avatar). Requires a valid access token and a valid upload session context.
       requestBody:
         content:
           application/json:
@@ -149,19 +208,13 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Errors"
-          description: Bad request (validation error / invalid payload).
+          description: Bad request.
         "401":
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Errors"
-          description: Unauthorized (missing/invalid token or profile does not exist).
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Errors"
-          description: Forbidden (user too young).
+          description: Unauthorized.
         "500":
           content:
             application/problem+json:
@@ -303,11 +356,11 @@ components:
       example:
         data:
           attributes:
-            avatar_url: https://openapi-generator.tech
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
+            avatar: https://openapi-generator.tech
             pseudonym: pseudonym
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -320,11 +373,11 @@ components:
     ProfileData:
       example:
         attributes:
-          avatar_url: https://openapi-generator.tech
           updated_at: 2000-01-23T04:56:07.000+00:00
           description: description
           official: true
           created_at: 2000-01-23T04:56:07.000+00:00
+          avatar: https://openapi-generator.tech
           pseudonym: pseudonym
           username: username
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -346,11 +399,11 @@ components:
       - type
     ProfileAttributes:
       example:
-        avatar_url: https://openapi-generator.tech
         updated_at: 2000-01-23T04:56:07.000+00:00
         description: description
         official: true
         created_at: 2000-01-23T04:56:07.000+00:00
+        avatar: https://openapi-generator.tech
         pseudonym: pseudonym
         username: username
       properties:
@@ -366,7 +419,7 @@ components:
         official:
           description: Is Official Account
           type: boolean
-        avatar_url:
+        avatar:
           description: Avatar URL
           format: uri
           type: string
@@ -387,21 +440,21 @@ components:
       example:
         data:
         - attributes:
-            avatar_url: https://openapi-generator.tech
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
+            avatar: https://openapi-generator.tech
             pseudonym: pseudonym
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
         - attributes:
-            avatar_url: https://openapi-generator.tech
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
+            avatar: https://openapi-generator.tech
             pseudonym: pseudonym
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -422,6 +475,52 @@ components:
       required:
       - data
       - links
+    UpdateProfileSession:
+      example:
+        data:
+          relationships:
+            profile:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+                type: profile
+          attributes:
+            upload_token: upload_token
+            expires_at: 2000-01-23T04:56:07.000+00:00
+            upload_url: https://openapi-generator.tech
+            get_url: https://openapi-generator.tech
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: profile_avatar_upload
+        included:
+        - attributes:
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: description
+            official: true
+            created_at: 2000-01-23T04:56:07.000+00:00
+            avatar: https://openapi-generator.tech
+            pseudonym: pseudonym
+            username: username
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: profile
+        - attributes:
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: description
+            official: true
+            created_at: 2000-01-23T04:56:07.000+00:00
+            avatar: https://openapi-generator.tech
+            pseudonym: pseudonym
+            username: username
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: profile
+      properties:
+        data:
+          $ref: "#/components/schemas/UpdateProfileSession_data"
+        included:
+          items:
+            $ref: "#/components/schemas/ProfileData"
+          type: array
+      required:
+      - data
+      - included
     Errors:
       description: Standard JSON:API error
       properties:
@@ -560,6 +659,100 @@ components:
       required:
       - attributes
       - id
+      - type
+    UpdateProfileSession_data_attributes:
+      example:
+        upload_token: upload_token
+        expires_at: 2000-01-23T04:56:07.000+00:00
+        upload_url: https://openapi-generator.tech
+        get_url: https://openapi-generator.tech
+      properties:
+        upload_token:
+          description: JWT upload session token
+          type: string
+        upload_url:
+          description: Pre-signed PUT URL for avatar upload
+          format: uri
+          type: string
+        get_url:
+          description: Pre-signed GET URL to read uploaded avatar
+          format: uri
+          type: string
+        expires_at:
+          description: Upload session expiration time
+          format: date-time
+          type: string
+      required:
+      - expires_at
+      - get_url
+      - upload_token
+      - upload_url
+    UpdateProfileSession_data_relationships_profile_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: profile
+      properties:
+        id:
+          description: Profile id
+          format: uuid
+          type: string
+        type:
+          enum:
+          - profile
+          type: string
+      required:
+      - id
+      - type
+    UpdateProfileSession_data_relationships_profile:
+      example:
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: profile
+      properties:
+        data:
+          $ref: "#/components/schemas/UpdateProfileSession_data_relationships_profile_data"
+      required:
+      - data
+    UpdateProfileSession_data_relationships:
+      example:
+        profile:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: profile
+      properties:
+        profile:
+          $ref: "#/components/schemas/UpdateProfileSession_data_relationships_profile"
+    UpdateProfileSession_data:
+      example:
+        relationships:
+          profile:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: profile
+        attributes:
+          upload_token: upload_token
+          expires_at: 2000-01-23T04:56:07.000+00:00
+          upload_url: https://openapi-generator.tech
+          get_url: https://openapi-generator.tech
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: profile_avatar_upload
+      properties:
+        id:
+          description: Upload session id
+          format: uuid
+          type: string
+        type:
+          enum:
+          - profile_avatar_upload
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateProfileSession_data_attributes"
+        relationships:
+          $ref: "#/components/schemas/UpdateProfileSession_data_relationships"
+      required:
+      - attributes
+      - id
+      - relationships
       - type
     Errors_errors_inner:
       properties:

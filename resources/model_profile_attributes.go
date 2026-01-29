@@ -31,7 +31,7 @@ type ProfileAttributes struct {
 	// Is Official Account
 	Official bool `json:"official"`
 	// Avatar URL
-	AvatarUrl *string `json:"avatar_url,omitempty"`
+	Avatar *string `json:"avatar,omitempty"`
 	// Updated At
 	UpdatedAt time.Time `json:"updated_at"`
 	// Created At
@@ -173,36 +173,36 @@ func (o *ProfileAttributes) SetOfficial(v bool) {
 	o.Official = v
 }
 
-// GetAvatarUrl returns the AvatarUrl field value if set, zero value otherwise.
-func (o *ProfileAttributes) GetAvatarUrl() string {
-	if o == nil || IsNil(o.AvatarUrl) {
+// GetAvatar returns the Avatar field value if set, zero value otherwise.
+func (o *ProfileAttributes) GetAvatar() string {
+	if o == nil || IsNil(o.Avatar) {
 		var ret string
 		return ret
 	}
-	return *o.AvatarUrl
+	return *o.Avatar
 }
 
-// GetAvatarUrlOk returns a tuple with the AvatarUrl field value if set, nil otherwise
+// GetAvatarOk returns a tuple with the Avatar field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetAvatarUrlOk() (*string, bool) {
-	if o == nil || IsNil(o.AvatarUrl) {
+func (o *ProfileAttributes) GetAvatarOk() (*string, bool) {
+	if o == nil || IsNil(o.Avatar) {
 		return nil, false
 	}
-	return o.AvatarUrl, true
+	return o.Avatar, true
 }
 
-// HasAvatarUrl returns a boolean if a field has been set.
-func (o *ProfileAttributes) HasAvatarUrl() bool {
-	if o != nil && !IsNil(o.AvatarUrl) {
+// HasAvatar returns a boolean if a field has been set.
+func (o *ProfileAttributes) HasAvatar() bool {
+	if o != nil && !IsNil(o.Avatar) {
 		return true
 	}
 
 	return false
 }
 
-// SetAvatarUrl gets a reference to the given string and assigns it to the AvatarUrl field.
-func (o *ProfileAttributes) SetAvatarUrl(v string) {
-	o.AvatarUrl = &v
+// SetAvatar gets a reference to the given string and assigns it to the Avatar field.
+func (o *ProfileAttributes) SetAvatar(v string) {
+	o.Avatar = &v
 }
 
 // GetUpdatedAt returns the UpdatedAt field value
@@ -271,8 +271,8 @@ func (o ProfileAttributes) ToMap() (map[string]interface{}, error) {
 		toSerialize["description"] = o.Description
 	}
 	toSerialize["official"] = o.Official
-	if !IsNil(o.AvatarUrl) {
-		toSerialize["avatar_url"] = o.AvatarUrl
+	if !IsNil(o.Avatar) {
+		toSerialize["avatar"] = o.Avatar
 	}
 	toSerialize["updated_at"] = o.UpdatedAt
 	toSerialize["created_at"] = o.CreatedAt

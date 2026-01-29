@@ -578,32 +578,142 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiProfilesSvcV1ProfilesMePutRequest struct {
+type ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest struct {
+	ctx context.Context
+	ApiService *ProfilesAPIService
+}
+
+func (r ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest) Execute() (*http.Response, error) {
+	return r.ApiService.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteExecute(r)
+}
+
+/*
+ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete Delete uploaded avatar in session
+
+Deletes (cancels) the uploaded profile avatar within the current upload session. Requires a valid access token and a valid upload session context.
+
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest
+*/
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete(ctx context.Context) ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest {
+	return ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest{
+		ApiService: a,
+		ctx: ctx,
+	}
+}
+
+// Execute executes the request
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/profiles-svc/v1/profiles/me/update-session/avatar/"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/problem+json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
+type ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest struct {
 	ctx context.Context
 	ApiService *ProfilesAPIService
 	updateProfile *UpdateProfile
 }
 
-func (r ApiProfilesSvcV1ProfilesMePutRequest) UpdateProfile(updateProfile UpdateProfile) ApiProfilesSvcV1ProfilesMePutRequest {
+func (r ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest) UpdateProfile(updateProfile UpdateProfile) ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest {
 	r.updateProfile = &updateProfile
 	return r
 }
 
-func (r ApiProfilesSvcV1ProfilesMePutRequest) Execute() (*Profile, *http.Response, error) {
-	return r.ApiService.ProfilesSvcV1ProfilesMePutExecute(r)
+func (r ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest) Execute() (*Profile, *http.Response, error) {
+	return r.ApiService.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchExecute(r)
 }
 
 /*
-ProfilesSvcV1ProfilesMePut Update my profile
+ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch Update my profile
 
-Updates the current authenticated user's profile. The request body must contain the same `data.id` as the authenticated account id.
+Updates the current authenticated user's profile fields and applies avatar changes from the current upload session (e.g. delete avatar or commit uploaded avatar). Requires a valid access token and a valid upload session context.
 
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesMePutRequest
+ @return ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest
 */
-func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePut(ctx context.Context) ApiProfilesSvcV1ProfilesMePutRequest {
-	return ApiProfilesSvcV1ProfilesMePutRequest{
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(ctx context.Context) ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest {
+	return ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest{
 		ApiService: a,
 		ctx: ctx,
 	}
@@ -611,20 +721,20 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePut(ctx context.Context) Api
 
 // Execute executes the request
 //  @return Profile
-func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePutExecute(r ApiProfilesSvcV1ProfilesMePutRequest) (*Profile, *http.Response, error) {
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest) (*Profile, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
+		localVarHTTPMethod   = http.MethodPatch
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *Profile
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMePut")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/profiles-svc/v1/profiles/me/"
+	localVarPath := localBasePath + "/profiles-svc/v1/profiles/me/update-session/confirm/"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -696,7 +806,128 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePutExecute(r ApiProfilesSvcV
 					newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
-		if localVarHTTPResponse.StatusCode == 403 {
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest struct {
+	ctx context.Context
+	ApiService *ProfilesAPIService
+}
+
+func (r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) Execute() (*UpdateProfileSession, *http.Response, error) {
+	return r.ApiService.ProfilesSvcV1ProfilesMeUpdateSessionPostExecute(r)
+}
+
+/*
+ProfilesSvcV1ProfilesMeUpdateSessionPost Open profile update session
+
+Creates an upload session for updating the current authenticated user's profile media (e.g. avatar) and returns the session resource along with the current profile state. Requires a valid access token.
+
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest
+*/
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx context.Context) ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest {
+	return ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest{
+		ApiService: a,
+		ctx: ctx,
+	}
+}
+
+// Execute executes the request
+//  @return UpdateProfileSession
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionPostExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) (*UpdateProfileSession, *http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *UpdateProfileSession
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeUpdateSessionPost")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/profiles-svc/v1/profiles/me/update-session/"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json", "application/problem+json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
 			var v Errors
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {

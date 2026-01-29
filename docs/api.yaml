@@ -16,6 +16,13 @@ paths:
   /profiles-svc/v1/profiles/me/:
     $ref: "./spec/paths/MyProfile.yaml"
 
+  /profiles-svc/v1/profiles/me/update-session/:
+    $ref: "./spec/paths/UpdateProfileSession.yaml"
+  /profiles-svc/v1/profiles/me/update-session/avatar/:
+    $ref: "./spec/paths/UploadAvatar.yaml"
+  /profiles-svc/v1/profiles/me/update-session/confirm/:
+    $ref: "./spec/paths/ConfirmUpdateProfile.yaml"
+
   /profiles-svc/v1/profiles/{account_id}:
     $ref: "./spec/paths/ProfileByID.yaml"
   /profiles-svc/v1/profiles/{account_id}/official:
@@ -41,6 +48,8 @@ components:
       $ref: './spec/components/schemas/responses/ProfileAttributes.yaml'
     ProfilesCollection:
       $ref: './spec/components/schemas/responses/ProfilesCollection.yaml'
+    UpdateProfileSession:
+      $ref: './spec/components/schemas/responses/UpdateProfileSession.yaml'
 
     Errors:
       $ref: './spec/components/schemas/responses/Errors.yaml'

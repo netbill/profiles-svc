@@ -12,9 +12,9 @@ type Manager struct {
 }
 
 const (
-	ProfilesService        = "profiles-svc"
-	ProfileResource        = "profile"
-	ProfileAvatarUploadTTL = 1 * time.Hour
+	ProfilesService       = "profiles-svc"
+	ProfileResource       = "profile"
+	ProfileMediaUploadTTL = 1 * time.Hour
 )
 
 func New(issuer, uploadSK string) Manager {
@@ -35,6 +35,6 @@ func (m Manager) NewUploadProfileMediaToken(
 			Resource:        ProfileResource,
 			Issuer:          ProfilesService,
 			Audience:        []string{ProfilesService},
-			Ttl:             ProfileAvatarUploadTTL,
+			Ttl:             ProfileMediaUploadTTL,
 		}, m.uploadSK)
 }

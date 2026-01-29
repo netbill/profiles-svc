@@ -1,0 +1,41 @@
+patch:
+  tags:
+    - Profiles
+  summary: Update my profile
+  description: >
+    Updates the current authenticated user's profile fields and applies avatar changes
+    from the current upload session (e.g. delete avatar or commit uploaded avatar).
+    Requires a valid access token and a valid upload session context.
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateProfile.yaml"
+  responses:
+    "200":
+      description: Profile updated.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/Profile.yaml"
+    "400":
+      description: Bad request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "401":
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "500":
+      description: Internal server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"

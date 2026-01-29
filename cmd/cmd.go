@@ -10,13 +10,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/netbill/awsx"
 	"github.com/netbill/logium"
+	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/bucket"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/messenger"
 	"github.com/netbill/profiles-svc/internal/messenger/inbound"
 	"github.com/netbill/profiles-svc/internal/messenger/outbound"
 	"github.com/netbill/profiles-svc/internal/repository"
-	"github.com/netbill/profiles-svc/internal/repository/pgdb"
+	"github.com/netbill/profiles-svc/internal/repository/pg"
 	"github.com/netbill/profiles-svc/internal/rest/middlewares"
 	"github.com/netbill/profiles-svc/internal/tokenmanager"
 
@@ -37,6 +38,7 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	if err != nil {
 		log.Fatal("failed to connect to database", "error", err)
 	}
+	db := pgdbx.NewDB(pool)
 
 	awsCfg := aws.Config{
 		Region: cfg.S3.AWS.Region,
@@ -58,11 +60,11 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 
 	s3Bucket := bucket.New(awsxSvc)
 
-	profilesSqlQ := pgdb.NewProfilesQ(ctx, pool)
-	transactionSqlQ := pgdb.NewTransaction(pool)
+	profilesSqlQ := pg.NewProfilesQ(db)
+	transactionSqlQ := pg.NewTransaction(db)
 	repo := repository.New(transactionSqlQ, profilesSqlQ)
 
-	kafkaOutbound := outbound.New(log, pool)
+	kafkaOutbound := outbound.New(log, db)
 
 	tokenManager := tokenmanager.New(cfg.Service.Name, cfg.S3.Upload.Token.SecretKey)
 
@@ -75,7 +77,7 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	})
 	router := rest.New(log, mdll, ctrl)
 
-	msgx := messenger.New(log, pool, cfg.Kafka.Brokers...)
+	msgx := messenger.New(log, db, cfg.Kafka.Brokers...)
 
 	run(func() {
 		router.Run(ctx, rest.Config{

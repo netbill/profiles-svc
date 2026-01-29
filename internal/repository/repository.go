@@ -16,8 +16,8 @@ func New(Transaction Transactioner, profileSql ProfilesQ) Repository {
 	}
 }
 
-func (r Repository) profilesSqlQ(ctx context.Context) ProfilesQ {
-	return r.profileSql.New(ctx)
+func (r Repository) profilesSqlQ() ProfilesQ {
+	return r.profileSql.New()
 }
 
 type Transactioner interface {

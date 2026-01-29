@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **Pseudonym** | Pointer to **string** | Pseudonym | [optional] 
 **Description** | Pointer to **string** | Description | [optional] 
 **Official** | **bool** | Is Official Account | 
-**AvatarUrl** | Pointer to **string** | Avatar URL | [optional] 
+**Avatar** | Pointer to **string** | Avatar URL | [optional] 
 **UpdatedAt** | **time.Time** | Updated At | 
 **CreatedAt** | **time.Time** | Created At | 
 
@@ -121,30 +121,30 @@ and a boolean to check if the value has been set.
 SetOfficial sets Official field to given value.
 
 
-### GetAvatarUrl
+### GetAvatar
 
-`func (o *ProfileAttributes) GetAvatarUrl() string`
+`func (o *ProfileAttributes) GetAvatar() string`
 
-GetAvatarUrl returns the AvatarUrl field if non-nil, zero value otherwise.
+GetAvatar returns the Avatar field if non-nil, zero value otherwise.
 
-### GetAvatarUrlOk
+### GetAvatarOk
 
-`func (o *ProfileAttributes) GetAvatarUrlOk() (*string, bool)`
+`func (o *ProfileAttributes) GetAvatarOk() (*string, bool)`
 
-GetAvatarUrlOk returns a tuple with the AvatarUrl field if it's non-nil, zero value otherwise
+GetAvatarOk returns a tuple with the Avatar field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAvatarUrl
+### SetAvatar
 
-`func (o *ProfileAttributes) SetAvatarUrl(v string)`
+`func (o *ProfileAttributes) SetAvatar(v string)`
 
-SetAvatarUrl sets AvatarUrl field to given value.
+SetAvatar sets Avatar field to given value.
 
-### HasAvatarUrl
+### HasAvatar
 
-`func (o *ProfileAttributes) HasAvatarUrl() bool`
+`func (o *ProfileAttributes) HasAvatar() bool`
 
-HasAvatarUrl returns a boolean if a field has been set.
+HasAvatar returns a boolean if a field has been set.
 
 ### GetUpdatedAt
 

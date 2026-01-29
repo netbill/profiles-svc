@@ -17,7 +17,7 @@ properties:
   official:
     type: boolean
     description: "Is Official Account"
-  avatar_url:
+  avatar:
     type: string
     format: uri
     description: "Avatar URL"

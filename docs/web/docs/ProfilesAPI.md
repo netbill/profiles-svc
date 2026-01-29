@@ -8,7 +8,9 @@ Method | HTTP request | Description
 [**ProfilesSvcV1ProfilesAccountIdOfficialPatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesAccountIdOfficialPatch) | **Patch** /profiles-svc/v1/profiles/{account_id}/official | Update profile official status
 [**ProfilesSvcV1ProfilesGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesGet) | **Get** /profiles-svc/v1/profiles/ | Filter profiles
 [**ProfilesSvcV1ProfilesMeGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeGet) | **Get** /profiles-svc/v1/profiles/me/ | Get my profile
-[**ProfilesSvcV1ProfilesMePut**](ProfilesAPI.md#ProfilesSvcV1ProfilesMePut) | **Put** /profiles-svc/v1/profiles/me/ | Update my profile
+[**ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete) | **Delete** /profiles-svc/v1/profiles/me/update-session/avatar/ | Delete uploaded avatar in session
+[**ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch) | **Patch** /profiles-svc/v1/profiles/me/update-session/confirm/ | Update my profile
+[**ProfilesSvcV1ProfilesMeUpdateSessionPost**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionPost) | **Post** /profiles-svc/v1/profiles/me/update-session/ | Open profile update session
 [**ProfilesSvcV1ProfilesUUsernameGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesUUsernameGet) | **Get** /profiles-svc/v1/profiles/u/{username} | Get profile by username
 
 
@@ -288,9 +290,68 @@ No authorization required
 [[Back to README]](../README.md)
 
 
-## ProfilesSvcV1ProfilesMePut
+## ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete
 
-> Profile ProfilesSvcV1ProfilesMePut(ctx).UpdateProfile(updateProfile).Execute()
+> ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete(ctx).Execute()
+
+Delete uploaded avatar in session
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete(context.Background()).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest struct via the builder pattern
+
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch
+
+> Profile ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(ctx).UpdateProfile(updateProfile).Execute()
 
 Update my profile
 
@@ -313,13 +374,13 @@ func main() {
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMePut(context.Background()).UpdateProfile(updateProfile).Execute()
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(context.Background()).UpdateProfile(updateProfile).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMePut``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `ProfilesSvcV1ProfilesMePut`: Profile
-	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMePut`: %v\n", resp)
+	// response from `ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch`: Profile
+	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch`: %v\n", resp)
 }
 ```
 
@@ -329,7 +390,7 @@ func main() {
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMePutRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -347,6 +408,67 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ProfilesSvcV1ProfilesMeUpdateSessionPost
+
+> UpdateProfileSession ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx).Execute()
+
+Open profile update session
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost(context.Background()).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `ProfilesSvcV1ProfilesMeUpdateSessionPost`: UpdateProfileSession
+	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionPostRequest struct via the builder pattern
+
+
+### Return type
+
+[**UpdateProfileSession**](UpdateProfileSession.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

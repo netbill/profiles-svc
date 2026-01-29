@@ -27,7 +27,7 @@ type domain interface {
 	OpenProfileUpdateSession(
 		ctx context.Context,
 		accountID uuid.UUID,
-	) (models.UpdateProfileAvatar, error)
+	) (models.UpdateProfileMedia, models.Profile, error)
 	DeleteUploadProfileAvatarInSession(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,

@@ -65,7 +65,7 @@ func (b Bucket) GetPreloadLinkForUpdateProfileAvatar(
 	uploadURL, getURL, err := b.s3.PresignPut(
 		ctx,
 		CreateTempProfileAvatarKey(accountID, sessionID),
-		tokenmanager.ProfileAvatarUploadTTL,
+		tokenmanager.ProfileMediaUploadTTL,
 	)
 	if err != nil {
 		return "", "", fmt.Errorf(

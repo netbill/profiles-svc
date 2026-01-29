@@ -82,7 +82,9 @@ Class | Method | HTTP request | Description
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesAccountIdOfficialPatch**](docs/ProfilesAPI.md#profilessvcv1profilesaccountidofficialpatch) | **Patch** /profiles-svc/v1/profiles/{account_id}/official | Update profile official status
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesGet**](docs/ProfilesAPI.md#profilessvcv1profilesget) | **Get** /profiles-svc/v1/profiles/ | Filter profiles
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMeGet**](docs/ProfilesAPI.md#profilessvcv1profilesmeget) | **Get** /profiles-svc/v1/profiles/me/ | Get my profile
-*ProfilesAPI* | [**ProfilesSvcV1ProfilesMePut**](docs/ProfilesAPI.md#profilessvcv1profilesmeput) | **Put** /profiles-svc/v1/profiles/me/ | Update my profile
+*ProfilesAPI* | [**ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete**](docs/ProfilesAPI.md#profilessvcv1profilesmeupdatesessionavatardelete) | **Delete** /profiles-svc/v1/profiles/me/update-session/avatar/ | Delete uploaded avatar in session
+*ProfilesAPI* | [**ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch**](docs/ProfilesAPI.md#profilessvcv1profilesmeupdatesessionconfirmpatch) | **Patch** /profiles-svc/v1/profiles/me/update-session/confirm/ | Update my profile
+*ProfilesAPI* | [**ProfilesSvcV1ProfilesMeUpdateSessionPost**](docs/ProfilesAPI.md#profilessvcv1profilesmeupdatesessionpost) | **Post** /profiles-svc/v1/profiles/me/update-session/ | Open profile update session
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesUUsernameGet**](docs/ProfilesAPI.md#profilessvcv1profilesuusernameget) | **Get** /profiles-svc/v1/profiles/u/{username} | Get profile by username
 
 
@@ -104,6 +106,12 @@ Class | Method | HTTP request | Description
  - [UpdateProfileOfficial](docs/UpdateProfileOfficial.md)
  - [UpdateProfileOfficialData](docs/UpdateProfileOfficialData.md)
  - [UpdateProfileOfficialDataAttributes](docs/UpdateProfileOfficialDataAttributes.md)
+ - [UpdateProfileSession](docs/UpdateProfileSession.md)
+ - [UpdateProfileSessionData](docs/UpdateProfileSessionData.md)
+ - [UpdateProfileSessionDataAttributes](docs/UpdateProfileSessionDataAttributes.md)
+ - [UpdateProfileSessionDataRelationships](docs/UpdateProfileSessionDataRelationships.md)
+ - [UpdateProfileSessionDataRelationshipsProfile](docs/UpdateProfileSessionDataRelationshipsProfile.md)
+ - [UpdateProfileSessionDataRelationshipsProfileData](docs/UpdateProfileSessionDataRelationshipsProfileData.md)
 
 
 ## Documentation For Authorization
