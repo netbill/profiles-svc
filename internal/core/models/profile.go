@@ -22,9 +22,13 @@ func (e Profile) IsNil() bool {
 	return e.AccountID == uuid.Nil
 }
 
+type UpdateProfileMediaLinks struct {
+	UploadURL string `json:"upload_url"`
+	GetURL    string `json:"get_url"`
+}
+
 type UpdateProfileMedia struct {
-	UploadSessionID uuid.UUID `json:"upload_session_id"`
-	UploadURL       string    `json:"upload_url"`
-	GetURL          string    `json:"get_url"`
-	UploadToken     string    `json:"upload_token"`
+	Links           UpdateProfileMediaLinks `json:"links"`
+	UploadSessionID uuid.UUID               `json:"upload_session_id"`
+	UploadToken     string                  `json:"upload_token"`
 }

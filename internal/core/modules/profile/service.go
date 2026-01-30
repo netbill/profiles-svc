@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/restkit/pagi"
 )
@@ -62,10 +63,10 @@ type token interface {
 }
 
 type bucket interface {
-	GetPreloadLinkForUpdateProfileAvatar(
+	GetPreloadLinkForProfileMedia(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,
-	) (uploadURL, getURL string, err error)
+	) (links models.UpdateProfileMediaLinks, err error)
 
 	CancelUpdateProfileAvatar(
 		ctx context.Context,
@@ -77,7 +78,7 @@ type bucket interface {
 		accountID uuid.UUID,
 	) error
 
-	AcceptUpdateProfileAvatar(
+	AcceptUpdateProfileMedia(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,
 	) (string, error)

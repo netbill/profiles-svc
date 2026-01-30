@@ -58,16 +58,20 @@ type S3Config struct {
 	Upload struct {
 		Token struct {
 			SecretKey string `mapstructure:"secret_key"`
+			TTL       struct {
+				Profile time.Duration `mapstructure:"profile_avatar"`
+			} `mapstructure:"ttl"`
 		} `mapstructure:"token"`
 
-		//Profile struct {
-		//	Avatar struct {
-		//		MaxLength         int64         `mapstructure:"max_length"`
-		//		AllowedExtensions []string      `mapstructure:"allowed_extensions"`
-		//		UploadTokenScope  string        `mapstructure:"upload_token_scope"`
-		//		UploadTokenTTL    time.Duration `mapstructure:"upload_token_ttl"`
-		//	} `mapstructure:"avatar"`
-		//} `mapstructure:"profile"`
+		Profile struct {
+			Avatar struct {
+				AllowedContentTypes []string `mapstructure:"allowed_content_types"`
+				AllowedFormats      []string `mapstructure:"allowed_formats"`
+				MaxWidth            uint     `mapstructure:"max_width"`
+				MaxHeight           uint     `mapstructure:"max_height"`
+				ContentLengthMax    uint     `mapstructure:"content_length_max"`
+			} `mapstructure:"avatar"`
+		} `mapstructure:"profile"`
 	} `mapstructure:"upload"`
 }
 

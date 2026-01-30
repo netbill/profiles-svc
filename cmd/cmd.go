@@ -52,13 +52,27 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	s3Client := s3.NewFromConfig(awsCfg)
 	presignClient := s3.NewPresignClient(s3Client)
 
-	awsxSvc := awsx.New(
+	awsS3 := awsx.New(
 		cfg.S3.AWS.BucketName,
 		s3Client,
 		presignClient,
 	)
 
-	s3Bucket := bucket.New(awsxSvc)
+	profileAvatarValidator := &awsx.ImgObjectValidator{
+		AllowedContentTypes: cfg.S3.Upload.Profile.Avatar.AllowedContentTypes,
+		AllowedFormats:      cfg.S3.Upload.Profile.Avatar.AllowedFormats,
+		MaxWidth:            cfg.S3.Upload.Profile.Avatar.MaxWidth,
+		MaxHeight:           cfg.S3.Upload.Profile.Avatar.MaxHeight,
+		ContentLengthMax:    cfg.S3.Upload.Profile.Avatar.ContentLengthMax,
+	}
+
+	s3Bucket := bucket.New(bucket.Config{
+		Storage:                awsS3,
+		ProfileAvatarValidator: profileAvatarValidator,
+		UploadTokensTTL: bucket.UploadTokensTTL{
+			ProfileAvatar: cfg.S3.Upload.Token.TTL.Profile,
+		},
+	})
 
 	profilesSqlQ := pg.NewProfilesQ(db)
 	transactionSqlQ := pg.NewTransaction(db)
@@ -66,7 +80,7 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 
 	kafkaOutbound := outbound.New(log, db)
 
-	tokenManager := tokenmanager.New(cfg.Service.Name, cfg.S3.Upload.Token.SecretKey)
+	tokenManager := tokenmanager.New(cfg.Service.Name, cfg.S3.Upload.Token.TTL.Profile)
 
 	profileSvc := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 

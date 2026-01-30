@@ -33,18 +33,23 @@ s3:
   upload:
     token:
       secret_key: "UnG06MAU2i1Mvqf9" #example
+      ttl:
+        profile: 15m # 15 minutes
 
     profile:
       avatar:
         max_size: 5 << 20 # 5 MB
-        allowed_types:
+        allowed_formats:
           - "jpeg"
           - "jpg"
           - "png"
           - "gif"
-          - "img"
-        upload_token_ttl: 15m # 15 minutes
-        upload_token_scope: "upload_profile_avatar"
+        allowed_content_types:
+          - "image/jpeg"
+          - "image/png"
+          - "image/gif"
+        max_width:  512
+        max_height: 512
 
 kafka:
   brokers:

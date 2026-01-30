@@ -7,13 +7,12 @@ Name | Type | Description | Notes
 **UploadToken** | **string** | JWT upload session token | 
 **UploadUrl** | **string** | Pre-signed PUT URL for avatar upload | 
 **GetUrl** | **string** | Pre-signed GET URL to read uploaded avatar | 
-**ExpiresAt** | **time.Time** | Upload session expiration time | 
 
 ## Methods
 
 ### NewUpdateProfileSessionDataAttributes
 
-`func NewUpdateProfileSessionDataAttributes(uploadToken string, uploadUrl string, getUrl string, expiresAt time.Time, ) *UpdateProfileSessionDataAttributes`
+`func NewUpdateProfileSessionDataAttributes(uploadToken string, uploadUrl string, getUrl string, ) *UpdateProfileSessionDataAttributes`
 
 NewUpdateProfileSessionDataAttributes instantiates a new UpdateProfileSessionDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -86,26 +85,6 @@ and a boolean to check if the value has been set.
 `func (o *UpdateProfileSessionDataAttributes) SetGetUrl(v string)`
 
 SetGetUrl sets GetUrl field to given value.
-
-
-### GetExpiresAt
-
-`func (o *UpdateProfileSessionDataAttributes) GetExpiresAt() time.Time`
-
-GetExpiresAt returns the ExpiresAt field if non-nil, zero value otherwise.
-
-### GetExpiresAtOk
-
-`func (o *UpdateProfileSessionDataAttributes) GetExpiresAtOk() (*time.Time, bool)`
-
-GetExpiresAtOk returns a tuple with the ExpiresAt field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetExpiresAt
-
-`func (o *UpdateProfileSessionDataAttributes) SetExpiresAt(v time.Time)`
-
-SetExpiresAt sets ExpiresAt field to given value.
 
 
 

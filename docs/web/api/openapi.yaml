@@ -485,7 +485,6 @@ components:
                 type: profile
           attributes:
             upload_token: upload_token
-            expires_at: 2000-01-23T04:56:07.000+00:00
             upload_url: https://openapi-generator.tech
             get_url: https://openapi-generator.tech
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -663,7 +662,6 @@ components:
     UpdateProfileSession_data_attributes:
       example:
         upload_token: upload_token
-        expires_at: 2000-01-23T04:56:07.000+00:00
         upload_url: https://openapi-generator.tech
         get_url: https://openapi-generator.tech
       properties:
@@ -678,12 +676,7 @@ components:
           description: Pre-signed GET URL to read uploaded avatar
           format: uri
           type: string
-        expires_at:
-          description: Upload session expiration time
-          format: date-time
-          type: string
       required:
-      - expires_at
       - get_url
       - upload_token
       - upload_url
@@ -731,7 +724,6 @@ components:
               type: profile
         attributes:
           upload_token: upload_token
-          expires_at: 2000-01-23T04:56:07.000+00:00
           upload_url: https://openapi-generator.tech
           get_url: https://openapi-generator.tech
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91

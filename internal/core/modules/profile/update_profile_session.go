@@ -20,7 +20,7 @@ func (s Service) OpenProfileUpdateSession(
 	}
 
 	uploadSessionID := uuid.New()
-	uploadURL, getURL, err := s.bucket.GetPreloadLinkForUpdateProfileAvatar(
+	links, err := s.bucket.GetPreloadLinkForProfileMedia(
 		ctx,
 		accountID,
 		uploadSessionID,
@@ -39,9 +39,8 @@ func (s Service) OpenProfileUpdateSession(
 	}
 
 	return models.UpdateProfileMedia{
+		Links:           links,
 		UploadSessionID: uploadSessionID,
-		UploadURL:       uploadURL,
-		GetURL:          getURL,
 		UploadToken:     uploadToken,
 	}, profile, nil
 }
@@ -91,7 +90,7 @@ func (s Service) UpdateProfile(
 
 		params.Media.avatarKey = nil
 	case false:
-		avatar, err := s.bucket.AcceptUpdateProfileAvatar(
+		avatar, err := s.bucket.AcceptUpdateProfileMedia(
 			ctx,
 			accountID,
 			params.Media.UploadSessionID,

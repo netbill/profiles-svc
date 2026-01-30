@@ -12,7 +12,6 @@ package resources
 
 import (
 	"encoding/json"
-	"time"
 	"bytes"
 	"fmt"
 )
@@ -28,8 +27,6 @@ type UpdateProfileSessionDataAttributes struct {
 	UploadUrl string `json:"upload_url"`
 	// Pre-signed GET URL to read uploaded avatar
 	GetUrl string `json:"get_url"`
-	// Upload session expiration time
-	ExpiresAt time.Time `json:"expires_at"`
 }
 
 type _UpdateProfileSessionDataAttributes UpdateProfileSessionDataAttributes
@@ -38,12 +35,11 @@ type _UpdateProfileSessionDataAttributes UpdateProfileSessionDataAttributes
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateProfileSessionDataAttributes(uploadToken string, uploadUrl string, getUrl string, expiresAt time.Time) *UpdateProfileSessionDataAttributes {
+func NewUpdateProfileSessionDataAttributes(uploadToken string, uploadUrl string, getUrl string) *UpdateProfileSessionDataAttributes {
 	this := UpdateProfileSessionDataAttributes{}
 	this.UploadToken = uploadToken
 	this.UploadUrl = uploadUrl
 	this.GetUrl = getUrl
-	this.ExpiresAt = expiresAt
 	return &this
 }
 
@@ -127,30 +123,6 @@ func (o *UpdateProfileSessionDataAttributes) SetGetUrl(v string) {
 	o.GetUrl = v
 }
 
-// GetExpiresAt returns the ExpiresAt field value
-func (o *UpdateProfileSessionDataAttributes) GetExpiresAt() time.Time {
-	if o == nil {
-		var ret time.Time
-		return ret
-	}
-
-	return o.ExpiresAt
-}
-
-// GetExpiresAtOk returns a tuple with the ExpiresAt field value
-// and a boolean to check if the value has been set.
-func (o *UpdateProfileSessionDataAttributes) GetExpiresAtOk() (*time.Time, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.ExpiresAt, true
-}
-
-// SetExpiresAt sets field value
-func (o *UpdateProfileSessionDataAttributes) SetExpiresAt(v time.Time) {
-	o.ExpiresAt = v
-}
-
 func (o UpdateProfileSessionDataAttributes) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -164,7 +136,6 @@ func (o UpdateProfileSessionDataAttributes) ToMap() (map[string]interface{}, err
 	toSerialize["upload_token"] = o.UploadToken
 	toSerialize["upload_url"] = o.UploadUrl
 	toSerialize["get_url"] = o.GetUrl
-	toSerialize["expires_at"] = o.ExpiresAt
 	return toSerialize, nil
 }
 
@@ -176,7 +147,6 @@ func (o *UpdateProfileSessionDataAttributes) UnmarshalJSON(data []byte) (err err
 		"upload_token",
 		"upload_url",
 		"get_url",
-		"expires_at",
 	}
 
 	allProperties := make(map[string]interface{})

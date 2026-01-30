@@ -498,7 +498,6 @@ components:
                 - upload_token
                 - upload_url
                 - get_url
-                - expires_at
               properties:
                 upload_token:
                   type: string
@@ -511,10 +510,6 @@ components:
                   type: string
                   format: uri
                   description: Pre-signed GET URL to read uploaded avatar
-                expires_at:
-                  type: string
-                  format: date-time
-                  description: Upload session expiration time
             relationships:
               type: object
               properties:

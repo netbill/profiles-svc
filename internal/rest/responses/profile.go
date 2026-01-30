@@ -2,10 +2,8 @@ package responses
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/netbill/profiles-svc/internal/core/models"
-	"github.com/netbill/profiles-svc/internal/tokenmanager"
 	"github.com/netbill/profiles-svc/resources"
 	"github.com/netbill/restkit/pagi"
 )
@@ -58,9 +56,8 @@ func UpdateProfileSession(uploadLinks models.UpdateProfileMedia, profile models.
 			Type: "update_profile_session",
 			Attributes: resources.UpdateProfileSessionDataAttributes{
 				UploadToken: uploadLinks.UploadToken,
-				UploadUrl:   uploadLinks.UploadURL,
-				GetUrl:      uploadLinks.GetURL,
-				ExpiresAt:   time.Now().UTC().Add(tokenmanager.ProfileMediaUploadTTL),
+				UploadUrl:   uploadLinks.Links.UploadURL,
+				GetUrl:      uploadLinks.Links.GetURL,
 			},
 			Relationships: resources.UpdateProfileSessionDataRelationships{
 				Profile: &resources.UpdateProfileSessionDataRelationshipsProfile{
