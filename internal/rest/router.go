@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/netbill/logium"
-	"github.com/netbill/restkit/tokens/roles"
+	"github.com/netbill/restkit/tokens"
 )
 
 type Handlers interface {
@@ -28,9 +28,10 @@ type Handlers interface {
 }
 
 type Middlewares interface {
-	AccountAuth() func(http.Handler) http.Handler
-	AccountRoleGrant(allowedRoles map[string]bool) func(http.Handler) http.Handler
-	UpdateOwnProfile() func(http.Handler) http.Handler
+	AccountAuth(
+		allowedRoles ...string,
+	) func(next http.Handler) http.Handler
+	UpdateOwnProfile() func(next http.Handler) http.Handler
 }
 
 type Service struct {
@@ -61,10 +62,7 @@ type Config struct {
 
 func (s *Service) Run(ctx context.Context, cfg Config) {
 	auth := s.middlewares.AccountAuth()
-	sysmoder := s.middlewares.AccountRoleGrant(map[string]bool{
-		roles.SystemAdmin: true,
-		roles.SystemModer: true,
-	})
+	sysmoder := s.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
 	updateOwnProfile := s.middlewares.UpdateOwnProfile()
 
 	r := chi.NewRouter()
@@ -101,7 +99,7 @@ func (s *Service) Run(ctx context.Context, cfg Config) {
 			r.Route("/{account_id}", func(r chi.Router) {
 				r.Get("/", s.handlers.GetProfileByID)
 
-				r.With(auth, sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
+				r.With(sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
 			})
 		})
 	})

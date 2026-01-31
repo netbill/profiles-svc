@@ -3,39 +3,38 @@ package controller
 import (
 	"net/http"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
-	"github.com/netbill/profiles-svc/internal/rest/middlewares"
+	"github.com/netbill/profiles-svc/internal/rest/contexter"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request) {
-	initiator, err := middlewares.AccountData(r.Context())
+	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Error("failed to get user from context")
-		ape.RenderErr(w, problems.Unauthorized("failed to get user from context"))
+		c.responser.RenderErr(w, problems.Unauthorized("failed to get user from context"))
 
 		return
 	}
 
-	uploadFilesData, err := middlewares.UploadFilesData(r.Context())
+	uploadFilesData, err := contexter.UploadContentData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Error("failed to get upload session id")
-		ape.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
+		c.responser.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
 
 		return
 	}
 
 	err = c.domain.DeleteUploadProfileAvatarInSession(
 		r.Context(),
-		initiator.AccountID,
-		uploadFilesData.UploadSessionID,
+		initiator.GetAccountID(),
+		uploadFilesData.GetUploadSessionID(),
 	)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to cancel update avatar")
-		ape.RenderErr(w, problems.InternalError())
+		c.responser.RenderErr(w, problems.InternalError())
 
 		return
 	}
 
-	ape.Render(w, 200, nil)
+	c.responser.Render(w, 200, nil)
 }

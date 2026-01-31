@@ -6,21 +6,20 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
-	"github.com/netbill/profiles-svc/internal/rest/middlewares"
+	"github.com/netbill/profiles-svc/internal/rest/contexter"
+	"github.com/netbill/restkit/problems"
 
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 
 func (c Controller) ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request) {
-	initiator, err := middlewares.AccountData(r.Context())
+	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Error("failed to get user from context")
-		ape.RenderErr(w, problems.Unauthorized("failed to get user from context"))
+		c.responser.RenderErr(w, problems.Unauthorized("failed to get user from context"))
 
 		return
 	}
@@ -28,40 +27,40 @@ func (c Controller) ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Reques
 	req, err := requests.UpdateProfile(r)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid create profile request")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		c.responser.RenderErr(w, problems.BadRequest(err)...)
 
 		return
 	}
 
-	if req.Data.Id != initiator.AccountID {
+	if req.Data.Id != initiator.GetAccountID() {
 		c.log.WithError(err).Errorf("id in body and initiator id mismatch fir update My profile request")
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"id": fmt.Errorf(
 				"id in body: %s and initiator id: %s mismatch fir update My profile request",
 				req.Data.Id,
-				initiator.AccountID,
+				initiator.GetAccountID(),
 			),
 		})...)
 
 		return
 	}
 
-	uploadData, err := middlewares.UploadFilesData(r.Context())
+	uploadData, err := contexter.UploadContentData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Error("failed to get upload session id")
-		ape.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
+		c.responser.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
 
 		return
 	}
 
 	res, err := c.domain.UpdateProfile(
 		r.Context(),
-		initiator.AccountID,
+		initiator.GetAccountID(),
 		profile.UpdateParams{
 			Pseudonym:   req.Data.Attributes.Pseudonym,
 			Description: req.Data.Attributes.Description,
 			Media: profile.UpdateMediaParams{
-				UploadSessionID: uploadData.UploadSessionID,
+				UploadSessionID: uploadData.GetUploadSessionID(),
 				DeleteAvatar:    req.Data.Attributes.DeleteAvatar,
 			},
 		},
@@ -70,19 +69,19 @@ func (c Controller) ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Reques
 		c.log.WithError(err).Errorf("failed to update profile")
 		switch {
 		case errors.Is(err, errx.ErrorProfileNotFound):
-			ape.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+			c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
 		case errors.Is(err, errx.ErrorProfileAvatarContentFormatIsNotAllowed),
 			errors.Is(err, errx.ErrorProfileAvatarTooLarge),
 			errors.Is(err, errx.ErrorProfileAvatarContentTypeIsNotAllowed):
-			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 				"avatar": fmt.Errorf(err.Error()),
 			})...)
 		default:
-			ape.RenderErr(w, problems.InternalError())
+			c.responser.RenderErr(w, problems.InternalError())
 		}
 
 		return
 	}
 
-	ape.Render(w, http.StatusOK, responses.Profile(res))
+	c.responser.Render(w, http.StatusOK, responses.Profile(res))
 }

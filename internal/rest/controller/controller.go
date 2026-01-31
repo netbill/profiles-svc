@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
@@ -34,14 +35,22 @@ type domain interface {
 	) error
 }
 
-type Controller struct {
-	domain domain
-	log    *logium.Logger
+type responser interface {
+	Render(w http.ResponseWriter, status int, res ...interface{})
+	RenderErr(w http.ResponseWriter, errs ...error)
 }
 
-func New(log *logium.Logger, profile domain) Controller {
+type Controller struct {
+	log *logium.Logger
+
+	domain    domain
+	responser responser
+}
+
+func New(log *logium.Logger, profile domain, responser responser) Controller {
 	return Controller{
-		domain: profile,
-		log:    log,
+		domain:    profile,
+		log:       log,
+		responser: responser,
 	}
 }

@@ -4,37 +4,36 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/errx"
-	"github.com/netbill/profiles-svc/internal/rest/middlewares"
+	"github.com/netbill/profiles-svc/internal/rest/contexter"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) OenProfileUpdateSession(w http.ResponseWriter, r *http.Request) {
-	initiator, err := middlewares.AccountData(r.Context())
+	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Error("failed to get user from context")
-		ape.RenderErr(w, problems.Unauthorized("failed to get user from context"))
+		c.responser.RenderErr(w, problems.Unauthorized("failed to get user from context"))
 
 		return
 	}
 
 	media, profile, err := c.domain.OpenProfileUpdateSession(
 		r.Context(),
-		initiator.AccountID,
+		initiator.GetAccountID(),
 	)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get preload link for update avatar")
 		switch {
 		case errors.Is(err, errx.ErrorProfileNotFound):
-			ape.RenderErr(w, problems.NotFound("profile for user does not exist"))
+			c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
 		default:
-			ape.RenderErr(w, problems.InternalError())
+			c.responser.RenderErr(w, problems.InternalError())
 		}
 
 		return
 	}
 
-	ape.Render(w, 200, responses.UpdateProfileSession(media, profile))
+	c.responser.Render(w, 200, responses.UpdateProfileSession(media, profile))
 }

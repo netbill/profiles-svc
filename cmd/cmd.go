@@ -20,6 +20,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/repository/pg"
 	"github.com/netbill/profiles-svc/internal/rest/middlewares"
 	"github.com/netbill/profiles-svc/internal/tokenmanager"
+	"github.com/netbill/restkit"
 
 	"github.com/netbill/profiles-svc/internal/rest"
 	"github.com/netbill/profiles-svc/internal/rest/controller"
@@ -84,11 +85,12 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 
 	profileSvc := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
-	ctrl := controller.New(log, profileSvc)
+	responser := restkit.NewResponser()
+	ctrl := controller.New(log, profileSvc, responser)
 	mdll := middlewares.New(log, middlewares.Config{
 		AccountAccessSK: cfg.Auth.Account.Token.Access.SecretKey,
 		UploadFilesSK:   cfg.S3.Upload.Token.SecretKey,
-	})
+	}, responser)
 	router := rest.New(log, mdll, ctrl)
 
 	msgx := messenger.New(log, db, cfg.Kafka.Brokers...)

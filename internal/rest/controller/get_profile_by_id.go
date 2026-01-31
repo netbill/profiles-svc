@@ -8,17 +8,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 	userID, err := uuid.Parse(chi.URLParam(r, "account_id"))
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid account id")
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"query": fmt.Errorf("invalid account id: %s", chi.URLParam(r, "account_id")),
 		})...)
 
@@ -30,13 +29,13 @@ func (c Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 		c.log.WithError(err).Errorf("failed to get profile by user id")
 		switch {
 		case errors.Is(err, errx.ErrorProfileNotFound):
-			ape.RenderErr(w, problems.NotFound("profile for user does not exist"))
+			c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
 		default:
-			ape.RenderErr(w, problems.InternalError())
+			c.responser.RenderErr(w, problems.InternalError())
 		}
 
 		return
 	}
 
-	ape.Render(w, http.StatusOK, responses.Profile(res))
+	c.responser.Render(w, http.StatusOK, responses.Profile(res))
 }

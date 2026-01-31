@@ -16,6 +16,7 @@ require (
 	github.com/netbill/ape v0.1.1
 	github.com/netbill/awsx v0.1.8
 	github.com/netbill/evebox v0.5.2
+	github.com/netbill/logium v0.1.2
 	github.com/netbill/pgdbx v0.3.1
 	github.com/netbill/restkit v0.1.13
 	github.com/pkg/errors v0.9.1
@@ -63,4 +64,8 @@ require (
 	golang.org/x/text v0.29.0 // indirect
 )
 
-replace github.com/netbill/evebox => /home/trpdjke/go/src/github.com/netbill/evebox
+replace github.com/netbill/awsx => /home/trpdjke/go/src/github.com/netbill/awsx
+
+replace github.com/netbill/ape => /home/trpdjke/go/src/github.com/netbill/ape
+
+replace github.com/netbill/restkit => /home/trpdjke/go/src/github.com/netbill/restkit

@@ -4,11 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 	"github.com/netbill/restkit/pagi"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +27,9 @@ func (c Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	res, err := c.domain.FilterProfile(r.Context(), filters, limit, offset)
 	if err != nil {
 		c.log.WithError(err).Error("failed to filter profiles")
-		ape.RenderErr(w, problems.InternalError())
+		c.responser.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	ape.Render(w, http.StatusOK, responses.ProfileCollection(r, res))
+	c.responser.Render(w, http.StatusOK, responses.ProfileCollection(r, res))
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/netbill/restkit/tokens"
 )
@@ -30,17 +31,18 @@ func (m Manager) NewUploadProfileMediaToken(
 	OwnerAccountID uuid.UUID,
 	UploadSessionID uuid.UUID,
 ) (string, error) {
-	tkn, err := tokens.NewUploadFileToken(
-		tokens.GenerateUploadFilesJwtRequest{
-			OwnerAccountID:  OwnerAccountID,
-			UploadSessionID: UploadSessionID,
-			ResourceID:      OwnerAccountID.String(),
-			Resource:        ProfileResource,
-			Issuer:          ProfilesActor,
-			Audience:        []string{ProfilesActor},
-			Ttl:             m.profileMediaUploadTTL,
-		}, m.uploadSK,
-	)
+	tkn, err := tokens.UploadContentClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   OwnerAccountID.String(),
+			Issuer:    ProfilesActor,
+			Audience:  []string{ProfilesActor},
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(m.profileMediaUploadTTL)),
+		},
+		UploadSessionID: UploadSessionID,
+		ResourceID:      OwnerAccountID.String(),
+		Resource:        ProfileResource,
+	}.GenerateJWT(m.uploadSK)
+
 	if err != nil {
 		return "", fmt.Errorf("failed to generate upload profile media token, cause: %w", err)
 	}
