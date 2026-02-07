@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ServiceConfig struct {
-	Name string `mapstructure:"name"`
-}
-
 type LogConfig struct {
 	Level  string `mapstructure:"level"`
 	Format string `mapstructure:"format"`
@@ -76,7 +72,6 @@ type S3Config struct {
 }
 
 type Config struct {
-	Service  ServiceConfig  `mapstructure:"service"`
 	Log      LogConfig      `mapstructure:"log"`
 	Rest     RestConfig     `mapstructure:"rest"`
 	Auth     AuthConfig     `mapstructure:"auth"`
