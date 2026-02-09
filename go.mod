@@ -1,6 +1,6 @@
 module github.com/netbill/profiles-svc
 
-go 1.25.4
+go 1.25.6
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
@@ -18,6 +18,7 @@ require (
 	github.com/netbill/awsx v0.1.9
 	github.com/netbill/evebox v0.5.2
 	github.com/netbill/logium v0.1.2
+	github.com/netbill/msnger v0.0.0-00010101000000-000000000000
 	github.com/netbill/pgdbx v0.3.1
 	github.com/netbill/restkit v0.2.0
 	github.com/pkg/errors v0.9.1
@@ -63,3 +64,5 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/netbill/msnger => /home/trpdjke/go/src/github.com/netbill/msnger
