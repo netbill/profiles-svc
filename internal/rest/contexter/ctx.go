@@ -38,7 +38,7 @@ func AccountData(ctx context.Context) (Account, error) {
 
 type UploadContent interface {
 	GetOwnerAccountID() uuid.UUID
-	GetUploadSessionID() uuid.UUID
+	GetSessionID() uuid.UUID
 	GetResourceID() string
 	GetResource() string
 }
@@ -58,4 +58,46 @@ func UploadContentData(ctx context.Context) (UploadContent, error) {
 	}
 
 	return userData, nil
+}
+
+type UploadProfileContent interface {
+	GetOwnerAccountID() uuid.UUID
+	GetSessionID() uuid.UUID
+	GetProfileID() uuid.UUID
+}
+
+type uploadProfileContent struct {
+	ownerAccountID  uuid.UUID
+	uploadSessionID uuid.UUID
+	profileID       uuid.UUID
+}
+
+func (u uploadProfileContent) GetOwnerAccountID() uuid.UUID {
+	return u.ownerAccountID
+}
+
+func (u uploadProfileContent) GetSessionID() uuid.UUID {
+	return u.uploadSessionID
+}
+
+func (u uploadProfileContent) GetProfileID() uuid.UUID {
+	return u.profileID
+}
+
+func UploadProfileContentData(ctx context.Context) (UploadProfileContent, error) {
+	content, err := UploadContentData(ctx)
+	if err != nil {
+		return uploadProfileContent{}, err
+	}
+
+	profileID, err := uuid.Parse(content.GetResourceID())
+	if err != nil {
+		return nil, fmt.Errorf("invalid resource id in upload content data: %w", err)
+	}
+
+	return uploadProfileContent{
+		ownerAccountID:  content.GetOwnerAccountID(),
+		uploadSessionID: content.GetSessionID(),
+		profileID:       profileID,
+	}, nil
 }

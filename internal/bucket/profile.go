@@ -1,8 +1,10 @@
 package bucket
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"io"
 
 	"github.com/google/uuid"
@@ -25,7 +27,7 @@ func (b Bucket) GetPreloadLinkForProfileMedia(
 	uploadURL, getURL, err := b.s3.PresignPut(
 		ctx,
 		CreateTempProfileAvatarKey(accountID, sessionID),
-		b.tokensTTL.ProfileAvatar,
+		b.config.Profile.TokenTTL,
 	)
 	if err != nil {
 		return models.UpdateProfileMediaLinks{}, fmt.Errorf(
@@ -46,60 +48,54 @@ func (b Bucket) AcceptUpdateProfileMedia(
 	tempKey := CreateTempProfileAvatarKey(accountID, sessionID)
 	finalKey := CreateProfileAvatarKey(accountID)
 
-	rc, size, err := b.s3.GetObjectRange(ctx, tempKey, 2048)
+	head, err := b.s3.HeadObject(ctx, tempKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to get object range for profile avatar: %w", err)
+		return "", fmt.Errorf("failed to head object for profile avatar: %w", err)
 	}
-	defer rc.Close()
 
-	if size == 0 {
+	if head.ContentLength == nil || *head.ContentLength == 0 {
 		return "", errx.ErrorNoContentUploaded.Raise(
 			fmt.Errorf("no content uploaded for profile avatar in session %s", sessionID),
 		)
 	}
+
+	rc, err := b.s3.GetObjectRange(ctx, tempKey, 2048)
+	if err != nil {
+		return "", fmt.Errorf("failed to get object range for profile avatar: %w", err)
+	}
+	defer rc.Close()
 
 	probe, err := io.ReadAll(rc)
 	if err != nil {
 		return "", fmt.Errorf("failed to read avatar probe bytes: %w", err)
 	}
 
-	valid, err := b.profileAvatarValidator.ValidateImageSize(uint(size))
+	config, format, err := image.DecodeConfig(bytes.NewReader(probe))
 	if err != nil {
-		return "", fmt.Errorf("failed to validate profile avatar image size: %w", err)
+		return "", fmt.Errorf("decode config: %w", err)
 	}
-	if !valid {
-		return "", errx.ErrorProfileAvatarTooLarge.Raise(
-			fmt.Errorf("uploaded profile avatar size %d exceeds the maximum allowed size", size),
+
+	if b.config.Profile.MaxHeight > 0 && config.Width > b.config.Profile.MaxWidth {
+		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
+			fmt.Errorf("uploaded profile avatar width %d exceeds the maximum allowed width", config.Width),
+		)
+	}
+	if b.config.Profile.MaxHeight > 0 && config.Height > b.config.Profile.MaxHeight {
+		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
+			fmt.Errorf("uploaded profile avatar height %d exceeds the maximum allowed height", config.Height),
 		)
 	}
 
-	valid, err = b.profileAvatarValidator.ValidateImageResolution(probe)
-	if err != nil {
-		return "", fmt.Errorf("failed to validate profile avatar image: %w", err)
+	access := false
+	for _, f := range b.config.Profile.Formats {
+		if f == format {
+			access = true
+			break
+		}
 	}
-	if !valid {
-		return "", errx.ErrorProfileAvatarContentTypeIsNotAllowed.Raise(
-			fmt.Errorf("uploaded file is not a valid image"),
-		)
-	}
-
-	valid, err = b.profileAvatarValidator.ValidateImageFormat(probe)
-	if err != nil {
-		return "", fmt.Errorf("failed to validate profile avatar image format: %w", err)
-	}
-	if !valid {
-		return "", errx.ErrorProfileAvatarContentFormatIsNotAllowed.Raise(
-			fmt.Errorf("profile avatar image format is not allowed"),
-		)
-	}
-
-	valid, err = b.profileAvatarValidator.ValidateImageContentType(probe)
-	if err != nil {
-		return "", fmt.Errorf("failed to validate profile avatar content type: %w", err)
-	}
-	if !valid {
-		return "", errx.ErrorProfileAvatarContentTypeIsNotAllowed.Raise(
-			fmt.Errorf("profile avatar content type is not allowed"),
+	if !access {
+		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
+			fmt.Errorf("uploaded profile avatar format %s is not allowed", format),
 		)
 	}
 
@@ -139,7 +135,10 @@ func (b Bucket) CancelUpdateProfileAvatar(
 	return nil
 }
 
-func (b Bucket) DeleteProfileAvatar(ctx context.Context, accountID uuid.UUID) error {
+func (b Bucket) DeleteProfileAvatar(
+	ctx context.Context,
+	accountID uuid.UUID,
+) error {
 	err := b.s3.DeleteObject(ctx, CreateProfileAvatarKey(accountID))
 	if err != nil {
 		return fmt.Errorf(

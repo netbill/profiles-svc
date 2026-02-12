@@ -27,6 +27,7 @@ s3:
     access_key_id: "your-access-key-id"
     secret_access_key: "your-secret-access-key"
     session_token: "your-session-token"
+
   upload:
     token:
       secret_key: "UnG06MAU2i1Mvqf9" #example
@@ -35,19 +36,40 @@ s3:
 
     profile:
       avatar:
-        max_size: 5 << 20 # 5 MB
+        max_size: 5242880 # 5 MB
         allowed_formats:
           - "jpeg"
           - "jpg"
           - "png"
           - "gif"
-        allowed_content_types:
-          - "image/jpeg"
-          - "image/png"
-          - "image/gif"
         max_width:  512
         max_height: 512
 
 kafka:
   brokers:
     - "localhost:9092"
+
+  readers:
+    accounts.v1: 4 #number of readers for this topic
+
+  inbox:
+    process_count: 3      #number of inbox worker processes (DB inbox table processors)
+    routines: 100         #number of goroutines which can process messages in parallel in each process
+    min_batch: 10         #minimum number of messages to process in a batch in each process
+    max_batch: 100        #maximum number of messages to process in a batch in each process
+    min_sleep: 100ms      #minimum sleep time between processing messages
+    max_sleep: 5s         #maximum sleep time between processing messages
+    min_next_attempt: 1m  #minimum time to wait before retrying a failed message
+    max_next_attempt: 10m #maximum time to wait before retrying a failed message
+    max_attempt: 0        #maximum number of attempts to process a message before giving up (0 = infinite retries)
+
+  outbox:
+    process_count: 3      #number of outbox worker processes (DB outbox table processors)
+    routines: 100         #number of goroutines which can process messages in parallel in each process
+    min_batch: 10         #minimum number of messages to process in a batch in each process
+    max_batch: 100        #maximum number of messages to process in a batch in each process
+    min_sleep: 100ms      #minimum sleep time between processing messages
+    max_sleep: 5s         #maximum sleep time between processing messages
+    min_next_attempt: 1m  #minimum time to wait before retrying a failed message
+    max_next_attempt: 10m #maximum time to wait before retrying a failed message
+    max_attempt: 0        #maximum number of attempts to process a message before giving up (0 = infinite retries)

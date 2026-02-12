@@ -20,10 +20,11 @@ type Handlers interface {
 
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
-	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
-
-	OenProfileUpdateSession(w http.ResponseWriter, r *http.Request)
+	
+	OenUpdateProfileSession(w http.ResponseWriter, r *http.Request)
+	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
+	CancelUpdateProfileSession(w http.ResponseWriter, r *http.Request)
 	DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request)
 }
 
@@ -88,7 +89,8 @@ func (rt *Router) Run(ctx context.Context, cfg Config) {
 					r.Get("/", rt.handlers.GetMyProfile)
 
 					r.Route("/update-session", func(r chi.Router) {
-						r.Post("/", rt.handlers.OenProfileUpdateSession)
+						r.Post("/", rt.handlers.OenUpdateProfileSession)
+						r.With(updateOwnProfile).Delete("/", rt.handlers.CancelUpdateProfileSession)
 
 						r.With(updateOwnProfile).Put("/confirm", rt.handlers.ConfirmUpdateMyProfile)
 						r.With(updateOwnProfile).Delete("/upload-avatar", rt.handlers.DeleteUploadProfileAvatar)

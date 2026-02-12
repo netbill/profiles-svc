@@ -7,7 +7,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c *Controller) DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) CancelUpdateProfileSession(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.Log(r).WithError(err).Error("failed to get user from context")
@@ -24,17 +24,17 @@ func (c *Controller) DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = c.modules.Profile.DeleteUploadAvatar(
+	err = c.modules.Profile.CancelUpdateSession(
 		r.Context(),
 		initiator.GetAccountID(),
 		uploadFilesData.GetSessionID(),
 	)
 	switch {
 	case err != nil:
-		c.Log(r).WithError(err).Errorf("failed to cancel update avatar")
+		c.Log(r).WithError(err).Errorf("failed to cancel update profile session")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
-		c.Log(r).Info("avatar deleted successfully")
+		c.Log(r).Info("profile update session cancelled successfully")
 		c.responser.Render(w, http.StatusOK, nil)
 	}
 }

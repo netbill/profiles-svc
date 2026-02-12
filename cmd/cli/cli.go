@@ -10,14 +10,16 @@ import (
 	"github.com/alecthomas/kingpin"
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/cmd"
+	"github.com/netbill/profiles-svc/cmd/config"
+	"github.com/netbill/profiles-svc/cmd/events"
 	"github.com/netbill/profiles-svc/cmd/migrations"
 	"github.com/sirupsen/logrus"
 )
 
 func Run(args []string) bool {
-	cfg, err := cmd.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		logrus.Fatalf("failed to load config: %v", err)
+		logium.Fatalf("failed to load config: %v", err)
 	}
 
 	logium.SetLevel(logrus.DebugLevel)
@@ -44,13 +46,52 @@ func Run(args []string) bool {
 	log.Info("Starting server...")
 
 	var (
-		service = kingpin.New("chains-auth", "")
-		runCmd  = service.Command("run", "run command")
+		service = kingpin.New("profiles-svc", "")
 
-		serviceCmd     = runCmd.Command("service", "run service")
+		runCmd     = service.Command("run", "run command")
+		serviceCmd = runCmd.Command("service", "run service")
+
 		migrateCmd     = service.Command("migrate", "migrate command")
 		migrateUpCmd   = migrateCmd.Command("up", "migrate db up")
 		migrateDownCmd = migrateCmd.Command("down", "migrate db down")
+
+		eventsCmd = service.Command("events", "events commands")
+
+		// INBOX
+		// examples:
+		// profiles-svc events inbox cleanup processing --process-id=worker-1
+		// profiles-svc events inbox cleanup processing --process-id=worker-1 --process-id=worker-2
+		// profiles-svc events inbox cleanup failed
+		eventsInbox        = eventsCmd.Command("inbox", "inbox events")
+		eventsInboxCleanup = eventsInbox.Command("cleanup", "cleanup inbox events")
+		eventsInboxFailed  = eventsInboxCleanup.Command(
+			"failed", "cleanup inbox events in failed state",
+		)
+		eventsInboxProcessing = eventsInboxCleanup.Command(
+			"processing", "cleanup inbox events stuck in processing state",
+		)
+		eventsInboxProcessingProcessIDs = eventsInboxProcessing.Flag(
+			"process-id",
+			"cleanup only events reserved by this process id (repeatable)",
+		).Strings()
+
+		// OUTBOX
+		// examples:
+		// profiles-svc events inbox cleanup processing --process-id=worker-1
+		// profiles-svc events inbox cleanup processing --process-id=worker-1 --process-id=worker-2
+		// profiles-svc events inbox cleanup failed
+		eventsOutbox        = eventsCmd.Command("outbox", "outbox events")
+		eventsOutboxCleanup = eventsOutbox.Command("cleanup", "cleanup outbox events")
+		eventsOutboxFailed  = eventsOutboxCleanup.Command(
+			"failed", "cleanup outbox events in failed state",
+		)
+		eventsOutboxProcessing = eventsOutboxCleanup.Command(
+			"processing", "cleanup outbox events stuck in processing state",
+		)
+		eventsOutboxProcessingProcessIDs = eventsOutboxProcessing.Flag(
+			"process-id",
+			"cleanup only events reserved by this process id (repeatable)",
+		).Strings()
 	)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -71,6 +112,14 @@ func Run(args []string) bool {
 		err = migrations.MigrateUp(ctx, cfg.Database.SQL.URL)
 	case migrateDownCmd.FullCommand():
 		err = migrations.MigrateDown(ctx, cfg.Database.SQL.URL)
+	case eventsOutboxFailed.FullCommand():
+		err = events.CleanupOutboxFailed(ctx, cfg, log)
+	case eventsOutboxProcessing.FullCommand():
+		err = events.CleanupOutboxProcessing(ctx, cfg, log, *eventsOutboxProcessingProcessIDs...)
+	case eventsInboxFailed.FullCommand():
+		err = events.CleanupInboxFailed(ctx, cfg, log)
+	case eventsInboxProcessing.FullCommand():
+		err = events.CleanupInboxProcessing(ctx, cfg, log, *eventsInboxProcessingProcessIDs...)
 	default:
 		log.Errorf("unknown command %s", command)
 		return false

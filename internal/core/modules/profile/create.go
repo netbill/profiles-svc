@@ -9,10 +9,10 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) CreateProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
+func (m *Module) Create(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
 	profile, err := m.repo.GetProfileByAccountID(ctx, accountID)
 	switch {
-	case errors.Is(err, errx.ErrorProfileNotFound):
+	case errors.Is(err, errx.ErrorProfileNotExists):
 		// continue to create profile
 	case err != nil:
 		return models.Profile{}, err
@@ -26,7 +26,7 @@ func (m *Module) CreateProfile(ctx context.Context, accountID uuid.UUID, usernam
 			return err
 		}
 
-		err = m.messanger.WriteProfileCreated(ctx, profile)
+		err = m.messenger.WriteProfileCreated(ctx, profile)
 		if err != nil {
 			return err
 		}

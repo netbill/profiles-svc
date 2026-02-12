@@ -1,4 +1,4 @@
-package cmd
+package config
 
 import (
 	"fmt"
@@ -31,6 +31,31 @@ type DatabaseConfig struct {
 
 type KafkaConfig struct {
 	Brokers []string `mapstructure:"brokers"`
+	Readers struct {
+		AccountsV1 int `mapstructure:"accounts_v1"`
+	} `mapstructure:"readers"`
+	Inbox struct {
+		ProcessCount   int           `mapstructure:"process_count"`
+		Routines       int           `mapstructure:"routines"`
+		MinBatch       int           `mapstructure:"min_batch"`
+		MaxBatch       int           `mapstructure:"max_batch"`
+		MinSleep       time.Duration `mapstructure:"min_sleep"`
+		MaxSleep       time.Duration `mapstructure:"max_sleep"`
+		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
+		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
+		MaxAttempts    int32         `mapstructure:"max_attempts"`
+	} `mapstructure:"inbox"`
+	Outbox struct {
+		ProcessCount   int           `mapstructure:"process_count"`
+		Routines       int           `mapstructure:"routines"`
+		MinBatch       int           `mapstructure:"min_batch"`
+		MaxBatch       int           `mapstructure:"max_batch"`
+		MinSleep       time.Duration `mapstructure:"min_sleep"`
+		MaxSleep       time.Duration `mapstructure:"max_sleep"`
+		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
+		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
+		MaxAttempts    int32         `mapstructure:"max_attempts"`
+	} `mapstructure:"outbox"`
 }
 
 type AuthConfig struct {
@@ -61,11 +86,10 @@ type S3Config struct {
 
 		Profile struct {
 			Avatar struct {
-				AllowedContentTypes []string `mapstructure:"allowed_content_types"`
-				AllowedFormats      []string `mapstructure:"allowed_formats"`
-				MaxWidth            uint     `mapstructure:"max_width"`
-				MaxHeight           uint     `mapstructure:"max_height"`
-				ContentLengthMax    uint     `mapstructure:"content_length_max"`
+				AllowedFormats   []string `mapstructure:"allowed_formats"`
+				MaxWidth         int      `mapstructure:"max_width"`
+				MaxHeight        int      `mapstructure:"max_height"`
+				ContentLengthMax int      `mapstructure:"content_length_max"`
 			} `mapstructure:"avatar"`
 		} `mapstructure:"profile"`
 	} `mapstructure:"upload"`

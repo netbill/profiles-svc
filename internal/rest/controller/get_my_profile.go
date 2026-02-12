@@ -13,24 +13,21 @@ import (
 func (c *Controller) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
-		c.log.WithError(err).Error("failed to get account from context")
+		c.Log(r).WithError(err).Error("failed to get account from context")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get account from context"))
 
 		return
 	}
 
-	res, err := c.core.GetProfileByAccountID(r.Context(), initiator.GetAccountID())
-	if err != nil {
-		c.log.WithError(err).Errorf("failed to get profile by user id")
-		switch {
-		case errors.Is(err, errx.ErrorProfileNotFound):
-			c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
-		default:
-			c.responser.RenderErr(w, problems.InternalError())
-		}
-
-		return
+	res, err := c.modules.Profile.GetByAccountID(r.Context(), initiator.GetAccountID())
+	switch {
+	case errors.Is(err, errx.ErrorProfileNotExists):
+		c.Log(r).Infof("profile for user does not exist")
+		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+	case err != nil:
+		c.Log(r).Errorf("failed to get profile by user id")
+		c.responser.RenderErr(w, problems.InternalError())
+	default:
+		c.responser.Render(w, http.StatusOK, responses.Profile(res))
 	}
-
-	c.responser.Render(w, http.StatusOK, responses.Profile(res))
 }

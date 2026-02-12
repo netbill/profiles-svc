@@ -7,14 +7,14 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (profile models.Profile, err error) {
+func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) (profile models.Profile, err error) {
 	if err = m.repo.Transaction(ctx, func(ctx context.Context) error {
 		profile, err = m.repo.UpdateProfileUsername(ctx, accountID, username)
 		if err != nil {
 			return err
 		}
 
-		err = m.messanger.WriteProfileUpdated(ctx, profile)
+		err = m.messenger.WriteProfileUpdated(ctx, profile)
 		if err != nil {
 			return err
 		}

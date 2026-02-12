@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/evebox/header"
+	"github.com/netbill/eventbox/headers"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/messenger/contracts"
 	"github.com/segmentio/kafka-go"
@@ -28,26 +28,24 @@ func (o *Outbound) WriteProfileUpdated(
 		return fmt.Errorf("failed to marshal profile updated payload, cause: %w", err)
 	}
 
-	event, err := o.outbox.CreateOutboxEvent(
+	_, err = o.outbox.WriteToOutbox(
 		ctx,
 		kafka.Message{
 			Topic: contracts.ProfilesTopicV1,
 			Key:   []byte(profile.AccountID.String()),
 			Value: payload,
 			Headers: []kafka.Header{
-				{Key: header.EventID, Value: []byte(uuid.New().String())},
-				{Key: header.EventType, Value: []byte(contracts.ProfileUpdatedEvent)},
-				{Key: header.EventVersion, Value: []byte("1")},
-				{Key: header.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
-				{Key: header.ContentType, Value: []byte("application/json")},
+				{Key: headers.EventID, Value: []byte(uuid.New().String())},
+				{Key: headers.EventType, Value: []byte(contracts.ProfileUpdatedEvent)},
+				{Key: headers.EventVersion, Value: []byte("1")},
+				{Key: headers.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
+				{Key: headers.ContentType, Value: []byte("application/json")},
 			},
 		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create outbox event for profile updated, cause: %w", err)
 	}
-
-	o.log.Debugf("profile updated event queued, account_id: %s, event_id: %s", profile.AccountID, event.ID)
 
 	return nil
 }

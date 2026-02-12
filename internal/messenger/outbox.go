@@ -2,55 +2,57 @@ package messenger
 
 import (
 	"context"
-	"sync"
 
+	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
-	pgm "github.com/netbill/msnger/pg"
+	"github.com/netbill/pgdbx"
 	"github.com/segmentio/kafka-go"
 )
 
-type OutboxArchitectConfig struct {
-	KafkaAddr  []string
-	Processors []string
-
-	outbox pgm.OutboxProcessorConfig
+type Outbox struct {
+	log    *logium.Entry
+	db     *pgdbx.DB
+	addr   []string
+	config eventpg.OutboxWorkerConfig
 }
 
-func StartOutboxArchitect(
-	ctx context.Context,
-	wg *sync.WaitGroup,
+func NewOutbox(
 	log *logium.Logger,
-	cfg OutboxArchitectConfig,
-) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	db *pgdbx.DB,
+	addr []string,
+	config eventpg.OutboxWorkerConfig,
+) *Outbox {
+	return &Outbox{
+		db:     db,
+		log:    log.WithField("component", "outbox"),
+		addr:   addr,
+		config: config,
+	}
+}
 
-		writer := &kafka.Writer{
-			Addr:         kafka.TCP(cfg.KafkaAddr...),
-			RequiredAcks: kafka.RequireAll,
-			Compression:  kafka.Snappy,
-			Balancer:     &kafka.LeastBytes{},
+func (a *Outbox) Start(ctx context.Context) {
+	writer := &kafka.Writer{
+		Addr:         kafka.TCP(a.addr...),
+		RequiredAcks: kafka.RequireAll,
+		Compression:  kafka.Snappy,
+		Balancer:     &kafka.LeastBytes{},
+	}
+	defer func() {
+		if err := writer.Close(); err != nil {
+			a.log.WithError(err).Error("failed to close kafka writer")
 		}
-		defer func() {
-			if err := writer.Close(); err != nil {
-				log.Error("failed to close kafka writer", "error", err)
-			}
-		}()
-
-		processor := pgm.NewOutboxProcessor(log, cfg.outbox, nil, writer)
-
-		wg.Add(len(cfg.Processors))
-
-		for _, p := range cfg.Processors {
-			go func(processID string) {
-				defer wg.Done()
-				defer processor.StopProcess(context.Background(), processID)
-
-				processor.StartProcess(ctx, processID)
-			}(p)
-		}
-
-		<-ctx.Done()
 	}()
+
+	a.log.Infoln("starting outbox worker")
+
+	id := BuildProcessID("profiles-svc", "outbox", 0)
+	worker := eventpg.NewOutboxWorker(a.log, a.db, writer, id, a.config)
+
+	defer func() {
+		if err := worker.Stop(context.Background()); err != nil {
+			a.log.WithError(err).WithField("worker_id", id).Error("failed to stop outbox worker")
+		}
+	}()
+
+	worker.Run(ctx)
 }

@@ -1,23 +1,20 @@
 package messenger
 
 import (
-	"github.com/netbill/logium"
-	"github.com/netbill/msnger"
-	pgm "github.com/netbill/msnger/pg"
+	"github.com/netbill/eventbox"
+	eventpg "github.com/netbill/eventbox/pg"
+	"github.com/netbill/pgdbx"
 	"github.com/segmentio/kafka-go"
 )
 
-func Producer(log *logium.Logger, addr ...string) msnger.Producer {
-	prod := pgm.NewProducer(
-		log,
+func NewProducer(database *pgdbx.DB, addr ...string) eventbox.Producer {
+	return eventpg.NewProducer(
 		&kafka.Writer{
 			Addr:         kafka.TCP(addr...),
 			RequiredAcks: kafka.RequireAll,
 			Compression:  kafka.Snappy,
 			Balancer:     &kafka.LeastBytes{},
 		},
-		nil,
+		database,
 	)
-
-	return prod
 }

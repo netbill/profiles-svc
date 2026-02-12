@@ -53,7 +53,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGet(ctx context.Conte
 }
 
 // Execute executes the request
-//  @return Profile
+//  @return UploadTokenTTL
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfilesSvcV1ProfilesAccountIdGetRequest) (*Profile, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
@@ -195,7 +195,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdOfficialPatch(ctx con
 }
 
 // Execute executes the request
-//  @return Profile
+//  @return UploadTokenTTL
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdOfficialPatchExecute(r ApiProfilesSvcV1ProfilesAccountIdOfficialPatchRequest) (*Profile, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPatch
@@ -483,7 +483,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGet(ctx context.Context) Api
 }
 
 // Execute executes the request
-//  @return Profile
+//  @return UploadTokenTTL
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV1ProfilesMeGetRequest) (*Profile, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
@@ -720,7 +720,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(ct
 }
 
 // Execute executes the request
-//  @return Profile
+//  @return UploadTokenTTL
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest) (*Profile, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPatch
@@ -992,7 +992,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGet(ctx context.Conte
 }
 
 // Execute executes the request
-//  @return Profile
+//  @return UploadTokenTTL
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGetExecute(r ApiProfilesSvcV1ProfilesUUsernameGetRequest) (*Profile, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet

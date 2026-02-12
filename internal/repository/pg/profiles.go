@@ -204,21 +204,35 @@ func (q *profiles) FilterOfficial(official bool) repository.ProfilesQ {
 	return q
 }
 
-func (q *profiles) FilterLikePseudonym(pseudonym string) repository.ProfilesQ {
-	q.selector = q.selector.Where(sq.ILike{"pseudonym": "%" + pseudonym + "%"})
-	q.counter = q.counter.Where(sq.ILike{"pseudonym": "%" + pseudonym + "%"})
-	q.updater = q.updater.Where(sq.ILike{"pseudonym": "%" + pseudonym + "%"})
-	q.deleter = q.deleter.Where(sq.ILike{"pseudonym": "%" + pseudonym + "%"})
+func (q *profiles) FilterBestMatch(term string) repository.ProfilesQ {
+	like := "%" + term + "%"
+	prefix := term + "%"
 
-	return q
-}
+	q.selector = q.selector.Where(sq.Or{
+		sq.ILike{"username": like},
+		sq.ILike{"pseudonym": like},
+	})
+	q.counter = q.counter.Where(sq.Or{
+		sq.ILike{"username": like},
+		sq.ILike{"pseudonym": like},
+	})
 
-func (q *profiles) FilterLikeUsername(username string) repository.ProfilesQ {
-	q.selector = q.selector.Where(sq.ILike{"username": "%" + username + "%"})
-	q.counter = q.counter.Where(sq.ILike{"username": "%" + username + "%"})
-	q.updater = q.updater.Where(sq.ILike{"username": "%" + username + "%"})
-	q.deleter = q.deleter.Where(sq.ILike{"username": "%" + username + "%"})
+	q.selector = q.selector.OrderByClause(sq.Expr(
+		`CASE
+			WHEN lower(username) = lower(?) THEN 0
+			WHEN lower(pseudonym) = lower(?) THEN 1
+			WHEN lower(username) LIKE lower(?) THEN 2
+			WHEN lower(pseudonym) LIKE lower(?) THEN 3
+			WHEN lower(username) LIKE lower(?) THEN 4
+			WHEN lower(pseudonym) LIKE lower(?) THEN 5
+			ELSE 6
+		END`,
+		term, term,
+		prefix, prefix,
+		like, like,
+	))
 
+	q.selector = q.selector.OrderBy("username ASC")
 	return q
 }
 
