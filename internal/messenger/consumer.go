@@ -8,7 +8,7 @@ import (
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -36,9 +36,9 @@ func NewConsumerArchitect(
 func (a *ConsumerArchitect) Start(ctx context.Context) {
 	var wg sync.WaitGroup
 
-	accountReadersNum, ok := a.topicReaders[contracts.AccountsTopicV1]
+	accountReadersNum, ok := a.topicReaders[evtypes.AccountsTopicV1]
 	if !ok || accountReadersNum <= 0 {
-		a.log.Fatalf("number of readers for topic %s must be greater than 0", contracts.AccountsTopicV1)
+		a.log.Fatalf("number of readers for topic %s must be greater than 0", evtypes.AccountsTopicV1)
 	}
 
 	accountConsumer := eventpg.NewConsumer(a.log, a.db, eventpg.ConsumerConfig{
@@ -53,8 +53,8 @@ func (a *ConsumerArchitect) Start(ctx context.Context) {
 	for i := 0; i < accountReadersNum; i++ {
 		reader := kafka.NewReader(kafka.ReaderConfig{
 			Brokers:  a.brokers,
-			GroupID:  contracts.ProfilesSvcGroup,
-			Topic:    contracts.AccountsTopicV1,
+			GroupID:  evtypes.ProfilesSvcGroup,
+			Topic:    evtypes.AccountsTopicV1,
 			MinBytes: 10e3,
 			MaxBytes: 10e6,
 		})

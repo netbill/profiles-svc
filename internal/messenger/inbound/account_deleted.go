@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -12,7 +12,7 @@ func (i *Inbound) AccountDeleted(
 	ctx context.Context,
 	message kafka.Message,
 ) error {
-	var payload contracts.AccountDeletedPayload
+	var payload evtypes.AccountDeletedPayload
 	if err := json.Unmarshal(message.Value, &payload); err != nil {
 		return err
 	}

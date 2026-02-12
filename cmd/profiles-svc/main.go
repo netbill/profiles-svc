@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/netbill/profiles-svc/cmd/cli"
+	"github.com/netbill/profiles-svc/cli"
 )
 
 func main() {

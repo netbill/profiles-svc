@@ -1,3 +1,3 @@
-package contracts
+package evtypes
 
 const ProfilesSvcGroup = "profiles-svc"

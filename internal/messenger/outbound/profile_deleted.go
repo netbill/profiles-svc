@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/eventbox/headers"
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -16,7 +16,7 @@ func (o *Outbound) WriteProfileDeleted(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) error {
-	payload, err := json.Marshal(contracts.ProfileDeletedPayload{
+	payload, err := json.Marshal(evtypes.ProfileDeletedPayload{
 		AccountID: accountID,
 		DeletedAt: time.Now().UTC(),
 	})
@@ -27,14 +27,14 @@ func (o *Outbound) WriteProfileDeleted(
 	_, err = o.outbox.WriteToOutbox(
 		ctx,
 		kafka.Message{
-			Topic: contracts.ProfilesTopicV1,
+			Topic: evtypes.ProfilesTopicV1,
 			Key:   []byte(accountID.String()),
 			Value: payload,
 			Headers: []kafka.Header{
 				{Key: headers.EventID, Value: []byte(uuid.New().String())},
-				{Key: headers.EventType, Value: []byte(contracts.ProfileDeletedEvent)},
+				{Key: headers.EventType, Value: []byte(evtypes.ProfileDeletedEvent)},
 				{Key: headers.EventVersion, Value: []byte("1")},
-				{Key: headers.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
+				{Key: headers.Producer, Value: []byte(evtypes.ProfilesSvcGroup)},
 				{Key: headers.ContentType, Value: []byte("application/json")},
 			},
 		},

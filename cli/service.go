@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"context"
@@ -12,11 +12,10 @@ import (
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/profiles-svc/cmd/config"
 	"github.com/netbill/profiles-svc/internal/bucket"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/messenger"
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/netbill/profiles-svc/internal/messenger/inbound"
 	"github.com/netbill/profiles-svc/internal/messenger/outbound"
 	"github.com/netbill/profiles-svc/internal/repository"
@@ -28,7 +27,7 @@ import (
 	"github.com/netbill/restkit"
 )
 
-func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, wg *sync.WaitGroup) {
+func Start(ctx context.Context, cfg Config, log *logium.Logger, wg *sync.WaitGroup) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {
@@ -79,6 +78,7 @@ func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, w
 	kafkaOutbound := outbound.New(kafkaProducer)
 
 	tokenManager := tokenmanager.New(
+		cfg.Auth.Account.Token.Access.SecretKey,
 		cfg.S3.Upload.Token.SecretKey,
 		cfg.S3.Upload.Token.TTL.Profile,
 	)
@@ -89,10 +89,7 @@ func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, w
 	ctrl := controller.New(log, responser, controller.Modules{
 		Profile: profileModule,
 	})
-	mdll := middlewares.New(log, responser, middlewares.Config{
-		AccountAccessSK: cfg.Auth.Account.Token.Access.SecretKey,
-		UploadFilesSK:   cfg.S3.Upload.Token.SecretKey,
-	})
+	mdll := middlewares.New(log, responser, tokenManager)
 	router := rest.New(log, mdll, ctrl)
 
 	run(func() {
@@ -106,7 +103,7 @@ func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, w
 	})
 
 	kafkaConsumer := messenger.NewConsumerArchitect(log, db, cfg.Kafka.Brokers, map[string]int{
-		contracts.AccountsTopicV1: cfg.Kafka.Readers.AccountsV1,
+		evtypes.AccountsTopicV1: cfg.Kafka.Readers.AccountsV1,
 	})
 
 	run(func() { kafkaConsumer.Start(ctx) })

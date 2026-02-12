@@ -1,9 +1,10 @@
-package migrations
+package cli
 
 import (
 	"context"
 	"database/sql"
 	"embed"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -12,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed schema/*.sql
+//go:embed migrations/*.sql
 var Migrations embed.FS
 
 var migrations = &migrate.EmbedFileSystemMigrationSource{
@@ -25,16 +26,25 @@ func openDB(ctx context.Context, url string) (*pgxpool.Pool, *sql.DB, error) {
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to create pgx pool")
 	}
+
 	db := stdlib.OpenDBFromPool(pool)
 	if err = db.PingContext(ctx); err != nil {
 		db.Close()
 		pool.Close()
 		return nil, nil, errors.Wrap(err, "failed to ping database")
 	}
+
 	return pool, db, nil
 }
 
-func MigrateUp(ctx context.Context, url string) error {
+func Migrate(ctx context.Context, url string, up bool, down bool) error {
+	switch {
+	case up && down:
+		return fmt.Errorf("invalid migrate args: choose only one of --up or --down")
+	case !up && !down:
+		return fmt.Errorf("invalid migrate args: specify one of --up or --down")
+	}
+
 	pool, db, err := openDB(ctx, url)
 	if err != nil {
 		return err
@@ -42,28 +52,23 @@ func MigrateUp(ctx context.Context, url string) error {
 	defer db.Close()
 	defer pool.Close()
 
-	applied, err := migrate.ExecContext(ctx, db, "postgres", migrations, migrate.Up)
+	direction := migrate.Up
+	if down {
+		direction = migrate.Down
+	}
+
+	applied, err := migrate.ExecContext(ctx, db, "postgres", migrations, direction)
 	if err != nil {
+		if down {
+			return errors.Wrap(err, "failed to apply migrations (down)")
+		}
 		return errors.Wrap(err, "failed to apply migrations (up)")
 	}
-	logrus.WithField("applied", applied).Info("migrations applied")
 
-	return nil
-}
-
-func MigrateDown(ctx context.Context, url string) error {
-	pool, db, err := openDB(ctx, url)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	defer pool.Close()
-
-	applied, err := migrate.ExecContext(ctx, db, "postgres", migrations, migrate.Down)
-	if err != nil {
-		return errors.Wrap(err, "failed to apply migrations (down)")
-	}
-	logrus.WithField("applied", applied).Info("migrations applied")
+	logrus.WithFields(logrus.Fields{
+		"applied": applied,
+		"dir":     map[bool]string{true: "down", false: "up"}[down],
+	}).Info("migrations applied")
 
 	return nil
 }

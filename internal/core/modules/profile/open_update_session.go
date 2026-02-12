@@ -26,7 +26,7 @@ func (m *Module) OpenUpdateSession(
 		return models.UpdateProfileMedia{}, models.Profile{}, err
 	}
 
-	uploadToken, err := m.token.NewUploadProfileMediaToken(accountID, uploadSessionID)
+	uploadToken, err := m.token.GenerateUploadProfileMediaToken(accountID, uploadSessionID)
 	if err != nil {
 		return models.UpdateProfileMedia{}, models.Profile{}, err
 	}

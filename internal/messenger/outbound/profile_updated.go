@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/eventbox/headers"
 	"github.com/netbill/profiles-svc/internal/core/models"
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -16,7 +16,7 @@ func (o *Outbound) WriteProfileUpdated(
 	ctx context.Context,
 	profile models.Profile,
 ) error {
-	payload, err := json.Marshal(contracts.ProfileUpdatedPayload{
+	payload, err := json.Marshal(evtypes.ProfileUpdatedPayload{
 		AccountID:   profile.AccountID,
 		Username:    profile.Username,
 		Official:    profile.Official,
@@ -31,14 +31,14 @@ func (o *Outbound) WriteProfileUpdated(
 	_, err = o.outbox.WriteToOutbox(
 		ctx,
 		kafka.Message{
-			Topic: contracts.ProfilesTopicV1,
+			Topic: evtypes.ProfilesTopicV1,
 			Key:   []byte(profile.AccountID.String()),
 			Value: payload,
 			Headers: []kafka.Header{
 				{Key: headers.EventID, Value: []byte(uuid.New().String())},
-				{Key: headers.EventType, Value: []byte(contracts.ProfileUpdatedEvent)},
+				{Key: headers.EventType, Value: []byte(evtypes.ProfileUpdatedEvent)},
 				{Key: headers.EventVersion, Value: []byte("1")},
-				{Key: headers.Producer, Value: []byte(contracts.ProfilesSvcGroup)},
+				{Key: headers.Producer, Value: []byte(evtypes.ProfilesSvcGroup)},
 				{Key: headers.ContentType, Value: []byte("application/json")},
 			},
 		},

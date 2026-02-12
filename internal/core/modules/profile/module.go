@@ -56,7 +56,7 @@ type messenger interface {
 }
 
 type token interface {
-	NewUploadProfileMediaToken(
+	GenerateUploadProfileMediaToken(
 		OwnerAccountID uuid.UUID,
 		UploadSessionID uuid.UUID,
 	) (string, error)

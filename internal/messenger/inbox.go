@@ -8,7 +8,7 @@ import (
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/profiles-svc/internal/messenger/contracts"
+	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -60,9 +60,9 @@ func (a *Inbox) Start(ctx context.Context) {
 		}
 	}()
 
-	worker.Route(contracts.AccountCreatedEvent, a.handlers.AccountCreated)
-	worker.Route(contracts.AccountDeletedEvent, a.handlers.AccountDeleted)
-	worker.Route(contracts.AccountUsernameUpdatedEvent, a.handlers.AccountUsernameUpdated)
+	worker.Route(evtypes.AccountCreatedEvent, a.handlers.AccountCreated)
+	worker.Route(evtypes.AccountDeletedEvent, a.handlers.AccountDeleted)
+	worker.Route(evtypes.AccountUsernameUpdatedEvent, a.handlers.AccountUsernameUpdated)
 
 	worker.Run(ctx)
 }

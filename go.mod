@@ -63,3 +63,5 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/netbill/restkit => /home/trpdjke/go/src/github.com/netbill/restkit

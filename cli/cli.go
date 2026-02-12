@@ -9,15 +9,11 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/cmd"
-	"github.com/netbill/profiles-svc/cmd/config"
-	"github.com/netbill/profiles-svc/cmd/events"
-	"github.com/netbill/profiles-svc/cmd/migrations"
 	"github.com/sirupsen/logrus"
 )
 
 func Run(args []string) bool {
-	cfg, err := config.LoadConfig()
+	cfg, err := LoadConfig()
 	if err != nil {
 		logium.Fatalf("failed to load config: %v", err)
 	}
@@ -43,17 +39,13 @@ func Run(args []string) bool {
 		})
 	}
 
-	log.Info("Starting server...")
-
 	var (
-		service = kingpin.New("profiles-svc", "")
+		service    = kingpin.New("profiles-svc", "A service for managing user profiles")
+		serviceCmd = service.Command("run service", "starting all service processes")
 
-		runCmd     = service.Command("run", "run command")
-		serviceCmd = runCmd.Command("service", "run service")
-
-		migrateCmd     = service.Command("migrate", "migrate command")
-		migrateUpCmd   = migrateCmd.Command("up", "migrate db up")
-		migrateDownCmd = migrateCmd.Command("down", "migrate db down")
+		migrateCmd  = service.Command("migrate", "migrate command flags --up or --down")
+		migrateUp   = migrateCmd.Flag("up", "migrate db up").Bool()
+		migrateDown = migrateCmd.Flag("down", "migrate db down").Bool()
 
 		eventsCmd = service.Command("events", "events commands")
 
@@ -71,8 +63,7 @@ func Run(args []string) bool {
 			"processing", "cleanup inbox events stuck in processing state",
 		)
 		eventsInboxProcessingProcessIDs = eventsInboxProcessing.Flag(
-			"process-id",
-			"cleanup only events reserved by this process id (repeatable)",
+			"process-id", "cleanup only events reserved by this process id (repeatable)",
 		).Strings()
 
 		// OUTBOX
@@ -89,8 +80,7 @@ func Run(args []string) bool {
 			"processing", "cleanup outbox events stuck in processing state",
 		)
 		eventsOutboxProcessingProcessIDs = eventsOutboxProcessing.Flag(
-			"process-id",
-			"cleanup only events reserved by this process id (repeatable)",
+			"process-id", "cleanup only events reserved by this process id (repeatable)",
 		).Strings()
 	)
 
@@ -107,19 +97,17 @@ func Run(args []string) bool {
 
 	switch command {
 	case serviceCmd.FullCommand():
-		cmd.StartServices(ctx, cfg, log, &wg)
-	case migrateUpCmd.FullCommand():
-		err = migrations.MigrateUp(ctx, cfg.Database.SQL.URL)
-	case migrateDownCmd.FullCommand():
-		err = migrations.MigrateDown(ctx, cfg.Database.SQL.URL)
+		Start(ctx, cfg, log, &wg)
+	case migrateCmd.FullCommand():
+		err = Migrate(ctx, cfg.Database.SQL.URL, *migrateUp, *migrateDown)
 	case eventsOutboxFailed.FullCommand():
-		err = events.CleanupOutboxFailed(ctx, cfg, log)
+		err = CleanupOutboxFailed(ctx, cfg, log)
 	case eventsOutboxProcessing.FullCommand():
-		err = events.CleanupOutboxProcessing(ctx, cfg, log, *eventsOutboxProcessingProcessIDs...)
+		err = CleanupOutboxProcessing(ctx, cfg, log, *eventsOutboxProcessingProcessIDs...)
 	case eventsInboxFailed.FullCommand():
-		err = events.CleanupInboxFailed(ctx, cfg, log)
+		err = CleanupInboxFailed(ctx, cfg, log)
 	case eventsInboxProcessing.FullCommand():
-		err = events.CleanupInboxProcessing(ctx, cfg, log, *eventsInboxProcessingProcessIDs...)
+		err = CleanupInboxProcessing(ctx, cfg, log, *eventsInboxProcessingProcessIDs...)
 	default:
 		log.Errorf("unknown command %s", command)
 		return false
