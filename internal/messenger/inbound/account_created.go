@@ -17,9 +17,5 @@ func (i *Inbound) AccountCreated(
 		return err
 	}
 
-	if _, err := i.domain.Create(ctx, payload.AccountID, payload.Username); err != nil {
-		return err
-	}
-
-	return nil
+	return i.modules.profile.Create(ctx, payload.AccountID, payload.Username)
 }

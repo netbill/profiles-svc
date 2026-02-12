@@ -50,7 +50,7 @@ kafka:
     - "localhost:9092"
 
   readers:
-    accounts.v1: 4 #number of readers for this topic
+    accounts_v1: 4 #number of readers for this topic
 
   inbox:
     process_count: 3      #number of inbox worker processes (DB inbox table processors)
@@ -61,7 +61,7 @@ kafka:
     max_sleep: 5s         #maximum sleep time between processing messages
     min_next_attempt: 1m  #minimum time to wait before retrying a failed message
     max_next_attempt: 10m #maximum time to wait before retrying a failed message
-    max_attempt: 0        #maximum number of attempts to process a message before giving up (0 = infinite retries)
+    max_attempts: 0       #maximum number of attempts to process a message before giving up (0 = infinite retries)
 
   outbox:
     process_count: 3      #number of outbox worker processes (DB outbox table processors)
@@ -72,4 +72,4 @@ kafka:
     max_sleep: 5s         #maximum sleep time between processing messages
     min_next_attempt: 1m  #minimum time to wait before retrying a failed message
     max_next_attempt: 10m #maximum time to wait before retrying a failed message
-    max_attempt: 0        #maximum number of attempts to process a message before giving up (0 = infinite retries)
+    max_attempts: 0       #maximum number of attempts to process a message before giving up (0 = infinite retries)

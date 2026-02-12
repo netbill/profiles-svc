@@ -17,9 +17,5 @@ func (i *Inbound) AccountDeleted(
 		return err
 	}
 
-	if err := i.domain.Delete(ctx, payload.AccountID); err != nil {
-		return err
-	}
-
-	return nil
+	return i.modules.profile.Delete(ctx, payload.AccountID)
 }

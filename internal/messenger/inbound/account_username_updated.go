@@ -17,9 +17,5 @@ func (i *Inbound) AccountUsernameUpdated(
 		return err
 	}
 
-	if _, err := i.domain.UpdateUsername(ctx, payload.AccountID, payload.NewUsername); err != nil {
-		return err
-	}
-
-	return nil
+	return i.modules.profile.UpdateUsername(ctx, payload.AccountID, payload.NewUsername)
 }

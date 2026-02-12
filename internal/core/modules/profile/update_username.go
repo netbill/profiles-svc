@@ -4,12 +4,11 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) (profile models.Profile, err error) {
-	if err = m.repo.Transaction(ctx, func(ctx context.Context) error {
-		profile, err = m.repo.UpdateProfileUsername(ctx, accountID, username)
+func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
+	return m.repo.Transaction(ctx, func(ctx context.Context) error {
+		profile, err := m.repo.UpdateProfileUsername(ctx, accountID, username)
 		if err != nil {
 			return err
 		}
@@ -20,9 +19,5 @@ func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, userna
 		}
 
 		return nil
-	}); err != nil {
-		return models.Profile{}, err
-	}
-
-	return profile, nil
+	})
 }

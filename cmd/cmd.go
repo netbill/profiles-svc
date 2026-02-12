@@ -83,11 +83,11 @@ func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, w
 		cfg.S3.Upload.Token.TTL.Profile,
 	)
 
-	profileSvc := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
+	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
 	responser := restkit.NewResponser()
 	ctrl := controller.New(log, responser, controller.Modules{
-		Profile: profileSvc,
+		Profile: profileModule,
 	})
 	mdll := middlewares.New(log, responser, middlewares.Config{
 		AccountAccessSK: cfg.Auth.Account.Token.Access.SecretKey,
@@ -111,7 +111,7 @@ func StartServices(ctx context.Context, cfg config.Config, log *logium.Logger, w
 
 	run(func() { kafkaConsumer.Start(ctx) })
 
-	kafkaInboxArh := messenger.NewInbox(log, db, inbound.New(profileSvc), eventpg.InboxWorkerConfig{
+	kafkaInboxArh := messenger.NewInbox(log, db, inbound.New(profileModule), eventpg.InboxWorkerConfig{
 		Routines:       cfg.Kafka.Inbox.Routines,
 		MinSleep:       cfg.Kafka.Inbox.MinSleep,
 		MaxSleep:       cfg.Kafka.Inbox.MaxSleep,

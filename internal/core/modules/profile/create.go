@@ -6,21 +6,20 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/profiles-svc/internal/core/errx"
-	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) Create(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
+func (m *Module) Create(ctx context.Context, accountID uuid.UUID, username string) error {
 	profile, err := m.repo.GetProfileByAccountID(ctx, accountID)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		// continue to create profile
 	case err != nil:
-		return models.Profile{}, err
+		return err
 	default:
-		return profile, nil
+		return nil
 	}
 
-	if err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+	return m.repo.Transaction(ctx, func(ctx context.Context) error {
 		profile, err = m.repo.InsertProfile(ctx, accountID, username)
 		if err != nil {
 			return err
@@ -32,9 +31,5 @@ func (m *Module) Create(ctx context.Context, accountID uuid.UUID, username strin
 		}
 
 		return nil
-	}); err != nil {
-		return models.Profile{}, err
-	}
-
-	return profile, nil
+	})
 }
