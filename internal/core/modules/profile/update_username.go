@@ -6,14 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func (m *Module) DeleteProfile(ctx context.Context, userID uuid.UUID) error {
+func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
 	return m.repo.Transaction(ctx, func(ctx context.Context) error {
-		err := m.repo.DeleteProfile(ctx, userID)
+		profile, err := m.repo.UpdateProfileUsername(ctx, accountID, username)
 		if err != nil {
 			return err
 		}
 
-		err = m.messanger.WriteProfileDeleted(ctx, userID)
+		err = m.messenger.WriteProfileUpdated(ctx, profile)
 		if err != nil {
 			return err
 		}

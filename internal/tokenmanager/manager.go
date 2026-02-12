@@ -40,7 +40,7 @@ func (m *Manager) NewUploadProfileMediaToken(
 		},
 		UploadSessionID: UploadSessionID,
 		ResourceID:      OwnerAccountID.String(),
-		Resource:        ProfileResource,
+		ResourceType:    ProfileResource,
 	}.GenerateJWT(m.uploadSK)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate upload profile media token, cause: %w", err)

@@ -8,12 +8,11 @@ import (
 )
 
 type FilterParams struct {
-	UsernamePrefix  *string
-	PseudonymPrefix *string
-	Verified        *bool
+	Text     *string
+	Official *bool
 }
 
-func (m *Module) FilterProfile(
+func (m *Module) GetList(
 	ctx context.Context,
 	params FilterParams,
 	limit, offset uint,

@@ -4,24 +4,26 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
 type Inbound struct {
-	log    *logium.Logger
-	domain domain
+	modules
 }
 
-func New(log *logium.Logger, domain domain) *Inbound {
+type modules struct {
+	profile profileModule
+}
+
+func New(profileModule profileModule) *Inbound {
 	return &Inbound{
-		log:    log,
-		domain: domain,
+		modules: modules{
+			profile: profileModule,
+		},
 	}
 }
 
-type domain interface {
-	CreateProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
-	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
-	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
+type profileModule interface {
+	Create(ctx context.Context, userID uuid.UUID, username string) error
+	UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error
+	Delete(ctx context.Context, accountID uuid.UUID) error
 }

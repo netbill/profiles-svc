@@ -16,20 +16,20 @@ func (c *Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 
 	filters := profile.FilterParams{}
 
-	if usernameLike := strings.TrimSpace(q.Get("username_like")); usernameLike != "" {
-		filters.UsernamePrefix = &usernameLike
+	if text := strings.TrimSpace(q.Get("text")); text != "" {
+		filters.Text = &text
+	}
+	if official := q.Get("official"); official != "" {
+		officialBool := official == "true"
+		filters.Official = &officialBool
 	}
 
-	if pseudonym := strings.TrimSpace(q.Get("pseudonym")); pseudonym != "" {
-		filters.PseudonymPrefix = &pseudonym
-	}
-
-	res, err := c.core.FilterProfile(r.Context(), filters, limit, offset)
-	if err != nil {
-		c.log.WithError(err).Error("failed to filter profiles")
+	res, err := c.modules.Profile.GetList(r.Context(), filters, limit, offset)
+	switch {
+	case err != nil:
+		c.Log(r).WithError(err).Error("failed to filter profiles")
 		c.responser.RenderErr(w, problems.InternalError())
-		return
+	default:
+		c.responser.Render(w, http.StatusOK, responses.ProfileCollection(r, res))
 	}
-
-	c.responser.Render(w, http.StatusOK, responses.ProfileCollection(r, res))
 }

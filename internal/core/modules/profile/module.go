@@ -11,15 +11,15 @@ import (
 
 type Module struct {
 	repo      repo
-	messanger messanger
+	messenger messenger
 	token     token
 	bucket    bucket
 }
 
-func New(repo repo, messanger messanger, token token, bucket bucket) *Module {
+func New(repo repo, messenger messenger, token token, bucket bucket) *Module {
 	return &Module{
 		repo:      repo,
-		messanger: messanger,
+		messenger: messenger,
 		token:     token,
 		bucket:    bucket,
 	}
@@ -49,7 +49,7 @@ type repo interface {
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-type messanger interface {
+type messenger interface {
 	WriteProfileCreated(ctx context.Context, profile models.Profile) error
 	WriteProfileUpdated(ctx context.Context, profile models.Profile) error
 	WriteProfileDeleted(ctx context.Context, accountID uuid.UUID) error

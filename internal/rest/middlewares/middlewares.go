@@ -47,14 +47,9 @@ func (p *Provider) AccountAuth(
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			res, err := grants.AccountAuthToken(
-				r,
-				p.accountAccessSK,
-				"",
-				allowedRoles...,
-			)
+			res, err := grants.AccountAuthToken(r, p.accountAccessSK, "", allowedRoles...)
 			if err != nil {
-				p.log.WithError(err).Errorf("account authentication failed")
+				p.log.WithError(err).Warn("account authentication failed")
 				p.responser.RenderErr(w, problems.Unauthorized("account authentication failed"))
 
 				return
@@ -72,7 +67,7 @@ func (p *Provider) UpdateOwnProfile() func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			initiator, err := contexter.AccountData(r.Context())
 			if err != nil {
-				p.log.WithError(err).Error("failed to get user from context")
+				p.log.WithError(err).Warn("failed to get user from context")
 				p.responser.RenderErr(w, problems.Unauthorized("failed to get user from context"))
 
 				return
@@ -84,7 +79,7 @@ func (p *Provider) UpdateOwnProfile() func(next http.Handler) http.Handler {
 				ResourceID: initiator.GetAccountID().String(),
 			})
 			if err != nil {
-				p.log.WithError(err).Errorf("upload content grant validation failed")
+				p.log.WithError(err).Warn("upload content grant validation failed")
 				p.responser.RenderErr(w, problems.Unauthorized("upload content grant validation failed"))
 
 				return

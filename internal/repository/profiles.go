@@ -61,8 +61,7 @@ type ProfilesQ interface {
 	FilterAccountID(accountID ...uuid.UUID) ProfilesQ
 	FilterUsername(username string) ProfilesQ
 	FilterOfficial(official bool) ProfilesQ
-	FilterLikePseudonym(pseudonym string) ProfilesQ
-	FilterLikeUsername(username string) ProfilesQ
+	FilterBestMatch(term string) ProfilesQ
 
 	Count(ctx context.Context) (uint, error)
 	Page(limit, offset uint) ProfilesQ
@@ -91,7 +90,7 @@ func (r *Repository) GetProfileByAccountID(ctx context.Context, accountID uuid.U
 			"failed to get profile by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("profile by account id %s: profile not found", accountID),
 		)
 	}
@@ -107,7 +106,7 @@ func (r *Repository) GetProfileByUsername(ctx context.Context, username string) 
 			"failed to get profile by username %s, cause: %w", username, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to get profile by username %s, cause: %w", username, err),
 		)
 	}
@@ -133,7 +132,7 @@ func (r *Repository) UpdateProfile(
 			"failed to update profile by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to update profile by account id %s, cause: %w", accountID, err),
 		)
 	}
@@ -156,7 +155,7 @@ func (r *Repository) UpdateProfileUsername(
 			"failed to update profile username by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to update profile username by account id %s, cause: %w", accountID, err),
 		)
 	}
@@ -179,7 +178,7 @@ func (r *Repository) UpdateProfileOfficial(
 			"failed to update profile official by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to update profile official by account id %s, cause: %w", accountID, err),
 		)
 	}
@@ -202,7 +201,7 @@ func (r *Repository) UpdateProfileAvatar(
 			"failed to update profile avatar by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to update profile avatar by account id %s, cause: %w", accountID, err),
 		)
 	}
@@ -224,51 +223,12 @@ func (r *Repository) DeleteProfileAvatar(
 			"failed to delete profile official by account id %s, cause: %w", accountID, err,
 		)
 	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotFound.Raise(
+		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
 			fmt.Errorf("failed to delete profile official by account id %s, cause: %w", accountID, err),
 		)
 	}
 
 	return row.ToModel(), nil
-}
-
-func (r *Repository) FilterProfilesByUsername(
-	ctx context.Context,
-	prefix string,
-	offset uint,
-	limit uint,
-) (pagi.Page[[]models.Profile], error) {
-	q := r.profilesSqlQ().FilterLikeUsername(prefix)
-
-	if limit == 0 {
-		limit = 10
-	}
-
-	rows, err := q.Page(limit, offset).Select(ctx)
-	if err != nil {
-		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
-			"failed to filter profiles by username with prefix %s: %w", prefix, err,
-		)
-	}
-
-	collection := make([]models.Profile, 0, len(rows))
-	for _, row := range rows {
-		collection = append(collection, row.ToModel())
-	}
-
-	total, err := q.Count(ctx)
-	if err != nil {
-		return pagi.Page[[]models.Profile]{}, fmt.Errorf(
-			"failed to count profiles by username with prefix %s: %w", prefix, err,
-		)
-	}
-
-	return pagi.Page[[]models.Profile]{
-		Data:  collection,
-		Page:  uint(offset/limit) + 1,
-		Size:  uint(len(collection)),
-		Total: total,
-	}, nil
 }
 
 func (r *Repository) FilterProfiles(
@@ -278,11 +238,11 @@ func (r *Repository) FilterProfiles(
 ) (pagi.Page[[]models.Profile], error) {
 	q := r.profilesSqlQ()
 
-	if params.PseudonymPrefix != nil {
-		q = q.FilterLikePseudonym(*params.PseudonymPrefix)
+	if params.Text != nil {
+		q = q.FilterBestMatch(*params.Text)
 	}
-	if params.UsernamePrefix != nil {
-		q = q.FilterLikeUsername(*params.UsernamePrefix)
+	if params.Official != nil {
+		q = q.FilterOfficial(*params.Official)
 	}
 
 	if limit == 0 {

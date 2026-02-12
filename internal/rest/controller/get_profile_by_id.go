@@ -14,9 +14,9 @@ import (
 )
 
 func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "account_id"))
+	accountID, err := uuid.Parse(chi.URLParam(r, "account_id"))
 	if err != nil {
-		c.log.WithError(err).Errorf("invalid account id")
+		c.Log(r).WithError(err).Errorf("invalid account id")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"query": fmt.Errorf("invalid account id: %s", chi.URLParam(r, "account_id")),
 		})...)
@@ -24,18 +24,15 @@ func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.GetProfileByAccountID(r.Context(), userID)
-	if err != nil {
-		c.log.WithError(err).Errorf("failed to get profile by user id")
-		switch {
-		case errors.Is(err, errx.ErrorProfileNotFound):
-			c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
-		default:
-			c.responser.RenderErr(w, problems.InternalError())
-		}
-
-		return
+	res, err := c.modules.Profile.GetByAccountID(r.Context(), accountID)
+	switch {
+	case errors.Is(err, errx.ErrorProfileNotExists):
+		c.Log(r).Infof("profile for user does not exist")
+		c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
+	case err != nil:
+		c.Log(r).Errorf("failed to get profile by user id")
+		c.responser.RenderErr(w, problems.InternalError())
+	default:
+		c.responser.Render(w, http.StatusOK, responses.Profile(res))
 	}
-
-	c.responser.Render(w, http.StatusOK, responses.Profile(res))
 }
