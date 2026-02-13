@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/netbill/eventbox"
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
@@ -13,55 +14,71 @@ import (
 )
 
 type Consumer struct {
-	log          *logium.Entry
-	db           *pgdbx.DB
-	brokers      []string
-	topicReaders map[string]int
+	log      *logium.Entry
+	consumer eventbox.Consumer
+
+	groupID string
+	brokers []string
+	topics  map[string]ConsumerTopicConfig
+}
+
+type ConsumerTopicConfig struct {
+	NumReaders     int
+	QueueCapacity  int
+	MaxBytes       int
+	MinBytes       int
+	MaxWait        time.Duration
+	CommitInterval time.Duration
 }
 
 func NewConsumer(
 	log *logium.Entry,
 	db *pgdbx.DB,
-	brokers []string,
-	topicReaders map[string]int,
+	brokers ...string,
 ) *Consumer {
 	return &Consumer{
-		log:          log.WithComponent("kafka-consumer"),
-		db:           db,
-		brokers:      brokers,
-		topicReaders: topicReaders,
+		log:      log.WithComponent("kafka-consumer"),
+		consumer: eventpg.NewConsumer(log, db, eventpg.ConsumerConfig{}),
+		groupID:  evtypes.ProfilesSvcGroup,
+		brokers:  brokers,
+		topics:   make(map[string]ConsumerTopicConfig),
 	}
 }
 
-func (c *Consumer) Start(ctx context.Context) {
-	var wg sync.WaitGroup
-
-	accountReadersNum, ok := c.topicReaders[evtypes.AccountsTopicV1]
-	if !ok || accountReadersNum <= 0 {
-		c.log.Fatalf("number of readers for topic %s must be greater than 0", evtypes.AccountsTopicV1)
+func (g *Consumer) AddTopic(topic string, config ConsumerTopicConfig) {
+	if config.NumReaders <= 0 {
+		g.log.Fatalf("number of readers for topic %s must be greater than 0", topic)
 	}
 
-	accountConsumer := eventpg.NewConsumer(c.log, c.db, eventpg.ConsumerConfig{
-		MinBackoff: 200 * time.Millisecond,
-		MaxBackoff: 5 * time.Second,
-	})
+	g.topics[topic] = config
+}
 
-	c.log.Infof("starting %d readers for topic %s", accountReadersNum, evtypes.AccountsTopicV1)
+func (g *Consumer) Run(ctx context.Context) {
+	var wg sync.WaitGroup
 
-	wg.Add(accountReadersNum)
+	for topic, config := range g.topics {
+		g.log.Infof("starting %d readers for topic %s", config.NumReaders, topic)
 
-	for i := 0; i < accountReadersNum; i++ {
-		reader := kafka.NewReader(kafka.ReaderConfig{
-			Brokers: c.brokers,
-			GroupID: evtypes.ProfilesSvcGroup,
-			Topic:   evtypes.AccountsTopicV1,
-		})
-		go func(r *kafka.Reader) {
-			defer r.Close()
-			defer wg.Done()
+		for i := 0; i < config.NumReaders; i++ {
+			reader := kafka.NewReader(kafka.ReaderConfig{
+				Brokers:        g.brokers,
+				Topic:          topic,
+				GroupID:        g.groupID,
+				QueueCapacity:  config.QueueCapacity,
+				MaxBytes:       config.MaxBytes,
+				MinBytes:       config.MinBytes,
+				MaxWait:        config.MaxWait,
+				CommitInterval: config.CommitInterval,
+			})
 
-			accountConsumer.Read(ctx, r) // Read сам закроет reader
-		}(reader)
+			wg.Add(1)
+			go func(r *kafka.Reader) {
+				defer r.Close()
+				defer wg.Done()
+
+				g.consumer.Read(ctx, r)
+			}(reader)
+		}
 	}
 
 	wg.Wait()

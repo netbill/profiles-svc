@@ -31,7 +31,7 @@ func NewOutbox(
 	}
 }
 
-func (b *Outbox) Start(ctx context.Context) {
+func (b *Outbox) Run(ctx context.Context) {
 	writer := &kafka.Writer{
 		Addr:         kafka.TCP(b.brokers...),
 		RequiredAcks: kafka.RequireAll,

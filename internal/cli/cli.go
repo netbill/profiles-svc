@@ -9,15 +9,16 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/netbill/logium"
-	"github.com/netbill/profiles-svc/cli/maintenance"
-	"github.com/netbill/profiles-svc/cli/migrations"
+	"github.com/netbill/profiles-svc/internal/boot"
+	maintenance2 "github.com/netbill/profiles-svc/internal/messenger/cleaning"
+	"github.com/netbill/profiles-svc/migrations"
 	"github.com/sirupsen/logrus"
 )
 
 const ServiceName = "profiles-svc"
 
 func Run(args []string) bool {
-	cfg, err := LoadConfig()
+	cfg, err := boot.LoadConfig()
 	if err != nil {
 		logium.Fatalf("failed to load config: %v", err)
 	}
@@ -104,19 +105,19 @@ func Run(args []string) bool {
 
 	switch command {
 	case serviceCmd.FullCommand():
-		Start(ctx, cfg, base, &wg)
+		boot.Start(ctx, cfg, base, &wg)
 	case migrateUpCmd.FullCommand():
 		err = migrations.MigrateUp(ctx, base, cfg.Database.SQL.URL)
 	case migrateDownCmd.FullCommand():
 		err = migrations.MigrateDown(ctx, base, cfg.Database.SQL.URL)
 	case eventsOutboxFailed.FullCommand():
-		err = maintenance.CleanupOutboxFailed(ctx, base, cfg.Database.SQL.URL)
+		err = maintenance2.CleanupOutboxFailed(ctx, base, cfg.Database.SQL.URL)
 	case eventsOutboxProcessing.FullCommand():
-		err = maintenance.CleanupOutboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsOutboxProcessingProcessIDs...)
+		err = maintenance2.CleanupOutboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsOutboxProcessingProcessIDs...)
 	case eventsInboxFailed.FullCommand():
-		err = maintenance.CleanupInboxFailed(ctx, base, cfg.Database.SQL.URL)
+		err = maintenance2.CleanupInboxFailed(ctx, base, cfg.Database.SQL.URL)
 	case eventsInboxProcessing.FullCommand():
-		err = maintenance.CleanupInboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsInboxProcessingProcessIDs...)
+		err = maintenance2.CleanupInboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsInboxProcessingProcessIDs...)
 	default:
 		base.Errorf("unknown command %s", command)
 		return false

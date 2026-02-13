@@ -5,14 +5,30 @@ import (
 )
 
 type Manager struct {
-	Issuer string
+	issuer string
 
-	UploadSK string
-	AccessSK string
+	uploadSK string
+	accessSK string
 
-	ProfileMediaUploadTTL time.Duration
+	profileMediaUploadTTL time.Duration
 }
 
 const (
 	ProfileResource = "profile"
 )
+
+type Config struct {
+	AccessSK string
+	UploadSK string
+
+	ProfileMediaUploadTTL time.Duration
+}
+
+func New(issuer string, config Config) *Manager {
+	return &Manager{
+		issuer:                issuer,
+		accessSK:              config.AccessSK,
+		uploadSK:              config.UploadSK,
+		profileMediaUploadTTL: config.ProfileMediaUploadTTL,
+	}
+}

@@ -49,7 +49,7 @@ func NewInbox(
 	}
 }
 
-func (b *Inbox) Start(ctx context.Context) {
+func (b *Inbox) Run(ctx context.Context) {
 	id := BuildProcessID("inbox")
 	worker := eventpg.NewInboxWorker(id, b.log, b.db, b.config)
 

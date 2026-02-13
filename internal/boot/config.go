@@ -1,4 +1,4 @@
-package cli
+package boot
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/spf13/viper"
 )
+
+const ServiceName = "auth-svc"
 
 type LogConfig struct {
 	Level  string `mapstructure:"level"`
@@ -31,9 +33,17 @@ type DatabaseConfig struct {
 
 type KafkaConfig struct {
 	Brokers []string `mapstructure:"brokers"`
-	Readers struct {
-		AccountsV1 int `mapstructure:"accounts_v1"`
-	} `mapstructure:"readers"`
+	Topics  struct {
+		AccountsV1 struct {
+			NumReaders     int           `mapstructure:"num_readers"`
+			MinBytes       int           `mapstructure:"min_bytes"`
+			MaxBytes       int           `mapstructure:"max_bytes"`
+			MaxWait        time.Duration `mapstructure:"max_wait"`
+			CommitInterval time.Duration `mapstructure:"commit_interval"`
+			StartOffset    string        `mapstructure:"start_offset"`
+			QueueCapacity  int           `mapstructure:"queue_capacity"`
+		} `mapstructure:"accounts_v1"`
+	} `mapstructure:"topics"`
 	Inbox struct {
 		Routines       int           `mapstructure:"routines"`
 		Slots          int           `mapstructure:"slots"`

@@ -1,4 +1,4 @@
-package cli
+package boot
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/messenger"
 	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/netbill/profiles-svc/internal/messenger/inbound"
-	"github.com/netbill/profiles-svc/internal/messenger/outbound"
+	outbound2 "github.com/netbill/profiles-svc/internal/messenger/outbound"
 	"github.com/netbill/profiles-svc/internal/repository"
 	"github.com/netbill/profiles-svc/internal/repository/pg"
 	"github.com/netbill/profiles-svc/internal/rest"
@@ -72,14 +72,13 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 	repo := repository.New(transactionSqlQ, profilesSqlQ)
 
 	kafkaProducer := messenger.NewProducer(db, cfg.Kafka.Brokers...)
-	kafkaOutbound := outbound.New(kafkaProducer)
+	kafkaOutbound := outbound2.New(kafkaProducer)
 
-	tokenManager := &tokenmanager.Manager{
-		Issuer:                ServiceName,
+	tokenManager := tokenmanager.New(ServiceName, tokenmanager.Config{
 		AccessSK:              cfg.Auth.Account.Token.Access.SecretKey,
 		UploadSK:              cfg.S3.Upload.Token.SecretKey,
 		ProfileMediaUploadTTL: cfg.S3.Upload.Token.TTL.Profile,
-	}
+	})
 
 	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
@@ -102,11 +101,18 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 		})
 	})
 
-	kafkaConsumer := messenger.NewConsumer(log, db, cfg.Kafka.Brokers, map[string]int{
-		evtypes.AccountsTopicV1: cfg.Kafka.Readers.AccountsV1,
+	kafkaConsumer := messenger.NewConsumer(log, db, cfg.Kafka.Brokers...)
+
+	kafkaConsumer.AddTopic(evtypes.AccountsTopicV1, messenger.ConsumerTopicConfig{
+		NumReaders:     cfg.Kafka.Topics.AccountsV1.NumReaders,
+		QueueCapacity:  cfg.Kafka.Topics.AccountsV1.QueueCapacity,
+		MaxBytes:       cfg.Kafka.Topics.AccountsV1.MaxBytes,
+		MinBytes:       cfg.Kafka.Topics.AccountsV1.MinBytes,
+		MaxWait:        cfg.Kafka.Topics.AccountsV1.MaxWait,
+		CommitInterval: cfg.Kafka.Topics.AccountsV1.CommitInterval,
 	})
 
-	run(func() { kafkaConsumer.Start(ctx) })
+	run(func() { kafkaConsumer.Run(ctx) })
 
 	kafkaInboxArh := messenger.NewInbox(log, db, inbound.New(profileModule), eventpg.InboxWorkerConfig{
 		Routines:       cfg.Kafka.Inbox.Routines,
@@ -118,17 +124,17 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 		MaxAttempts:    cfg.Kafka.Inbox.MaxAttempts,
 	})
 
-	run(func() { kafkaInboxArh.Start(ctx) })
+	run(func() { kafkaInboxArh.Run(ctx) })
 
 	kafkaOutboxArch := messenger.NewOutbox(log, db, cfg.Kafka.Brokers, eventpg.OutboxWorkerConfig{
 		Routines:       cfg.Kafka.Outbox.Routines,
-		Slots:          cfg.Kafka.Inbox.Slots,
-		Sleep:          cfg.Kafka.Inbox.Sleep,
-		BatchSize:      cfg.Kafka.Inbox.BatchSize,
+		Slots:          cfg.Kafka.Outbox.Slots,
+		Sleep:          cfg.Kafka.Outbox.Sleep,
+		BatchSize:      cfg.Kafka.Outbox.BatchSize,
 		MinNextAttempt: cfg.Kafka.Outbox.MinNextAttempt,
 		MaxNextAttempt: cfg.Kafka.Outbox.MaxNextAttempt,
 		MaxAttempts:    cfg.Kafka.Outbox.MaxAttempts,
 	})
 
-	run(func() { kafkaOutboxArch.Start(ctx) })
+	run(func() { kafkaOutboxArch.Run(ctx) })
 }
