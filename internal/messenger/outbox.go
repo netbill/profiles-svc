@@ -10,45 +10,47 @@ import (
 )
 
 type Outbox struct {
-	log    *logium.Entry
-	db     *pgdbx.DB
-	addr   []string
-	config eventpg.OutboxWorkerConfig
+	log *logium.Entry
+	db  *pgdbx.DB
+
+	brokers []string
+	config  eventpg.OutboxWorkerConfig
 }
 
 func NewOutbox(
 	log *logium.Entry,
 	db *pgdbx.DB,
-	addr []string,
+	brokers []string,
 	config eventpg.OutboxWorkerConfig,
 ) *Outbox {
 	return &Outbox{
-		db:     db,
-		log:    log.WithField("component", "outbox"),
-		addr:   addr,
-		config: config,
+		db:      db,
+		log:     log.WithComponent("outbox"),
+		brokers: brokers,
+		config:  config,
 	}
 }
 
-func (a *Outbox) Start(ctx context.Context) {
+func (b *Outbox) Start(ctx context.Context) {
 	writer := &kafka.Writer{
-		Addr:         kafka.TCP(a.addr...),
+		Addr:         kafka.TCP(b.brokers...),
 		RequiredAcks: kafka.RequireAll,
 		Compression:  kafka.Snappy,
 		Balancer:     &kafka.LeastBytes{},
 	}
+
 	defer func() {
 		if err := writer.Close(); err != nil {
-			a.log.WithError(err).Error("failed to close kafka writer")
+			b.log.WithError(err).Error("failed to close kafka writer")
 		}
 	}()
 
-	id := BuildProcessID("profiles-svc", "outbox", 0)
-	worker := eventpg.NewOutboxWorker(a.log, a.db, writer, id, a.config)
+	id := BuildProcessID("outbox")
+	worker := eventpg.NewOutboxWorker(id, b.log, b.db, writer, b.config)
 
 	defer func() {
 		if err := worker.Stop(context.Background()); err != nil {
-			a.log.WithError(err).WithField("worker_id", id).Error("failed to stop outbox worker")
+			b.log.WithError(err).WithField("worker_id", id).Error("failed to stop outbox worker")
 		}
 	}()
 

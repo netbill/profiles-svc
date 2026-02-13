@@ -16,14 +16,14 @@ func (m *Manager) GenerateUploadProfileMediaToken(
 	tkn, err := tokens.UploadContentClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   OwnerAccountID.String(),
-			Issuer:    ProfilesServiceActor,
-			Audience:  []string{ProfilesServiceActor},
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(m.profileMediaUploadTTL)),
+			Issuer:    m.Issuer,
+			Audience:  []string{m.Issuer},
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(m.ProfileMediaUploadTTL)),
 		},
 		UploadSessionID: UploadSessionID,
 		ResourceID:      OwnerAccountID.String(),
 		ResourceType:    ProfileResource,
-	}.GenerateJWT(m.uploadSK)
+	}.GenerateJWT(m.UploadSK)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate upload profile media token, cause: %w", err)
 	}
@@ -32,7 +32,7 @@ func (m *Manager) GenerateUploadProfileMediaToken(
 }
 
 func (m *Manager) ParseUploadProfileContentToken(token string) (tokens.UploadContentClaims, error) {
-	res, err := tokens.ParseUploadFilesClaims(token, m.uploadSK)
+	res, err := tokens.ParseUploadFilesClaims(token, m.UploadSK)
 	if err != nil {
 		return tokens.UploadContentClaims{}, fmt.Errorf(
 			"failed to validate upload profile media token, cause: %w", err,
@@ -45,7 +45,7 @@ func (m *Manager) ParseUploadProfileContentToken(token string) (tokens.UploadCon
 
 	audSuccess := false
 	for _, aud := range res.Audience {
-		if aud == ProfilesServiceActor {
+		if aud == m.Issuer {
 			audSuccess = true
 			break
 		}

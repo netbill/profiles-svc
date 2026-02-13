@@ -11,7 +11,11 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
+const operationFilterProfiles = "filter_profiles"
+
 func (c *Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationFilterProfiles)
+
 	q := r.URL.Query()
 	limit, offset := pagi.GetPagination(r)
 
@@ -29,7 +33,7 @@ func (c *Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	res, err := c.modules.Profile.GetList(r.Context(), filters, limit, offset)
 	switch {
 	case err != nil:
-		scope.Log(r).WithError(err).Error("failed to filter profiles")
+		log.WithError(err).Error("failed to filter profiles")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.ProfileCollection(r, res))

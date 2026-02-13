@@ -11,16 +11,20 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
+const operationGetProfileByUsername = "get_profile_by_username"
+
 func (c *Controller) GetProfileByUsername(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationGetProfileByUsername)
+
 	username := chi.URLParam(r, "username")
 
 	res, err := c.modules.Profile.GetByUsername(r.Context(), username)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		scope.Log(r).Infof("profile for user does not exist")
+		log.Info("profile not found")
 		c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
-		scope.Log(r).Errorf("failed to get profile by username")
+		log.WithError(err).Error("failed to get profile by username")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.Profile(res))

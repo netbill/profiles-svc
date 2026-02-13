@@ -9,8 +9,12 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/netbill/logium"
+	"github.com/netbill/profiles-svc/cli/maintenance"
+	"github.com/netbill/profiles-svc/cli/migrations"
 	"github.com/sirupsen/logrus"
 )
+
+const ServiceName = "profiles-svc"
 
 func Run(args []string) bool {
 	cfg, err := LoadConfig()
@@ -44,9 +48,9 @@ func Run(args []string) bool {
 		runCmd     = service.Command("run", "run command flags: service")
 		serviceCmd = runCmd.Command("service", "starting all service processes")
 
-		migrateCmd  = service.Command("migrate", "migrate command flags --up or --down")
-		migrateUp   = migrateCmd.Flag("up", "migrate db up").Bool()
-		migrateDown = migrateCmd.Flag("down", "migrate db down").Bool()
+		migrateCmd     = service.Command("migrate", "migrate command")
+		migrateUpCmd   = migrateCmd.Command("up", "migrate db up")
+		migrateDownCmd = migrateCmd.Command("down", "migrate db down")
 
 		eventsCmd = service.Command("events", "events commands")
 
@@ -96,21 +100,23 @@ func Run(args []string) bool {
 		return false
 	}
 
-	base := log.WithField("service", "profiles-svc")
+	base := log.WithService(ServiceName)
 
 	switch command {
 	case serviceCmd.FullCommand():
 		Start(ctx, cfg, base, &wg)
-	case migrateCmd.FullCommand():
-		err = Migrate(ctx, cfg.Database.SQL.URL, *migrateUp, *migrateDown)
+	case migrateUpCmd.FullCommand():
+		err = migrations.MigrateUp(ctx, base, cfg.Database.SQL.URL)
+	case migrateDownCmd.FullCommand():
+		err = migrations.MigrateDown(ctx, base, cfg.Database.SQL.URL)
 	case eventsOutboxFailed.FullCommand():
-		err = CleanupOutboxFailed(ctx, cfg, base)
+		err = maintenance.CleanupOutboxFailed(ctx, base, cfg.Database.SQL.URL)
 	case eventsOutboxProcessing.FullCommand():
-		err = CleanupOutboxProcessing(ctx, cfg, base, *eventsOutboxProcessingProcessIDs...)
+		err = maintenance.CleanupOutboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsOutboxProcessingProcessIDs...)
 	case eventsInboxFailed.FullCommand():
-		err = CleanupInboxFailed(ctx, cfg, base)
+		err = maintenance.CleanupInboxFailed(ctx, base, cfg.Database.SQL.URL)
 	case eventsInboxProcessing.FullCommand():
-		err = CleanupInboxProcessing(ctx, cfg, base, *eventsInboxProcessingProcessIDs...)
+		err = maintenance.CleanupInboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsInboxProcessingProcessIDs...)
 	default:
 		base.Errorf("unknown command %s", command)
 		return false
@@ -128,10 +134,10 @@ func Run(args []string) bool {
 
 	select {
 	case <-ctx.Done():
-		base.Warnf("Interrupt signal received: %v", ctx.Err())
+		base.Infof("Interrupt signal received: %v", ctx.Err())
 		<-wgch
 	case <-wgch:
-		base.Warnf("All services stopped")
+		base.Info("All services stopped")
 	}
 
 	return true

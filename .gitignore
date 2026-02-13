@@ -3,6 +3,7 @@
 
 vendor
 node_modules
+docs/node_modules
 
 cmd/*/main
 

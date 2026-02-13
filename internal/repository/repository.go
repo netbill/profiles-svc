@@ -5,19 +5,15 @@ import (
 )
 
 type Repository struct {
-	profileSql ProfilesQ
+	profilesQ ProfilesQ
 	Transactioner
 }
 
 func New(Transaction Transactioner, profileSql ProfilesQ) *Repository {
 	return &Repository{
-		profileSql:    profileSql,
+		profilesQ:     profileSql,
 		Transactioner: Transaction,
 	}
-}
-
-func (r *Repository) profilesSqlQ() ProfilesQ {
-	return r.profileSql.New()
 }
 
 type Transactioner interface {

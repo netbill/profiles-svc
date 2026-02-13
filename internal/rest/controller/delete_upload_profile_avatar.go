@@ -7,18 +7,22 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
+const operationDeleteUploadProfileAvatar = "delete_upload_profile_avatar"
+
 func (c *Controller) DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationDeleteUploadProfileAvatar)
+
 	err := c.modules.Profile.DeleteUploadAvatar(
 		r.Context(),
-		scope.AccountAuthClaims(r).GetAccountID(),
-		scope.UploadContentClaims(r).GetSessionID(),
+		scope.AccountActor(r),
+		scope.UploadScope(r),
 	)
 	switch {
 	case err != nil:
-		scope.Log(r).WithError(err).Errorf("failed to cancel update avatar")
+		log.WithError(err).Error("failed to delete upload avatar")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
-		scope.Log(r).Info("avatar deleted successfully")
+		log.Info("upload avatar deleted")
 		c.responser.Render(w, http.StatusOK, nil)
 	}
 }

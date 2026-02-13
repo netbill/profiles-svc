@@ -34,7 +34,7 @@ func (p *Provider) AccountAuth(allowedRoles ...string) func(next http.Handler) h
 
 			if len(allowed) > 0 {
 				if _, ok := allowed[claims.Role]; !ok {
-					scope.Log(r).WithAccountAuthClaims(claims).Debug("account authentication rejected by role")
+					scope.Log(r).Debug("account authentication rejected by role")
 					p.responser.RenderErr(w, problems.Unauthorized("invalid authentication role"))
 
 					return

@@ -35,23 +35,19 @@ type KafkaConfig struct {
 		AccountsV1 int `mapstructure:"accounts_v1"`
 	} `mapstructure:"readers"`
 	Inbox struct {
-		ProcessCount   int           `mapstructure:"process_count"`
 		Routines       int           `mapstructure:"routines"`
-		MinBatch       int           `mapstructure:"min_batch"`
-		MaxBatch       int           `mapstructure:"max_batch"`
-		MinSleep       time.Duration `mapstructure:"min_sleep"`
-		MaxSleep       time.Duration `mapstructure:"max_sleep"`
+		Slots          int           `mapstructure:"slots"`
+		BatchSize      int           `mapstructure:"batch_size"`
+		Sleep          time.Duration `mapstructure:"sleep"`
 		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
 		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
 		MaxAttempts    int32         `mapstructure:"max_attempts"`
 	} `mapstructure:"inbox"`
 	Outbox struct {
-		ProcessCount   int           `mapstructure:"process_count"`
 		Routines       int           `mapstructure:"routines"`
-		MinBatch       int           `mapstructure:"min_batch"`
-		MaxBatch       int           `mapstructure:"max_batch"`
-		MinSleep       time.Duration `mapstructure:"min_sleep"`
-		MaxSleep       time.Duration `mapstructure:"max_sleep"`
+		Slots          int           `mapstructure:"slots"`
+		BatchSize      int           `mapstructure:"batch_size"`
+		Sleep          time.Duration `mapstructure:"sleep"`
 		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
 		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
 		MaxAttempts    int32         `mapstructure:"max_attempts"`

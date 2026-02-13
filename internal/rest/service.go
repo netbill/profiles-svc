@@ -23,7 +23,7 @@ type Handlers interface {
 
 	OenUpdateProfileSession(w http.ResponseWriter, r *http.Request)
 	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	CancelUpdateProfileSession(w http.ResponseWriter, r *http.Request)
+	CancelUpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request)
 }
 
@@ -61,8 +61,9 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 	sysmoder := s.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
 	updateOwnProfile := s.middlewares.UpdateOwnProfileMediaContent()
 
-	r := chi.NewRouter()
+	log = log.WithField("component", "rest")
 
+	r := chi.NewRouter()
 	r.Use(
 		s.middlewares.Logger(log),
 		s.middlewares.CorsDocs(),
@@ -80,7 +81,7 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 
 					r.Route("/update-session", func(r chi.Router) {
 						r.Post("/", s.handlers.OenUpdateProfileSession)
-						r.With(updateOwnProfile).Delete("/", s.handlers.CancelUpdateProfileSession)
+						r.With(updateOwnProfile).Delete("/", s.handlers.CancelUpdateMyProfile)
 
 						r.With(updateOwnProfile).Put("/confirm", s.handlers.ConfirmUpdateMyProfile)
 						r.With(updateOwnProfile).Delete("/upload-avatar", s.handlers.DeleteUploadProfileAvatar)
@@ -105,7 +106,7 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 		IdleTimeout:       cfg.TimeoutIdle,
 	}
 
-	log.Infof("starting REST service on %s", cfg.Port)
+	log.Infof("starting http service on %s", cfg.Port)
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -118,18 +119,18 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 
 	select {
 	case <-ctx.Done():
-		log.Warnf("shutting down REST service...")
+		log.Info("shutting down http service...")
 	case err := <-errCh:
 		if err != nil {
-			log.Errorf("REST server error: %v", err)
+			log.Errorf("http server error: %v", err)
 		}
 	}
 
 	shCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shCtx); err != nil {
-		log.Errorf("REST shutdown error: %v", err)
+		log.Errorf("http shutdown error: %v", err)
 	} else {
-		log.Warnf("REST server stopped")
+		log.Infof("REST server stopped")
 	}
 }

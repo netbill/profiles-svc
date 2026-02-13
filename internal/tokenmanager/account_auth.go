@@ -7,7 +7,7 @@ import (
 )
 
 func (m *Manager) ParseAccountAuthAccessClaims(token string) (tokens.AccountAuthClaims, error) {
-	data, err := tokens.ParseAccountJWT(token, m.accessSK)
+	data, err := tokens.ParseAccountJWT(token, m.AccessSK)
 	if err != nil {
 		return tokens.AccountAuthClaims{}, fmt.Errorf("failed to parse access token, cause: %w", err)
 	}

@@ -19,6 +19,7 @@ type Bucket struct {
 type Config struct {
 	Profile ProfileConfig
 }
+
 type ProfileConfig struct {
 	TokenTTL  time.Duration
 	MaxSize   int

@@ -52,7 +52,7 @@ CREATE INDEX inbox_events_processing_key_idx
 
 CREATE TYPE outbox_event_status AS ENUM (
     'pending',
-    'processed',
+    'sent',
     'processing',
     'failed'
 );

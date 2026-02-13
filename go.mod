@@ -16,10 +16,10 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/netbill/ape v0.1.3
 	github.com/netbill/awsx v0.3.2
-	github.com/netbill/eventbox v0.1.0
-	github.com/netbill/logium v0.2.4
+	github.com/netbill/eventbox v0.1.1
+	github.com/netbill/logium v0.2.5
 	github.com/netbill/pgdbx v0.3.1
-	github.com/netbill/restkit v0.2.1
+	github.com/netbill/restkit v0.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/segmentio/kafka-go v0.4.50
@@ -63,6 +63,3 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
-
-replace github.com/netbill/restkit => /home/trpdjke/go/src/github.com/netbill/restkit
-replace github.com/netbill/logium => /home/trpdjke/go/src/github.com/netbill/logium

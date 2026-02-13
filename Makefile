@@ -30,11 +30,11 @@ build:
 
 migrate-up:
 	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
-	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate --up
+	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate up
 
 migrate-down:
 	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
-	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate --down
+	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate down
 
 run-server:
 	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go

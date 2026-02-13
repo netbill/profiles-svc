@@ -14,24 +14,27 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
+const operationGetProfileByID = "get_profile_by_id"
+
 func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationGetProfileByID)
+
 	accountID, err := uuid.Parse(chi.URLParam(r, "account_id"))
 	if err != nil {
-		scope.Log(r).WithError(err).Errorf("invalid account id")
+		log.WithError(err).Warn("invalid account id")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
-			"query": fmt.Errorf("invalid account id: %s", chi.URLParam(r, "account_id")),
+			"path": fmt.Errorf("invalid account id: %s", chi.URLParam(r, "account_id")),
 		})...)
-
 		return
 	}
 
 	res, err := c.modules.Profile.GetByAccountID(r.Context(), accountID)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		scope.Log(r).Infof("profile for user does not exist")
+		log.Info("profile not found")
 		c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
-		scope.Log(r).Errorf("failed to get profile by user id")
+		log.WithError(err).Error("failed to get profile by account id")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.Profile(res))

@@ -42,22 +42,19 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 	}
 	db := pgdbx.NewDB(pool)
 
-	awsCfg := aws.Config{
+	s3Client := s3.NewFromConfig(aws.Config{
 		Region: cfg.S3.AWS.Region,
 		Credentials: credentials.NewStaticCredentialsProvider(
 			cfg.S3.AWS.AccessKeyID,
 			cfg.S3.AWS.SecretAccessKey,
 			"",
 		),
-	}
-
-	s3Client := s3.NewFromConfig(awsCfg)
-	presignClient := s3.NewPresignClient(s3Client)
+	})
 
 	awsS3 := awsx.New(
 		cfg.S3.AWS.BucketName,
 		s3Client,
-		presignClient,
+		s3.NewPresignClient(s3Client),
 	)
 
 	s3Bucket := bucket.New(awsS3, bucket.Config{
@@ -77,11 +74,12 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 	kafkaProducer := messenger.NewProducer(db, cfg.Kafka.Brokers...)
 	kafkaOutbound := outbound.New(kafkaProducer)
 
-	tokenManager := tokenmanager.New(
-		cfg.Auth.Account.Token.Access.SecretKey,
-		cfg.S3.Upload.Token.SecretKey,
-		cfg.S3.Upload.Token.TTL.Profile,
-	)
+	tokenManager := &tokenmanager.Manager{
+		Issuer:                ServiceName,
+		AccessSK:              cfg.Auth.Account.Token.Access.SecretKey,
+		UploadSK:              cfg.S3.Upload.Token.SecretKey,
+		ProfileMediaUploadTTL: cfg.S3.Upload.Token.TTL.Profile,
+	}
 
 	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
@@ -104,7 +102,7 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 		})
 	})
 
-	kafkaConsumer := messenger.NewConsumerArchitect(log, db, cfg.Kafka.Brokers, map[string]int{
+	kafkaConsumer := messenger.NewConsumer(log, db, cfg.Kafka.Brokers, map[string]int{
 		evtypes.AccountsTopicV1: cfg.Kafka.Readers.AccountsV1,
 	})
 
@@ -112,10 +110,9 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 
 	kafkaInboxArh := messenger.NewInbox(log, db, inbound.New(profileModule), eventpg.InboxWorkerConfig{
 		Routines:       cfg.Kafka.Inbox.Routines,
-		MinSleep:       cfg.Kafka.Inbox.MinSleep,
-		MaxSleep:       cfg.Kafka.Inbox.MaxSleep,
-		MinBatch:       cfg.Kafka.Inbox.MinBatch,
-		MaxBatch:       cfg.Kafka.Inbox.MaxBatch,
+		Slots:          cfg.Kafka.Inbox.Slots,
+		Sleep:          cfg.Kafka.Inbox.Sleep,
+		BatchSize:      cfg.Kafka.Inbox.BatchSize,
 		MinNextAttempt: cfg.Kafka.Inbox.MinNextAttempt,
 		MaxNextAttempt: cfg.Kafka.Inbox.MaxNextAttempt,
 		MaxAttempts:    cfg.Kafka.Inbox.MaxAttempts,
@@ -125,10 +122,9 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 
 	kafkaOutboxArch := messenger.NewOutbox(log, db, cfg.Kafka.Brokers, eventpg.OutboxWorkerConfig{
 		Routines:       cfg.Kafka.Outbox.Routines,
-		MinSleep:       cfg.Kafka.Outbox.MinSleep,
-		MaxSleep:       cfg.Kafka.Outbox.MaxSleep,
-		MinBatch:       cfg.Kafka.Outbox.MinBatch,
-		MaxBatch:       cfg.Kafka.Outbox.MaxBatch,
+		Slots:          cfg.Kafka.Inbox.Slots,
+		Sleep:          cfg.Kafka.Inbox.Sleep,
+		BatchSize:      cfg.Kafka.Inbox.BatchSize,
 		MinNextAttempt: cfg.Kafka.Outbox.MinNextAttempt,
 		MaxNextAttempt: cfg.Kafka.Outbox.MaxNextAttempt,
 		MaxAttempts:    cfg.Kafka.Outbox.MaxAttempts,

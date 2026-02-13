@@ -11,11 +11,11 @@ import (
 func (p *Provider) UpdateOwnProfileMediaContent() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			initiator := scope.AccountAuthClaims(r)
+			actor := scope.AccountActor(r)
 
 			token, err := headers.GetUploadContent(r)
 			if err != nil {
-				scope.Log(r).WithAccountAuthClaims(initiator).Debug("upload token missing")
+				scope.Log(r).Debug("upload token missing")
 				p.responser.RenderErr(w, problems.Unauthorized("failed to get token"))
 
 				return
@@ -23,20 +23,20 @@ func (p *Provider) UpdateOwnProfileMediaContent() func(next http.Handler) http.H
 
 			uploadClaims, err := p.tokenManager.ParseUploadProfileContentToken(token)
 			if err != nil {
-				scope.Log(r).WithAccountAuthClaims(initiator).Info("upload token invalid")
+				scope.Log(r).Info("upload token invalid")
 				p.responser.RenderErr(w, problems.Unauthorized("invalid upload profile token"))
 
 				return
 			}
 
-			if uploadClaims.GetAccountID() != initiator.GetAccountID() {
+			if uploadClaims.GetAccountID() != actor {
 				scope.Log(r).Info("account is not owner of the profile")
 				p.responser.RenderErr(w, problems.Unauthorized("account is not owner of the profile"))
 
 				return
 			}
 
-			if uploadClaims.GetResourceID() != initiator.GetAccountID().String() {
+			if uploadClaims.GetResourceID() != actor.String() {
 				scope.Log(r).Info("upload token is not for profile content")
 				p.responser.RenderErr(w, problems.Unauthorized("invalid upload profile token"))
 

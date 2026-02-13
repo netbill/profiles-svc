@@ -15,19 +15,22 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 )
 
+const operationConfirmUpdateMyProfile = "confirm_update_my_profile"
+
 func (c *Controller) ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationConfirmUpdateMyProfile)
+
 	req, err := requests.UpdateProfile(r)
 	if err != nil {
-		scope.Log(r).WithError(err).Errorf("invalid create profile request")
+		log.WithError(err).Info("invalid update profile request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
-
 		return
 	}
 
 	res, err := c.modules.Profile.ConfirmUpdateSession(
 		r.Context(),
-		scope.AccountAuthClaims(r).GetAccountID(),
-		scope.UploadContentClaims(r).GetSessionID(),
+		scope.AccountActor(r),
+		scope.UploadScope(r),
 		profile.UpdateParams{
 			Pseudonym:   req.Data.Attributes.Pseudonym,
 			Description: req.Data.Attributes.Description,
@@ -38,15 +41,15 @@ func (c *Controller) ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Reque
 	)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		scope.Log(r).Info("profile for user does not exist")
+		log.Info("profile for user does not exist")
 		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
 	case errors.Is(err, errx.ErrorProfileAvatarContentIsInvalid):
-		scope.Log(r).Info("avatar content is not valid for update profile")
+		log.Info("avatar content is not valid for update profile")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"avatar": fmt.Errorf("avatar content is not valid for update profile"),
 		})...)
 	case err != nil:
-		scope.Log(r).Errorf("failed to update profile")
+		log.WithError(err).Error("failed to update profile")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.Profile(res))
