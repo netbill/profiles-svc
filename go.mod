@@ -65,3 +65,4 @@ require (
 )
 
 replace github.com/netbill/restkit => /home/trpdjke/go/src/github.com/netbill/restkit
+replace github.com/netbill/logium => /home/trpdjke/go/src/github.com/netbill/logium

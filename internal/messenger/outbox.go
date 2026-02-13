@@ -17,7 +17,7 @@ type Outbox struct {
 }
 
 func NewOutbox(
-	log *logium.Logger,
+	log *logium.Entry,
 	db *pgdbx.DB,
 	addr []string,
 	config eventpg.OutboxWorkerConfig,
@@ -42,8 +42,6 @@ func (a *Outbox) Start(ctx context.Context) {
 			a.log.WithError(err).Error("failed to close kafka writer")
 		}
 	}()
-
-	a.log.Infoln("starting outbox worker")
 
 	id := BuildProcessID("profiles-svc", "outbox", 0)
 	worker := eventpg.NewOutboxWorker(a.log, a.db, writer, id, a.config)

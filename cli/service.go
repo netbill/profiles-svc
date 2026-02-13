@@ -27,7 +27,7 @@ import (
 	"github.com/netbill/restkit"
 )
 
-func Start(ctx context.Context, cfg Config, log *logium.Logger, wg *sync.WaitGroup) {
+func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGroup) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {
@@ -86,14 +86,16 @@ func Start(ctx context.Context, cfg Config, log *logium.Logger, wg *sync.WaitGro
 	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
 	responser := restkit.NewResponser()
-	ctrl := controller.New(log, responser, controller.Modules{
+	ctrl := controller.New(controller.Modules{
 		Profile: profileModule,
-	})
-	mdll := middlewares.New(log, responser, tokenManager)
-	router := rest.New(log, mdll, ctrl)
+	}, responser)
+
+	mdll := middlewares.New(responser, tokenManager)
+
+	router := rest.New(mdll, ctrl)
 
 	run(func() {
-		router.Run(ctx, rest.Config{
+		router.Run(ctx, log, rest.Config{
 			Port:              cfg.Rest.Port,
 			TimeoutRead:       cfg.Rest.Timeouts.Read,
 			TimeoutReadHeader: cfg.Rest.Timeouts.ReadHeader,

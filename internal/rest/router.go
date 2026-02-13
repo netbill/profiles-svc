@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
 	"github.com/netbill/logium"
 	"github.com/netbill/restkit/tokens"
 )
@@ -21,7 +20,7 @@ type Handlers interface {
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
 	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
-	
+
 	OenUpdateProfileSession(w http.ResponseWriter, r *http.Request)
 	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	CancelUpdateProfileSession(w http.ResponseWriter, r *http.Request)
@@ -32,24 +31,20 @@ type Middlewares interface {
 	AccountAuth(
 		allowedRoles ...string,
 	) func(next http.Handler) http.Handler
-	UpdateOwnProfile() func(next http.Handler) http.Handler
+	UpdateOwnProfileMediaContent() func(next http.Handler) http.Handler
+	Logger(log *logium.Entry) func(next http.Handler) http.Handler
+	CorsDocs() func(next http.Handler) http.Handler
 }
 
-type Router struct {
+type Server struct {
 	handlers    Handlers
 	middlewares Middlewares
-	log         *logium.Logger
 }
 
-func New(
-	log *logium.Logger,
-	middlewares Middlewares,
-	handlers Handlers,
-) *Router {
-	return &Router{
-		log:         log,
-		middlewares: middlewares,
-		handlers:    handlers,
+func New(m Middlewares, h Handlers) *Server {
+	return &Server{
+		middlewares: m,
+		handlers:    h,
 	}
 }
 
@@ -61,47 +56,42 @@ type Config struct {
 	TimeoutIdle       time.Duration
 }
 
-func (rt *Router) Run(ctx context.Context, cfg Config) {
-	auth := rt.middlewares.AccountAuth()
-	sysmoder := rt.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
-	updateOwnProfile := rt.middlewares.UpdateOwnProfile()
+func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
+	auth := s.middlewares.AccountAuth()
+	sysmoder := s.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
+	updateOwnProfile := s.middlewares.UpdateOwnProfileMediaContent()
 
 	r := chi.NewRouter()
 
-	// CORS for swagger UI documentation need to delete after configuring nginx
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5002"},
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}))
+	r.Use(
+		s.middlewares.Logger(log),
+		s.middlewares.CorsDocs(),
+	)
 
 	r.Route("/profiles-svc", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/profiles", func(r chi.Router) {
-				r.Get("/", rt.handlers.FilterProfiles)
+				r.Get("/", s.handlers.FilterProfiles)
 
-				r.Get("/u/{username}", rt.handlers.GetProfileByUsername)
+				r.Get("/u/{username}", s.handlers.GetProfileByUsername)
 
 				r.With(auth).Route("/me", func(r chi.Router) {
-					r.Get("/", rt.handlers.GetMyProfile)
+					r.Get("/", s.handlers.GetMyProfile)
 
 					r.Route("/update-session", func(r chi.Router) {
-						r.Post("/", rt.handlers.OenUpdateProfileSession)
-						r.With(updateOwnProfile).Delete("/", rt.handlers.CancelUpdateProfileSession)
+						r.Post("/", s.handlers.OenUpdateProfileSession)
+						r.With(updateOwnProfile).Delete("/", s.handlers.CancelUpdateProfileSession)
 
-						r.With(updateOwnProfile).Put("/confirm", rt.handlers.ConfirmUpdateMyProfile)
-						r.With(updateOwnProfile).Delete("/upload-avatar", rt.handlers.DeleteUploadProfileAvatar)
+						r.With(updateOwnProfile).Put("/confirm", s.handlers.ConfirmUpdateMyProfile)
+						r.With(updateOwnProfile).Delete("/upload-avatar", s.handlers.DeleteUploadProfileAvatar)
 					})
 				})
 			})
 
 			r.Route("/{account_id}", func(r chi.Router) {
-				r.Get("/", rt.handlers.GetProfileByID)
+				r.Get("/", s.handlers.GetProfileByID)
 
-				r.With(sysmoder).Patch("/official", rt.handlers.UpdateProfileOfficial)
+				r.With(sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
 			})
 		})
 	})
@@ -115,7 +105,7 @@ func (rt *Router) Run(ctx context.Context, cfg Config) {
 		IdleTimeout:       cfg.TimeoutIdle,
 	}
 
-	rt.log.Infof("starting REST service on %s", cfg.Port)
+	log.Infof("starting REST service on %s", cfg.Port)
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -128,18 +118,18 @@ func (rt *Router) Run(ctx context.Context, cfg Config) {
 
 	select {
 	case <-ctx.Done():
-		rt.log.Warnf("shutting down REST service...")
+		log.Warnf("shutting down REST service...")
 	case err := <-errCh:
 		if err != nil {
-			rt.log.Errorf("REST server error: %v", err)
+			log.Errorf("REST server error: %v", err)
 		}
 	}
 
 	shCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shCtx); err != nil {
-		rt.log.Errorf("REST shutdown error: %v", err)
+		log.Errorf("REST shutdown error: %v", err)
 	} else {
-		rt.log.Warnf("REST server stopped")
+		log.Warnf("REST server stopped")
 	}
 }

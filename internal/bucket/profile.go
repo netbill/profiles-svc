@@ -41,7 +41,7 @@ func (b Bucket) GetPreloadLinkForProfileMedia(
 	}, nil
 }
 
-func (b Bucket) AcceptUpdateProfileMedia(
+func (b Bucket) UpdateProfileAvatar(
 	ctx context.Context,
 	accountID, sessionID uuid.UUID,
 ) (string, error) {
@@ -75,7 +75,7 @@ func (b Bucket) AcceptUpdateProfileMedia(
 		return "", fmt.Errorf("decode config: %w", err)
 	}
 
-	if b.config.Profile.MaxHeight > 0 && config.Width > b.config.Profile.MaxWidth {
+	if b.config.Profile.MaxWidth > 0 && config.Width > b.config.Profile.MaxWidth {
 		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
 			fmt.Errorf("uploaded profile avatar width %d exceeds the maximum allowed width", config.Width),
 		)
@@ -86,14 +86,16 @@ func (b Bucket) AcceptUpdateProfileMedia(
 		)
 	}
 
-	access := false
-	for _, f := range b.config.Profile.Formats {
-		if f == format {
-			access = true
-			break
+	access := func(values []string, target string) bool {
+		for _, v := range values {
+			if v == target {
+				return true
+			}
 		}
+		return false
 	}
-	if !access {
+
+	if !access(b.config.Profile.Formats, format) {
 		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
 			fmt.Errorf("uploaded profile avatar format %s is not allowed", format),
 		)
@@ -105,6 +107,20 @@ func (b Bucket) AcceptUpdateProfileMedia(
 	}
 
 	return res, nil
+}
+
+func (b Bucket) DeleteProfileAvatar(
+	ctx context.Context,
+	accountID uuid.UUID,
+) error {
+	err := b.s3.DeleteObject(ctx, CreateProfileAvatarKey(accountID))
+	if err != nil {
+		return fmt.Errorf(
+			"failed to delete object for profile avatar: %w", err,
+		)
+	}
+
+	return nil
 }
 
 func (b Bucket) CleanProfileMediaSession(
@@ -129,20 +145,6 @@ func (b Bucket) CancelUpdateProfileAvatar(
 	if err != nil {
 		return fmt.Errorf(
 			"failed to delete temp object for profile avatar: %w", err,
-		)
-	}
-
-	return nil
-}
-
-func (b Bucket) DeleteProfileAvatar(
-	ctx context.Context,
-	accountID uuid.UUID,
-) error {
-	err := b.s3.DeleteObject(ctx, CreateProfileAvatarKey(accountID))
-	if err != nil {
-		return fmt.Errorf(
-			"failed to delete object for profile avatar: %w", err,
 		)
 	}
 

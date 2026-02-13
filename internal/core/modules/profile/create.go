@@ -12,7 +12,7 @@ func (m *Module) Create(ctx context.Context, accountID uuid.UUID, username strin
 	profile, err := m.repo.GetProfileByAccountID(ctx, accountID)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		// continue to create profile
+		// profile doesn't exist, we can create it
 	case err != nil:
 		return err
 	default:

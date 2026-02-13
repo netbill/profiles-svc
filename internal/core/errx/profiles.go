@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ErrorNotEnoughRights  = ape.DeclareError("NOT_ENOUGH_RIGHTS")
 	ErrorProfileNotExists = ape.DeclareError("PROFILE_NOT_EXISTS")
 
 	ErrorNoContentUploaded             = ape.DeclareError("NO_CONTENT_UPLOADED")

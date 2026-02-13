@@ -26,19 +26,19 @@ func New(repo repo, messenger messenger, token token, bucket bucket) *Module {
 }
 
 type repo interface {
-	InsertProfile(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
+	InsertProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
 
-	GetProfileByAccountID(ctx context.Context, userID uuid.UUID) (models.Profile, error)
+	GetProfileByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetProfileByUsername(ctx context.Context, username string) (models.Profile, error)
 
-	UpdateProfile(ctx context.Context, userID uuid.UUID, params UpdateParams) (models.Profile, error)
-	UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatarURL string) (models.Profile, error)
-	DeleteProfileAvatar(ctx context.Context, userID uuid.UUID) (models.Profile, error)
+	UpdateProfile(ctx context.Context, accountID uuid.UUID, params UpdateParams) (models.Profile, error)
+	UpdateProfileAvatar(ctx context.Context, accountID uuid.UUID, avatarURL string) (models.Profile, error)
+	DeleteProfileAvatar(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 
-	UpdateProfileUsername(ctx context.Context, userID uuid.UUID, username string) (models.Profile, error)
-	UpdateProfileOfficial(ctx context.Context, userID uuid.UUID, official bool) (models.Profile, error)
+	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
+	UpdateProfileOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
-	DeleteProfile(ctx context.Context, userID uuid.UUID) error
+	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
 
 	FilterProfiles(
 		ctx context.Context,
@@ -78,7 +78,7 @@ type bucket interface {
 		accountID uuid.UUID,
 	) error
 
-	AcceptUpdateProfileMedia(
+	UpdateProfileAvatar(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,
 	) (string, error)

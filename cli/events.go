@@ -10,7 +10,7 @@ import (
 	"github.com/netbill/pgdbx"
 )
 
-func CleanupInboxFailed(ctx context.Context, cfg Config, log *logium.Logger) error {
+func CleanupInboxFailed(ctx context.Context, cfg Config, log *logium.Entry) error {
 	pool, err := pgxpool.New(ctx, cfg.Database.SQL.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
@@ -31,7 +31,7 @@ func CleanupInboxFailed(ctx context.Context, cfg Config, log *logium.Logger) err
 	return nil
 }
 
-func CleanupInboxProcessing(ctx context.Context, cfg Config, log *logium.Logger, processIDs ...string) error {
+func CleanupInboxProcessing(ctx context.Context, cfg Config, log *logium.Entry, processIDs ...string) error {
 	pool, err := pgxpool.New(ctx, cfg.Database.SQL.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
@@ -52,7 +52,7 @@ func CleanupInboxProcessing(ctx context.Context, cfg Config, log *logium.Logger,
 	return nil
 }
 
-func CleanupOutboxFailed(ctx context.Context, cfg Config, log *logium.Logger) error {
+func CleanupOutboxFailed(ctx context.Context, cfg Config, log *logium.Entry) error {
 	pool, err := pgxpool.New(ctx, cfg.Database.SQL.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
@@ -71,7 +71,7 @@ func CleanupOutboxFailed(ctx context.Context, cfg Config, log *logium.Logger) er
 	return nil
 }
 
-func CleanupOutboxProcessing(ctx context.Context, cfg Config, log *logium.Logger, processIDs ...string) error {
+func CleanupOutboxProcessing(ctx context.Context, cfg Config, log *logium.Entry, processIDs ...string) error {
 	pool, err := pgxpool.New(ctx, cfg.Database.SQL.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)

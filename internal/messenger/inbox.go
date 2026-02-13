@@ -35,7 +35,7 @@ type Inbox struct {
 }
 
 func NewInbox(
-	log *logium.Logger,
+	log *logium.Entry,
 	db *pgdbx.DB,
 	handlers handlers,
 	config eventpg.InboxWorkerConfig,
@@ -49,8 +49,6 @@ func NewInbox(
 }
 
 func (a *Inbox) Start(ctx context.Context) {
-	a.log.Infoln("starting inbox worker")
-
 	id := BuildProcessID("profiles-svc", "inbox", 0)
 	worker := eventpg.NewInboxWorker(a.log, a.db, id, a.config)
 

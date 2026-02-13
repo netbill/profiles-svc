@@ -23,7 +23,7 @@ func New(profileModule profileModule) *Inbound {
 }
 
 type profileModule interface {
-	Create(ctx context.Context, userID uuid.UUID, username string) error
+	Create(ctx context.Context, accountID uuid.UUID, username string) error
 	UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error
 	Delete(ctx context.Context, accountID uuid.UUID) error
 }

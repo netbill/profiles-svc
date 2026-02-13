@@ -6,7 +6,11 @@ import (
 	"github.com/google/uuid"
 )
 
-func (m *Module) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
+func (m *Module) UpdateUsername(
+	ctx context.Context,
+	accountID uuid.UUID,
+	username string,
+) error {
 	return m.repo.Transaction(ctx, func(ctx context.Context) error {
 		profile, err := m.repo.UpdateProfileUsername(ctx, accountID, username)
 		if err != nil {

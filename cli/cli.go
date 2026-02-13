@@ -41,7 +41,8 @@ func Run(args []string) bool {
 
 	var (
 		service    = kingpin.New("profiles-svc", "A service for managing user profiles")
-		serviceCmd = service.Command("run service", "starting all service processes")
+		runCmd     = service.Command("run", "run command flags: service")
+		serviceCmd = runCmd.Command("service", "starting all service processes")
 
 		migrateCmd  = service.Command("migrate", "migrate command flags --up or --down")
 		migrateUp   = migrateCmd.Flag("up", "migrate db up").Bool()
@@ -95,25 +96,27 @@ func Run(args []string) bool {
 		return false
 	}
 
+	base := log.WithField("service", "profiles-svc")
+
 	switch command {
 	case serviceCmd.FullCommand():
-		Start(ctx, cfg, log, &wg)
+		Start(ctx, cfg, base, &wg)
 	case migrateCmd.FullCommand():
 		err = Migrate(ctx, cfg.Database.SQL.URL, *migrateUp, *migrateDown)
 	case eventsOutboxFailed.FullCommand():
-		err = CleanupOutboxFailed(ctx, cfg, log)
+		err = CleanupOutboxFailed(ctx, cfg, base)
 	case eventsOutboxProcessing.FullCommand():
-		err = CleanupOutboxProcessing(ctx, cfg, log, *eventsOutboxProcessingProcessIDs...)
+		err = CleanupOutboxProcessing(ctx, cfg, base, *eventsOutboxProcessingProcessIDs...)
 	case eventsInboxFailed.FullCommand():
-		err = CleanupInboxFailed(ctx, cfg, log)
+		err = CleanupInboxFailed(ctx, cfg, base)
 	case eventsInboxProcessing.FullCommand():
-		err = CleanupInboxProcessing(ctx, cfg, log, *eventsInboxProcessingProcessIDs...)
+		err = CleanupInboxProcessing(ctx, cfg, base, *eventsInboxProcessingProcessIDs...)
 	default:
-		log.Errorf("unknown command %s", command)
+		base.Errorf("unknown command %s", command)
 		return false
 	}
 	if err != nil {
-		log.WithError(err).Error("failed to exec cmd")
+		base.WithError(err).Error("failed to exec cmd")
 		return false
 	}
 
@@ -125,10 +128,10 @@ func Run(args []string) bool {
 
 	select {
 	case <-ctx.Done():
-		log.Warnf("Interrupt signal received: %v", ctx.Err())
+		base.Warnf("Interrupt signal received: %v", ctx.Err())
 		<-wgch
 	case <-wgch:
-		log.Warnf("All services stopped")
+		base.Warnf("All services stopped")
 	}
 
 	return true

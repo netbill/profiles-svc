@@ -54,5 +54,15 @@ func (m *Manager) ParseUploadProfileContentToken(token string) (tokens.UploadCon
 		return tokens.UploadContentClaims{}, fmt.Errorf("invalid upload token audience")
 	}
 
+	_, err = uuid.Parse(res.Subject)
+	if err != nil {
+		return tokens.UploadContentClaims{}, fmt.Errorf("invalid upload token subject: %w", err)
+	}
+
+	_, err = uuid.Parse(res.ResourceID)
+	if err != nil {
+		return tokens.UploadContentClaims{}, fmt.Errorf("invalid upload token resource ID: %w", err)
+	}
+
 	return res, nil
 }

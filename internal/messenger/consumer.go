@@ -20,7 +20,7 @@ type ConsumerArchitect struct {
 }
 
 func NewConsumerArchitect(
-	log *logium.Logger,
+	log *logium.Entry,
 	db *pgdbx.DB,
 	brokers []string,
 	topicReaders map[string]int,

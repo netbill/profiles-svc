@@ -5,10 +5,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
-	"github.com/netbill/profiles-svc/internal/rest/contexter"
 	"github.com/netbill/restkit/pagi"
 )
 
@@ -23,27 +21,29 @@ type profileModule interface {
 		limit, offset uint,
 	) (pagi.Page[[]models.Profile], error)
 
-	GetByAccountID(ctx context.Context, userID uuid.UUID) (models.Profile, error)
+	GetByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetByUsername(ctx context.Context, username string) (models.Profile, error)
 
 	UpdateOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
-	ConfirmUpdateSession(
-		ctx context.Context,
-		accountID uuid.UUID,
-		params profile.UpdateParams,
-	) (models.Profile, error)
 	OpenUpdateSession(
 		ctx context.Context,
-		accountID uuid.UUID,
+		account models.AccountActor,
 	) (models.UpdateProfileMedia, models.Profile, error)
+	ConfirmUpdateSession(ctx context.Context,
+		account models.AccountActor,
+		session models.UploadScope,
+		params profile.UpdateParams,
+	) (models.Profile, error)
 	DeleteUploadAvatar(
 		ctx context.Context,
-		accountID, sessionID uuid.UUID,
+		account models.AccountActor,
+		session models.UploadScope,
 	) error
 	CancelUpdateSession(
 		ctx context.Context,
-		accountID, sessionID uuid.UUID,
+		account models.AccountActor,
+		session models.UploadScope,
 	) error
 }
 
@@ -53,32 +53,13 @@ type responser interface {
 }
 
 type Controller struct {
-	log *logium.Logger
-
 	modules   Modules
 	responser responser
 }
 
-func New(log *logium.Logger, responser responser, modules Modules) *Controller {
+func New(modules Modules, responser responser) *Controller {
 	return &Controller{
-		log:       log,
 		modules:   modules,
 		responser: responser,
 	}
-}
-
-func (c *Controller) Log(r *http.Request) *logium.Entry {
-	log := c.log.WithRequest(r)
-
-	initiator, err := contexter.AccountData(r.Context())
-	if err == nil {
-		log = log.WithAccount(initiator)
-	}
-
-	upload, err := contexter.UploadContentData(r.Context())
-	if err == nil {
-		log = log.WithUploadSession(upload)
-	}
-
-	return log
 }
