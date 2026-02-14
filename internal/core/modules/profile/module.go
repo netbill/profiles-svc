@@ -63,6 +63,11 @@ type bucket interface {
 		accountID, sessionID uuid.UUID,
 	) (links models.UpdateProfileMediaLinks, err error)
 
+	UpdateProfileAvatar(
+		ctx context.Context,
+		accountID, sessionID uuid.UUID,
+	) (string, error)
+
 	CancelUpdateProfileAvatar(
 		ctx context.Context,
 		accountID, sessionID uuid.UUID,
@@ -72,11 +77,6 @@ type bucket interface {
 		ctx context.Context,
 		accountID uuid.UUID,
 	) error
-
-	UpdateProfileAvatar(
-		ctx context.Context,
-		accountID, sessionID uuid.UUID,
-	) (string, error)
 
 	CleanProfileMediaSession(
 		ctx context.Context,

@@ -15,11 +15,7 @@ import (
 )
 
 func Run(args []string) bool {
-	cfg, err := boot.LoadConfig()
-	if err != nil {
-		logium.Fatalf("failed to load config: %v", err)
-	}
-
+	cfg := boot.LoadConfig()
 	log := boot.NewLogger(cfg.Log)
 
 	var (
@@ -33,11 +29,6 @@ func Run(args []string) bool {
 
 		eventsCmd = service.Command("events", "events commands")
 
-		// INBOX
-		// examples:
-		// profiles-svc events inbox cleanup processing --process-id=worker-1
-		// profiles-svc events inbox cleanup processing --process-id=worker-1 --process-id=worker-2
-		// profiles-svc events inbox cleanup failed
 		eventsInbox        = eventsCmd.Command("inbox", "inbox events")
 		eventsInboxCleanup = eventsInbox.Command("cleanup", "cleanup inbox events")
 		eventsInboxFailed  = eventsInboxCleanup.Command(
@@ -50,11 +41,6 @@ func Run(args []string) bool {
 			"process-id", "cleanup only events reserved by this process id (repeatable)",
 		).Strings()
 
-		// OUTBOX
-		// examples:
-		// profiles-svc events inbox cleanup processing --process-id=worker-1
-		// profiles-svc events inbox cleanup processing --process-id=worker-1 --process-id=worker-2
-		// profiles-svc events inbox cleanup failed
 		eventsOutbox        = eventsCmd.Command("outbox", "outbox events")
 		eventsOutboxCleanup = eventsOutbox.Command("cleanup", "cleanup outbox events")
 		eventsOutboxFailed  = eventsOutboxCleanup.Command(

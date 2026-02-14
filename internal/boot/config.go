@@ -37,22 +37,21 @@ type Config struct {
 	S3       S3Config         `mapstructure:"s3"`
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig() *Config {
 	configPath := os.Getenv("KV_VIPER_FILE")
 	if configPath == "" {
-		return nil, fmt.Errorf("KV_VIPER_FILE env var is not set")
+		panic(fmt.Errorf("KV_VIPER_FILE env var is not set"))
 	}
-
 	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("error reading config file: %s", err)
+		panic(fmt.Errorf("error reading config file: %s", err))
 	}
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("error unmarshalling config: %s", err)
+		panic(fmt.Errorf("error unmarshalling config: %s", err))
 	}
 
-	return &config, nil
+	return &config
 }
