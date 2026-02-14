@@ -6,12 +6,14 @@ import (
 
 type Repository struct {
 	profilesQ ProfilesQ
+	accountsQ AccountsQ
 	Transactioner
 }
 
-func New(Transaction Transactioner, profileSql ProfilesQ) *Repository {
+func New(Transaction Transactioner, accountsSql AccountsQ, profileSql ProfilesQ) *Repository {
 	return &Repository{
 		profilesQ:     profileSql,
+		accountsQ:     accountsSql,
 		Transactioner: Transaction,
 	}
 }

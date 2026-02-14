@@ -31,7 +31,7 @@ type AuthConfig struct {
 type Config struct {
 	Log      LogConfig        `mapstructure:"log"`
 	Rest     rest.Config      `mapstructure:"rest"`
-	Auth     AuthConfig       `mapstructure:"auth"`
+	Auth     AuthConfig       `mapstructure:"account"`
 	Kafka    messenger.Config `mapstructure:"kafka"`
 	Database DatabaseConfig   `mapstructure:"database"`
 	S3       S3Config         `mapstructure:"s3"`

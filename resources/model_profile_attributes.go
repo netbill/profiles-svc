@@ -22,19 +22,21 @@ var _ MappedNullable = &ProfileAttributes{}
 
 // ProfileAttributes struct for ProfileAttributes
 type ProfileAttributes struct {
-	// Username
+	// username for this account and profile
 	Username string `json:"username"`
-	// Pseudonym
+	// profile pseudonym
 	Pseudonym *string `json:"pseudonym,omitempty"`
-	// Description
+	// description of profile
 	Description *string `json:"description,omitempty"`
-	// Is Official Account
+	// official mark
 	Official bool `json:"official"`
-	// Avatar URL
+	// avatar key
 	Avatar *string `json:"avatar,omitempty"`
-	// Updated At
+	// profile version
+	Version int32 `json:"version"`
+	// updated at
 	UpdatedAt time.Time `json:"updated_at"`
-	// Created At
+	// created at
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -44,10 +46,11 @@ type _ProfileAttributes ProfileAttributes
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProfileAttributes(username string, official bool, updatedAt time.Time, createdAt time.Time) *ProfileAttributes {
+func NewProfileAttributes(username string, official bool, version int32, updatedAt time.Time, createdAt time.Time) *ProfileAttributes {
 	this := ProfileAttributes{}
 	this.Username = username
 	this.Official = official
+	this.Version = version
 	this.UpdatedAt = updatedAt
 	this.CreatedAt = createdAt
 	return &this
@@ -205,6 +208,30 @@ func (o *ProfileAttributes) SetAvatar(v string) {
 	o.Avatar = &v
 }
 
+// GetVersion returns the Version field value
+func (o *ProfileAttributes) GetVersion() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.Version
+}
+
+// GetVersionOk returns a tuple with the Version field value
+// and a boolean to check if the value has been set.
+func (o *ProfileAttributes) GetVersionOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Version, true
+}
+
+// SetVersion sets field value
+func (o *ProfileAttributes) SetVersion(v int32) {
+	o.Version = v
+}
+
 // GetUpdatedAt returns the UpdatedAt field value
 func (o *ProfileAttributes) GetUpdatedAt() time.Time {
 	if o == nil {
@@ -274,6 +301,7 @@ func (o ProfileAttributes) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Avatar) {
 		toSerialize["avatar"] = o.Avatar
 	}
+	toSerialize["version"] = o.Version
 	toSerialize["updated_at"] = o.UpdatedAt
 	toSerialize["created_at"] = o.CreatedAt
 	return toSerialize, nil
@@ -286,6 +314,7 @@ func (o *ProfileAttributes) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"username",
 		"official",
+		"version",
 		"updated_at",
 		"created_at",
 	}

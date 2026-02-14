@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/core/modules/account"
 )
 
 type Inbound struct {
@@ -11,10 +12,10 @@ type Inbound struct {
 }
 
 type modules struct {
-	profile profileModule
+	profile accountModule
 }
 
-func New(profileModule profileModule) *Inbound {
+func New(profileModule accountModule) *Inbound {
 	return &Inbound{
 		modules: modules{
 			profile: profileModule,
@@ -22,8 +23,12 @@ func New(profileModule profileModule) *Inbound {
 	}
 }
 
-type profileModule interface {
-	Create(ctx context.Context, accountID uuid.UUID, username string) error
-	UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error
+type accountModule interface {
+	Create(ctx context.Context, params account.CreateAccountParams) error
+	UpdateUsername(
+		ctx context.Context,
+		accountID uuid.UUID,
+		module account.UpdateUsernameParams,
+	) error
 	Delete(ctx context.Context, accountID uuid.UUID) error
 }

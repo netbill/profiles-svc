@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/netbill/profiles-svc/internal/core/modules/account"
 	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
@@ -17,5 +18,9 @@ func (i *Inbound) AccountUsernameUpdated(
 		return err
 	}
 
-	return i.modules.profile.UpdateUsername(ctx, payload.AccountID, payload.NewUsername)
+	return i.modules.profile.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
+		Username:  payload.NewUsername,
+		Version:   payload.Version,
+		UpdatedAt: payload.UpdatedAt,
+	})
 }

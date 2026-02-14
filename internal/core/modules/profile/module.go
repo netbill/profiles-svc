@@ -26,8 +26,6 @@ func New(repo repo, messenger messenger, token token, bucket bucket) *Module {
 }
 
 type repo interface {
-	InsertProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
-
 	GetProfileByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetProfileByUsername(ctx context.Context, username string) (models.Profile, error)
 
@@ -35,7 +33,6 @@ type repo interface {
 	UpdateProfileAvatar(ctx context.Context, accountID uuid.UUID, avatarURL string) (models.Profile, error)
 	DeleteProfileAvatar(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 
-	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
 	UpdateProfileOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
 	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
@@ -50,9 +47,7 @@ type repo interface {
 }
 
 type messenger interface {
-	WriteProfileCreated(ctx context.Context, profile models.Profile) error
 	WriteProfileUpdated(ctx context.Context, profile models.Profile) error
-	WriteProfileDeleted(ctx context.Context, accountID uuid.UUID) error
 }
 
 type token interface {

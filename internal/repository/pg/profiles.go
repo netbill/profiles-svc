@@ -15,7 +15,7 @@ import (
 )
 
 const profilesTable = "profiles"
-const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar, created_at, updated_at"
+const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar, version, created_at, updated_at"
 
 func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 	pseudonym := pgtype.Text{}
@@ -29,6 +29,7 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 		&pseudonym,
 		&description,
 		&avatarURL,
+		&p.Version,
 		&p.CreatedAt,
 		&p.UpdatedAt,
 	)
@@ -92,57 +93,6 @@ func (q *profiles) Insert(ctx context.Context, input repository.ProfileRow) (rep
 	return scanProfile(q.db.QueryRow(ctx, query, args...))
 }
 
-func (q *profiles) UpdateMany(ctx context.Context) (int64, error) {
-	q.updater = q.updater.Set("updated_at", time.Now().UTC())
-
-	query, args, err := q.updater.ToSql()
-	if err != nil {
-		return 0, fmt.Errorf("building update query for %s: %w", profilesTable, err)
-	}
-
-	tag, err := q.db.Exec(ctx, query, args...)
-	if err != nil {
-		return 0, err
-	}
-	return tag.RowsAffected(), nil
-}
-
-func (q *profiles) UpdateOne(ctx context.Context) (repository.ProfileRow, error) {
-	q.updater = q.updater.Set("updated_at", time.Now().UTC())
-
-	query, args, err := q.updater.Suffix("RETURNING " + ProfilesColumns).ToSql()
-	if err != nil {
-		return repository.ProfileRow{}, fmt.Errorf("building update query for %s: %w", profilesTable, err)
-	}
-
-	return scanProfile(q.db.QueryRow(ctx, query, args...))
-}
-
-func (q *profiles) UpdateUsername(username string) repository.ProfilesQ {
-	q.updater = q.updater.Set("username", username)
-	return q
-}
-
-func (q *profiles) UpdateOfficial(official bool) repository.ProfilesQ {
-	q.updater = q.updater.Set("official", official)
-	return q
-}
-
-func (q *profiles) UpdatePseudonym(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("pseudonym", v)
-	return q
-}
-
-func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("description", v)
-	return q
-}
-
-func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("avatar", v)
-	return q
-}
-
 func (q *profiles) Get(ctx context.Context) (repository.ProfileRow, error) {
 	query, args, err := q.selector.Limit(1).ToSql()
 	if err != nil {
@@ -178,6 +128,60 @@ func (q *profiles) Select(ctx context.Context) ([]repository.ProfileRow, error) 
 	}
 
 	return out, nil
+}
+
+func (q *profiles) Exists(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	sql := "SELECT EXISTS (" + subSQL + ")"
+
+	var exists bool
+	err = q.db.QueryRow(ctx, sql, subArgs...).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("sql=%s args=%v: %w", sql, subArgs, err)
+	}
+
+	return exists, nil
+}
+
+func (q *profiles) UpdateOne(ctx context.Context) (repository.ProfileRow, error) {
+	q.updater = q.updater.Set("updated_at", time.Now().UTC()).
+		Set("version", sq.Expr("version + 1"))
+
+	query, args, err := q.updater.Suffix("RETURNING " + ProfilesColumns).ToSql()
+	if err != nil {
+		return repository.ProfileRow{}, fmt.Errorf("building update query for %s: %w", profilesTable, err)
+	}
+
+	return scanProfile(q.db.QueryRow(ctx, query, args...))
+}
+
+func (q *profiles) UpdateUsername(username string) repository.ProfilesQ {
+	q.updater = q.updater.Set("username", username)
+	return q
+}
+
+func (q *profiles) UpdateOfficial(official bool) repository.ProfilesQ {
+	q.updater = q.updater.Set("official", official)
+	return q
+}
+
+func (q *profiles) UpdatePseudonym(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("pseudonym", v)
+	return q
+}
+
+func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("description", v)
+	return q
+}
+
+func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("avatar", v)
+	return q
 }
 
 func (q *profiles) FilterAccountID(accountID ...uuid.UUID) repository.ProfilesQ {

@@ -8,6 +8,7 @@ import (
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/bucket"
+	"github.com/netbill/profiles-svc/internal/core/modules/account"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/messenger"
 	"github.com/netbill/profiles-svc/internal/messenger/inbound"
@@ -43,7 +44,8 @@ func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg 
 
 	profilesSqlQ := pg.NewProfilesQ(db)
 	transactionSqlQ := pg.NewTransaction(db)
-	repo := repository.New(transactionSqlQ, profilesSqlQ)
+	accountsSqlQ := pg.NewAccountsQ(db)
+	repo := repository.New(transactionSqlQ, accountsSqlQ, profilesSqlQ)
 
 	msg := messenger.NewManager(log, db, cfg.Kafka)
 
@@ -53,6 +55,7 @@ func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg 
 	tokenManager := tokenmanager.New(ServiceName, cfg.Auth.Tokens)
 
 	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
+	accountModule := account.New(repo, kafkaOutbound)
 
 	responser := restkit.NewResponser()
 	ctrl := controller.New(controller.Modules{
@@ -67,7 +70,7 @@ func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg 
 		router.Run(ctx, log, cfg.Rest)
 	})
 
-	run(func() { msg.RunInbox(ctx, inbound.New(profileModule)) })
+	run(func() { msg.RunInbox(ctx, inbound.New(accountModule)) })
 
 	run(func() { msg.RunConsumer(ctx) })
 

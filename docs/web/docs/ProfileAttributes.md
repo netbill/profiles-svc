@@ -4,19 +4,20 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Username** | **string** | Username | 
-**Pseudonym** | Pointer to **string** | Pseudonym | [optional] 
-**Description** | Pointer to **string** | Description | [optional] 
-**Official** | **bool** | Is Official Account | 
-**Avatar** | Pointer to **string** | Avatar URL | [optional] 
-**UpdatedAt** | **time.Time** | Updated At | 
-**CreatedAt** | **time.Time** | Created At | 
+**Username** | **string** | username for this account and profile | 
+**Pseudonym** | Pointer to **string** | profile pseudonym | [optional] 
+**Description** | Pointer to **string** | description of profile | [optional] 
+**Official** | **bool** | official mark | 
+**Avatar** | Pointer to **string** | avatar key | [optional] 
+**Version** | **int32** | profile version | 
+**UpdatedAt** | **time.Time** | updated at | 
+**CreatedAt** | **time.Time** | created at | 
 
 ## Methods
 
 ### NewProfileAttributes
 
-`func NewProfileAttributes(username string, official bool, updatedAt time.Time, createdAt time.Time, ) *ProfileAttributes`
+`func NewProfileAttributes(username string, official bool, version int32, updatedAt time.Time, createdAt time.Time, ) *ProfileAttributes`
 
 NewProfileAttributes instantiates a new ProfileAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -145,6 +146,26 @@ SetAvatar sets Avatar field to given value.
 `func (o *ProfileAttributes) HasAvatar() bool`
 
 HasAvatar returns a boolean if a field has been set.
+
+### GetVersion
+
+`func (o *ProfileAttributes) GetVersion() int32`
+
+GetVersion returns the Version field if non-nil, zero value otherwise.
+
+### GetVersionOk
+
+`func (o *ProfileAttributes) GetVersionOk() (*int32, bool)`
+
+GetVersionOk returns a tuple with the Version field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetVersion
+
+`func (o *ProfileAttributes) SetVersion(v int32)`
+
+SetVersion sets Version field to given value.
+
 
 ### GetUpdatedAt
 

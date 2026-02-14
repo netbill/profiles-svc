@@ -354,8 +354,9 @@ components:
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: https://openapi-generator.tech
+            avatar: avatar
             pseudonym: pseudonym
+            version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
@@ -371,8 +372,9 @@ components:
           description: description
           official: true
           created_at: 2000-01-23T04:56:07.000+00:00
-          avatar: https://openapi-generator.tech
+          avatar: avatar
           pseudonym: pseudonym
+          version: 0
           username: username
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         type: profile
@@ -397,32 +399,35 @@ components:
         description: description
         official: true
         created_at: 2000-01-23T04:56:07.000+00:00
-        avatar: https://openapi-generator.tech
+        avatar: avatar
         pseudonym: pseudonym
+        version: 0
         username: username
       properties:
         username:
-          description: Username
+          description: username for this account and profile
           type: string
         pseudonym:
-          description: Pseudonym
+          description: profile pseudonym
           type: string
         description:
-          description: Description
+          description: description of profile
           type: string
         official:
-          description: Is Official Account
+          description: official mark
           type: boolean
         avatar:
-          description: Avatar URL
-          format: uri
+          description: avatar key
           type: string
+        version:
+          description: profile version
+          type: integer
         updated_at:
-          description: Updated At
+          description: updated at
           format: date-time
           type: string
         created_at:
-          description: Created At
+          description: created at
           format: date-time
           type: string
       required:
@@ -430,6 +435,7 @@ components:
       - official
       - updated_at
       - username
+      - version
     ProfilesCollection:
       example:
         data:
@@ -438,8 +444,9 @@ components:
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: https://openapi-generator.tech
+            avatar: avatar
             pseudonym: pseudonym
+            version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
@@ -448,8 +455,9 @@ components:
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: https://openapi-generator.tech
+            avatar: avatar
             pseudonym: pseudonym
+            version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
@@ -489,8 +497,9 @@ components:
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: https://openapi-generator.tech
+            avatar: avatar
             pseudonym: pseudonym
+            version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
@@ -499,8 +508,9 @@ components:
             description: description
             official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: https://openapi-generator.tech
+            avatar: avatar
             pseudonym: pseudonym
+            version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile

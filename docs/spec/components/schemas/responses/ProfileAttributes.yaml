@@ -2,30 +2,33 @@ type: object
 required:
   - username
   - official
+  - version
   - updated_at
   - created_at
 properties:
   username:
     type: string
-    description: "Username"
+    description: "username for this account and profile"
   pseudonym:
     type: string
-    description: "Pseudonym"
+    description: "profile pseudonym"
   description:
     type: string
-    description: "Description"
+    description: "description of profile"
   official:
     type: boolean
-    description: "Is Official Account"
+    description: "official mark"
   avatar:
     type: string
-    format: uri
-    description: "Avatar URL"
+    description: "avatar key"
+  version:
+    type: integer
+    description: "profile version"
   updated_at:
     type: string
     format: date-time
-    description: "Updated At"
+    description: "updated at"
   created_at:
     type: string
     format: date-time
-    description: "Created At"
+    description: "created at"

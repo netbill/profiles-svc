@@ -22,7 +22,7 @@ var _ MappedNullable = &UpdateProfileSessionData{}
 
 // UpdateProfileSessionData struct for UpdateProfileSessionData
 type UpdateProfileSessionData struct {
-	// Media session id
+	// Upload session id
 	Id uuid.UUID `json:"id"`
 	Type string `json:"type"`
 	Attributes UpdateProfileSessionDataAttributes `json:"attributes"`

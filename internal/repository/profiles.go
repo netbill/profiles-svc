@@ -19,6 +19,7 @@ type ProfileRow struct {
 	Pseudonym   *string   `db:"pseudonym,omitempty"`
 	Description *string   `db:"description,omitempty"`
 	Avatar      *string   `db:"avatar,omitempty"`
+	Version     int32     `db:"version"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }
@@ -35,6 +36,7 @@ func (p ProfileRow) ToModel() models.Profile {
 		Pseudonym:   p.Pseudonym,
 		Description: p.Description,
 		Avatar:      p.Avatar,
+		Version:     p.Version,
 		CreatedAt:   p.CreatedAt,
 		UpdatedAt:   p.UpdatedAt,
 	}
@@ -46,8 +48,8 @@ type ProfilesQ interface {
 
 	Get(ctx context.Context) (ProfileRow, error)
 	Select(ctx context.Context) ([]ProfileRow, error)
+	Exists(ctx context.Context) (bool, error)
 
-	UpdateMany(ctx context.Context) (int64, error)
 	UpdateOne(ctx context.Context) (ProfileRow, error)
 
 	UpdateUsername(username string) ProfilesQ
@@ -67,7 +69,7 @@ type ProfilesQ interface {
 	Page(limit, offset uint) ProfilesQ
 }
 
-func (r *Repository) InsertProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
+func (r *Repository) CreateProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
 	res, err := r.profilesQ.New().Insert(ctx, ProfileRow{
 		AccountID: accountID,
 		Username:  username,
@@ -96,6 +98,15 @@ func (r *Repository) GetProfileByAccountID(ctx context.Context, accountID uuid.U
 	}
 
 	return row.ToModel(), nil
+}
+
+func (r *Repository) ExistsProfileByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
+	exist, err := r.profilesQ.New().FilterAccountID(accountID).Exists(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to check account existence by id %s, cause: %w", accountID, err)
+	}
+
+	return exist, nil
 }
 
 func (r *Repository) GetProfileByUsername(ctx context.Context, username string) (models.Profile, error) {

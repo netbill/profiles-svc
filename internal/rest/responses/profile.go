@@ -19,6 +19,7 @@ func Profile(m models.Profile) resources.Profile {
 				Description: m.Description,
 				Official:    m.Official,
 				Avatar:      m.Avatar,
+				Version:     m.Version,
 				UpdatedAt:   m.UpdatedAt,
 				CreatedAt:   m.CreatedAt,
 			},
