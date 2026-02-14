@@ -18,7 +18,7 @@ func (m *Manager) GenerateUploadProfileMediaToken(
 			Subject:   OwnerAccountID.String(),
 			Issuer:    m.issuer,
 			Audience:  []string{m.issuer},
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(m.profileMediaUploadTTL)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(m.mediaTTL)),
 		},
 		UploadSessionID: UploadSessionID,
 		ResourceID:      OwnerAccountID.String(),

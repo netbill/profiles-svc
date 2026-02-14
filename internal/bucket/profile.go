@@ -27,7 +27,7 @@ func (b Bucket) GetPreloadLinkForProfileMedia(
 	uploadURL, getURL, err := b.s3.PresignPut(
 		ctx,
 		CreateTempProfileAvatarKey(accountID, sessionID),
-		b.config.Profile.TokenTTL,
+		b.config.Profile.Avatar.TTL,
 	)
 	if err != nil {
 		return models.UpdateProfileMediaLinks{}, fmt.Errorf(
@@ -75,12 +75,12 @@ func (b Bucket) UpdateProfileAvatar(
 		return "", fmt.Errorf("decode config: %w", err)
 	}
 
-	if b.config.Profile.MaxWidth > 0 && config.Width > b.config.Profile.MaxWidth {
+	if b.config.Profile.Avatar.MaxWidth > 0 && config.Width > b.config.Profile.Avatar.MaxWidth {
 		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
 			fmt.Errorf("uploaded profile avatar width %d exceeds the maximum allowed width", config.Width),
 		)
 	}
-	if b.config.Profile.MaxHeight > 0 && config.Height > b.config.Profile.MaxHeight {
+	if b.config.Profile.Avatar.MaxHeight > 0 && config.Height > b.config.Profile.Avatar.MaxHeight {
 		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
 			fmt.Errorf("uploaded profile avatar height %d exceeds the maximum allowed height", config.Height),
 		)
@@ -95,7 +95,7 @@ func (b Bucket) UpdateProfileAvatar(
 		return false
 	}
 
-	if !access(b.config.Profile.Formats, format) {
+	if !access(b.config.Profile.Avatar.AllowedFormats, format) {
 		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
 			fmt.Errorf("uploaded profile avatar format %s is not allowed", format),
 		)

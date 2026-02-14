@@ -11,17 +11,15 @@ func (m *Module) UpdateUsername(
 	accountID uuid.UUID,
 	username string,
 ) error {
-	return m.repo.Transaction(ctx, func(ctx context.Context) error {
-		profile, err := m.repo.UpdateProfileUsername(ctx, accountID, username)
-		if err != nil {
-			return err
-		}
+	profile, err := m.repo.UpdateProfileUsername(ctx, accountID, username)
+	if err != nil {
+		return err
+	}
 
-		err = m.messenger.WriteProfileUpdated(ctx, profile)
-		if err != nil {
-			return err
-		}
+	err = m.messenger.WriteProfileUpdated(ctx, profile)
+	if err != nil {
+		return err
+	}
 
-		return nil
-	})
+	return nil
 }

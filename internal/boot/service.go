@@ -4,20 +4,14 @@ import (
 	"context"
 	"sync"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/netbill/awsx"
-	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/bucket"
 	"github.com/netbill/profiles-svc/internal/core/modules/profile"
 	"github.com/netbill/profiles-svc/internal/messenger"
-	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/netbill/profiles-svc/internal/messenger/inbound"
-	outbound2 "github.com/netbill/profiles-svc/internal/messenger/outbound"
+	"github.com/netbill/profiles-svc/internal/messenger/outbound"
 	"github.com/netbill/profiles-svc/internal/repository"
 	"github.com/netbill/profiles-svc/internal/repository/pg"
 	"github.com/netbill/profiles-svc/internal/rest"
@@ -27,12 +21,12 @@ import (
 	"github.com/netbill/restkit"
 )
 
-func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGroup) {
+func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg *Config) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {
 			f()
-			wg.Done()
+			defer wg.Done()
 		}()
 	}
 
@@ -40,45 +34,23 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 	if err != nil {
 		log.Fatal("failed to connect to database", "error", err)
 	}
+
 	db := pgdbx.NewDB(pool)
 
-	s3Client := s3.NewFromConfig(aws.Config{
-		Region: cfg.S3.AWS.Region,
-		Credentials: credentials.NewStaticCredentialsProvider(
-			cfg.S3.AWS.AccessKeyID,
-			cfg.S3.AWS.SecretAccessKey,
-			"",
-		),
-	})
+	s3 := newAws(cfg.S3.AWS)
 
-	awsS3 := awsx.New(
-		cfg.S3.AWS.BucketName,
-		s3Client,
-		s3.NewPresignClient(s3Client),
-	)
-
-	s3Bucket := bucket.New(awsS3, bucket.Config{
-		Profile: bucket.ProfileConfig{
-			TokenTTL:  cfg.S3.Upload.Token.TTL.Profile,
-			MaxSize:   cfg.S3.Upload.Profile.Avatar.ContentLengthMax,
-			MaxWidth:  cfg.S3.Upload.Profile.Avatar.MaxWidth,
-			MaxHeight: cfg.S3.Upload.Profile.Avatar.MaxHeight,
-			Formats:   cfg.S3.Upload.Profile.Avatar.AllowedFormats,
-		},
-	})
+	s3Bucket := bucket.New(s3, cfg.S3.Media)
 
 	profilesSqlQ := pg.NewProfilesQ(db)
 	transactionSqlQ := pg.NewTransaction(db)
 	repo := repository.New(transactionSqlQ, profilesSqlQ)
 
-	kafkaProducer := messenger.NewProducer(db, cfg.Kafka.Brokers...)
-	kafkaOutbound := outbound2.New(kafkaProducer)
+	msg := messenger.NewManager(log, db, cfg.Kafka)
 
-	tokenManager := tokenmanager.New(ServiceName, tokenmanager.Config{
-		AccessSK:              cfg.Auth.Account.Token.Access.SecretKey,
-		UploadSK:              cfg.S3.Upload.Token.SecretKey,
-		ProfileMediaUploadTTL: cfg.S3.Upload.Token.TTL.Profile,
-	})
+	kafkaProducer := msg.NewProducer()
+	kafkaOutbound := outbound.New(kafkaProducer)
+
+	tokenManager := tokenmanager.New(ServiceName, cfg.Auth.Tokens)
 
 	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
 
@@ -92,49 +64,12 @@ func Start(ctx context.Context, cfg Config, log *logium.Entry, wg *sync.WaitGrou
 	router := rest.New(mdll, ctrl)
 
 	run(func() {
-		router.Run(ctx, log, rest.Config{
-			Port:              cfg.Rest.Port,
-			TimeoutRead:       cfg.Rest.Timeouts.Read,
-			TimeoutReadHeader: cfg.Rest.Timeouts.ReadHeader,
-			TimeoutWrite:      cfg.Rest.Timeouts.Write,
-			TimeoutIdle:       cfg.Rest.Timeouts.Idle,
-		})
+		router.Run(ctx, log, cfg.Rest)
 	})
 
-	kafkaConsumer := messenger.NewConsumer(log, db, cfg.Kafka.Brokers...)
+	run(func() { msg.RunInbox(ctx, inbound.New(profileModule)) })
 
-	kafkaConsumer.AddTopic(evtypes.AccountsTopicV1, messenger.ConsumerTopicConfig{
-		NumReaders:     cfg.Kafka.Topics.AccountsV1.NumReaders,
-		QueueCapacity:  cfg.Kafka.Topics.AccountsV1.QueueCapacity,
-		MaxBytes:       cfg.Kafka.Topics.AccountsV1.MaxBytes,
-		MinBytes:       cfg.Kafka.Topics.AccountsV1.MinBytes,
-		MaxWait:        cfg.Kafka.Topics.AccountsV1.MaxWait,
-		CommitInterval: cfg.Kafka.Topics.AccountsV1.CommitInterval,
-	})
+	run(func() { msg.RunConsumer(ctx) })
 
-	run(func() { kafkaConsumer.Run(ctx) })
-
-	kafkaInboxArh := messenger.NewInbox(log, db, inbound.New(profileModule), eventpg.InboxWorkerConfig{
-		Routines:       cfg.Kafka.Inbox.Routines,
-		Slots:          cfg.Kafka.Inbox.Slots,
-		Sleep:          cfg.Kafka.Inbox.Sleep,
-		BatchSize:      cfg.Kafka.Inbox.BatchSize,
-		MinNextAttempt: cfg.Kafka.Inbox.MinNextAttempt,
-		MaxNextAttempt: cfg.Kafka.Inbox.MaxNextAttempt,
-		MaxAttempts:    cfg.Kafka.Inbox.MaxAttempts,
-	})
-
-	run(func() { kafkaInboxArh.Run(ctx) })
-
-	kafkaOutboxArch := messenger.NewOutbox(log, db, cfg.Kafka.Brokers, eventpg.OutboxWorkerConfig{
-		Routines:       cfg.Kafka.Outbox.Routines,
-		Slots:          cfg.Kafka.Outbox.Slots,
-		Sleep:          cfg.Kafka.Outbox.Sleep,
-		BatchSize:      cfg.Kafka.Outbox.BatchSize,
-		MinNextAttempt: cfg.Kafka.Outbox.MinNextAttempt,
-		MaxNextAttempt: cfg.Kafka.Outbox.MaxNextAttempt,
-		MaxAttempts:    cfg.Kafka.Outbox.MaxAttempts,
-	})
-
-	run(func() { kafkaOutboxArch.Run(ctx) })
+	run(func() { msg.RunOutbox(ctx) })
 }

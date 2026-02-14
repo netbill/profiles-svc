@@ -11,21 +11,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+type Config struct {
+	Profile struct {
+		Avatar struct {
+			AllowedFormats   []string      `mapstructure:"allowed_formats" required:"true"`
+			MaxWidth         int           `mapstructure:"max_width" required:"true"`
+			MaxHeight        int           `mapstructure:"max_height" required:"true"`
+			ContentLengthMax int           `mapstructure:"content_length_max" required:"true"`
+			TTL              time.Duration `mapstructure:"ttl" required:"true"`
+		} `mapstructure:"avatar"`
+	} `mapstructure:"profile"`
+}
+
 type Bucket struct {
 	s3     storage
 	config Config
-}
-
-type Config struct {
-	Profile ProfileConfig
-}
-
-type ProfileConfig struct {
-	TokenTTL  time.Duration
-	MaxSize   int
-	MaxWidth  int
-	MaxHeight int
-	Formats   []string
 }
 
 func New(s3 storage, config Config) Bucket {

@@ -2,12 +2,8 @@ package messenger
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	eventpg "github.com/netbill/eventbox/pg"
-	"github.com/netbill/logium"
-	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/messenger/evtypes"
 	"github.com/segmentio/kafka-go"
 )
@@ -27,50 +23,27 @@ type handlers interface {
 	) error
 }
 
-type Inbox struct {
-	log *logium.Entry
-	db  *pgdbx.DB
-
-	handlers handlers
-	config   eventpg.InboxWorkerConfig
-}
-
-func NewInbox(
-	log *logium.Entry,
-	db *pgdbx.DB,
-	handlers handlers,
-	config eventpg.InboxWorkerConfig,
-) *Inbox {
-	return &Inbox{
-		log:      log.WithComponent("inbox"),
-		db:       db,
-		handlers: handlers,
-		config:   config,
-	}
-}
-
-func (b *Inbox) Run(ctx context.Context) {
+func (m *Manager) RunInbox(ctx context.Context, handlers handlers) {
 	id := BuildProcessID("inbox")
-	worker := eventpg.NewInboxWorker(id, b.log, b.db, b.config)
+	worker := eventpg.NewInboxWorker(id, m.log, m.db, eventpg.InboxWorkerConfig{
+		Routines:       m.config.Inbox.Routines,
+		Slots:          m.config.Inbox.Slots,
+		BatchSize:      m.config.Inbox.BatchSize,
+		Sleep:          m.config.Inbox.Sleep,
+		MinNextAttempt: m.config.Inbox.MinNextAttempt,
+		MaxNextAttempt: m.config.Inbox.MaxNextAttempt,
+		MaxAttempts:    m.config.Inbox.MaxAttempts,
+	})
 
 	defer func() {
 		if err := worker.Stop(context.Background()); err != nil {
-			b.log.WithError(err).Errorf("stop inbox worker %s failed", id)
+			m.log.WithError(err).Errorf("stop inbox worker %s failed", id)
 		}
 	}()
 
-	worker.Route(evtypes.AccountCreatedEvent, b.handlers.AccountCreated)
-	worker.Route(evtypes.AccountDeletedEvent, b.handlers.AccountDeleted)
-	worker.Route(evtypes.AccountUsernameUpdatedEvent, b.handlers.AccountUsernameUpdated)
+	worker.Route(evtypes.AccountCreatedEvent, handlers.AccountCreated)
+	worker.Route(evtypes.AccountDeletedEvent, handlers.AccountDeleted)
+	worker.Route(evtypes.AccountUsernameUpdatedEvent, handlers.AccountUsernameUpdated)
 
 	worker.Run(ctx)
-}
-
-func BuildProcessID(service string) string {
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "unknown"
-	}
-
-	return fmt.Sprintf("%s-%s-%d", service, hostname, os.Getpid())
 }

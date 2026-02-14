@@ -3,27 +3,15 @@ package boot
 import (
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/netbill/profiles-svc/internal/bucket"
+	"github.com/netbill/profiles-svc/internal/messenger"
+	"github.com/netbill/profiles-svc/internal/rest"
+	"github.com/netbill/profiles-svc/internal/tokenmanager"
 	"github.com/spf13/viper"
 )
 
-const ServiceName = "auth-svc"
-
-type LogConfig struct {
-	Level  string `mapstructure:"level"`
-	Format string `mapstructure:"format"`
-}
-
-type RestConfig struct {
-	Port     string `mapstructure:"port"`
-	Timeouts struct {
-		Read       time.Duration `mapstructure:"read"`
-		ReadHeader time.Duration `mapstructure:"read_header"`
-		Write      time.Duration `mapstructure:"write"`
-		Idle       time.Duration `mapstructure:"idle"`
-	} `mapstructure:"timeouts"`
-}
+const ServiceName = "profiles-svc"
 
 type DatabaseConfig struct {
 	SQL struct {
@@ -31,101 +19,40 @@ type DatabaseConfig struct {
 	} `mapstructure:"sql"`
 }
 
-type KafkaConfig struct {
-	Brokers []string `mapstructure:"brokers"`
-	Topics  struct {
-		AccountsV1 struct {
-			NumReaders     int           `mapstructure:"num_readers"`
-			MinBytes       int           `mapstructure:"min_bytes"`
-			MaxBytes       int           `mapstructure:"max_bytes"`
-			MaxWait        time.Duration `mapstructure:"max_wait"`
-			CommitInterval time.Duration `mapstructure:"commit_interval"`
-			StartOffset    string        `mapstructure:"start_offset"`
-			QueueCapacity  int           `mapstructure:"queue_capacity"`
-		} `mapstructure:"accounts_v1"`
-	} `mapstructure:"topics"`
-	Inbox struct {
-		Routines       int           `mapstructure:"routines"`
-		Slots          int           `mapstructure:"slots"`
-		BatchSize      int           `mapstructure:"batch_size"`
-		Sleep          time.Duration `mapstructure:"sleep"`
-		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
-		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
-		MaxAttempts    int32         `mapstructure:"max_attempts"`
-	} `mapstructure:"inbox"`
-	Outbox struct {
-		Routines       int           `mapstructure:"routines"`
-		Slots          int           `mapstructure:"slots"`
-		BatchSize      int           `mapstructure:"batch_size"`
-		Sleep          time.Duration `mapstructure:"sleep"`
-		MinNextAttempt time.Duration `mapstructure:"min_next_attempt"`
-		MaxNextAttempt time.Duration `mapstructure:"max_next_attempt"`
-		MaxAttempts    int32         `mapstructure:"max_attempts"`
-	} `mapstructure:"outbox"`
+type S3Config struct {
+	AWS   AwsConfig     `mapstructure:"aws"`
+	Media bucket.Config `mapstructure:"media"`
 }
 
 type AuthConfig struct {
-	Account struct {
-		Token struct {
-			Access struct {
-				SecretKey string `mapstructure:"secret_key"`
-			} `mapstructure:"access"`
-		} `mapstructure:"token"`
-	} `mapstructure:"account"`
-}
-
-type S3Config struct {
-	AWS struct {
-		BucketName      string `mapstructure:"bucket_name"`
-		Region          string `mapstructure:"region"`
-		AccessKeyID     string `mapstructure:"access_key_id"`
-		SecretAccessKey string `mapstructure:"secret_access_key"`
-	} `mapstructure:"aws"`
-
-	Upload struct {
-		Token struct {
-			SecretKey string `mapstructure:"secret_key"`
-			TTL       struct {
-				Profile time.Duration `mapstructure:"profile_avatar"`
-			} `mapstructure:"ttl"`
-		} `mapstructure:"token"`
-
-		Profile struct {
-			Avatar struct {
-				AllowedFormats   []string `mapstructure:"allowed_formats"`
-				MaxWidth         int      `mapstructure:"max_width"`
-				MaxHeight        int      `mapstructure:"max_height"`
-				ContentLengthMax int      `mapstructure:"content_length_max"`
-			} `mapstructure:"avatar"`
-		} `mapstructure:"profile"`
-	} `mapstructure:"upload"`
+	Tokens tokenmanager.Config `mapstructure:"tokens"`
 }
 
 type Config struct {
-	Log      LogConfig      `mapstructure:"log"`
-	Rest     RestConfig     `mapstructure:"rest"`
-	Auth     AuthConfig     `mapstructure:"auth"`
-	Kafka    KafkaConfig    `mapstructure:"kafka"`
-	Database DatabaseConfig `mapstructure:"database"`
-	S3       S3Config       `mapstructure:"s3"`
+	Log      LogConfig        `mapstructure:"log"`
+	Rest     rest.Config      `mapstructure:"rest"`
+	Auth     AuthConfig       `mapstructure:"auth"`
+	Kafka    messenger.Config `mapstructure:"kafka"`
+	Database DatabaseConfig   `mapstructure:"database"`
+	S3       S3Config         `mapstructure:"s3"`
 }
 
-func LoadConfig() (Config, error) {
+func LoadConfig() (*Config, error) {
 	configPath := os.Getenv("KV_VIPER_FILE")
 	if configPath == "" {
-		return Config{}, fmt.Errorf("KV_VIPER_FILE env var is not set")
+		return nil, fmt.Errorf("KV_VIPER_FILE env var is not set")
 	}
 
 	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return Config{}, fmt.Errorf("error reading config file: %s", err)
+		return nil, fmt.Errorf("error reading config file: %s", err)
 	}
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		return Config{}, fmt.Errorf("error unmarshalling config: %s", err)
+		return nil, fmt.Errorf("error unmarshalling config: %s", err)
 	}
 
-	return config, nil
+	return &config, nil
 }

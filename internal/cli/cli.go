@@ -10,12 +10,9 @@ import (
 	"github.com/alecthomas/kingpin"
 	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal/boot"
-	maintenance2 "github.com/netbill/profiles-svc/internal/messenger/cleaning"
+	"github.com/netbill/profiles-svc/internal/messenger/cleaning"
 	"github.com/netbill/profiles-svc/migrations"
-	"github.com/sirupsen/logrus"
 )
-
-const ServiceName = "profiles-svc"
 
 func Run(args []string) bool {
 	cfg, err := boot.LoadConfig()
@@ -23,26 +20,7 @@ func Run(args []string) bool {
 		logium.Fatalf("failed to load config: %v", err)
 	}
 
-	logium.SetLevel(logrus.DebugLevel)
-
-	log := logium.New()
-
-	lvl, err := logrus.ParseLevel(cfg.Log.Level)
-	if err != nil {
-		lvl = logrus.InfoLevel
-		log.WithField("bad_level", cfg.Log.Level).Warn("unknown log level, fallback to info")
-	}
-	log.SetLevel(lvl)
-
-	switch {
-	case cfg.Log.Format == "json":
-		log.SetFormatter(&logrus.JSONFormatter{})
-	default:
-		log.SetFormatter(&logrus.TextFormatter{
-			FullTimestamp:   true,
-			TimestampFormat: "2006-01-02 15:04:05",
-		})
-	}
+	log := boot.NewLogger(cfg.Log)
 
 	var (
 		service    = kingpin.New("profiles-svc", "A service for managing user profiles")
@@ -101,29 +79,27 @@ func Run(args []string) bool {
 		return false
 	}
 
-	base := log.WithService(ServiceName)
-
 	switch command {
 	case serviceCmd.FullCommand():
-		boot.Start(ctx, cfg, base, &wg)
+		boot.RunService(ctx, log, &wg, cfg)
 	case migrateUpCmd.FullCommand():
-		err = migrations.MigrateUp(ctx, base, cfg.Database.SQL.URL)
+		err = migrations.MigrateUp(ctx, log, cfg.Database.SQL.URL)
 	case migrateDownCmd.FullCommand():
-		err = migrations.MigrateDown(ctx, base, cfg.Database.SQL.URL)
+		err = migrations.MigrateDown(ctx, log, cfg.Database.SQL.URL)
 	case eventsOutboxFailed.FullCommand():
-		err = maintenance2.CleanupOutboxFailed(ctx, base, cfg.Database.SQL.URL)
+		err = cleaning.CleanupOutboxFailed(ctx, log, cfg.Database.SQL.URL)
 	case eventsOutboxProcessing.FullCommand():
-		err = maintenance2.CleanupOutboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsOutboxProcessingProcessIDs...)
+		err = cleaning.CleanupOutboxProcessing(ctx, log, cfg.Database.SQL.URL, *eventsOutboxProcessingProcessIDs...)
 	case eventsInboxFailed.FullCommand():
-		err = maintenance2.CleanupInboxFailed(ctx, base, cfg.Database.SQL.URL)
+		err = cleaning.CleanupInboxFailed(ctx, log, cfg.Database.SQL.URL)
 	case eventsInboxProcessing.FullCommand():
-		err = maintenance2.CleanupInboxProcessing(ctx, base, cfg.Database.SQL.URL, *eventsInboxProcessingProcessIDs...)
+		err = cleaning.CleanupInboxProcessing(ctx, log, cfg.Database.SQL.URL, *eventsInboxProcessingProcessIDs...)
 	default:
-		base.Errorf("unknown command %s", command)
+		log.Errorf("unknown command %s", command)
 		return false
 	}
 	if err != nil {
-		base.WithError(err).Error("failed to exec cmd")
+		log.WithError(err).Error("failed to exec cmd")
 		return false
 	}
 
@@ -135,10 +111,10 @@ func Run(args []string) bool {
 
 	select {
 	case <-ctx.Done():
-		base.Infof("Interrupt signal received: %v", ctx.Err())
+		log.Infof("Interrupt signal received: %v", ctx.Err())
 		<-wgch
 	case <-wgch:
-		base.Info("All services stopped")
+		log.Info("All services stopped")
 	}
 
 	return true
