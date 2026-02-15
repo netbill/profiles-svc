@@ -6,13 +6,13 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Pseudonym** | Pointer to **string** | pseudonym | [optional] 
 **Description** | Pointer to **string** | description | [optional] 
-**DeleteAvatar** | **bool** | delete avatar | 
+**AvatarKey** | Pointer to **string** | avatar media key | [optional] 
 
 ## Methods
 
 ### NewUpdateProfileDataAttributes
 
-`func NewUpdateProfileDataAttributes(deleteAvatar bool, ) *UpdateProfileDataAttributes`
+`func NewUpdateProfileDataAttributes() *UpdateProfileDataAttributes`
 
 NewUpdateProfileDataAttributes instantiates a new UpdateProfileDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -77,25 +77,30 @@ SetDescription sets Description field to given value.
 
 HasDescription returns a boolean if a field has been set.
 
-### GetDeleteAvatar
+### GetAvatarKey
 
-`func (o *UpdateProfileDataAttributes) GetDeleteAvatar() bool`
+`func (o *UpdateProfileDataAttributes) GetAvatarKey() string`
 
-GetDeleteAvatar returns the DeleteAvatar field if non-nil, zero value otherwise.
+GetAvatarKey returns the AvatarKey field if non-nil, zero value otherwise.
 
-### GetDeleteAvatarOk
+### GetAvatarKeyOk
 
-`func (o *UpdateProfileDataAttributes) GetDeleteAvatarOk() (*bool, bool)`
+`func (o *UpdateProfileDataAttributes) GetAvatarKeyOk() (*string, bool)`
 
-GetDeleteAvatarOk returns a tuple with the DeleteAvatar field if it's non-nil, zero value otherwise
+GetAvatarKeyOk returns a tuple with the AvatarKey field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetDeleteAvatar
+### SetAvatarKey
 
-`func (o *UpdateProfileDataAttributes) SetDeleteAvatar(v bool)`
+`func (o *UpdateProfileDataAttributes) SetAvatarKey(v string)`
 
-SetDeleteAvatar sets DeleteAvatar field to given value.
+SetAvatarKey sets AvatarKey field to given value.
 
+### HasAvatarKey
+
+`func (o *UpdateProfileDataAttributes) HasAvatarKey() bool`
+
+HasAvatarKey returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

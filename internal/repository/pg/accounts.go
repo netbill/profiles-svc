@@ -40,30 +40,30 @@ func scanAccount(row sq.RowScanner) (r repository.AccountRow, err error) {
 
 type accounts struct {
 	db       *pgdbx.DB
-	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
+	selector sq.SelectBuilder
+	counter  sq.SelectBuilder
 	updater  sq.UpdateBuilder
 	deleter  sq.DeleteBuilder
-	counter  sq.SelectBuilder
 }
 
 func NewAccountsQ(db *pgdbx.DB) repository.AccountsQ {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	return accounts{
+	return &accounts{
 		db:       db,
-		selector: builder.Select(accountsColumns).From(accountsTable),
 		inserter: builder.Insert(accountsTable),
+		selector: builder.Select(accountsColumns).From(accountsTable),
+		counter:  builder.Select("COUNT(*) AS count").From(accountsTable),
 		updater:  builder.Update(accountsTable),
 		deleter:  builder.Delete(accountsTable),
-		counter:  builder.Select("COUNT(*) AS count").From(accountsTable),
 	}
 }
 
-func (q accounts) New() repository.AccountsQ {
+func (q *accounts) New() repository.AccountsQ {
 	return NewAccountsQ(q.db)
 }
 
-func (q accounts) Insert(ctx context.Context, input repository.AccountRow) (repository.AccountRow, error) {
+func (q *accounts) Insert(ctx context.Context, input repository.AccountRow) (repository.AccountRow, error) {
 	id := pgtype.UUID{Bytes: [16]byte(input.ID), Valid: true}
 	username := pgtype.Text{String: input.Username, Valid: true}
 	role := pgtype.Text{String: input.Role, Valid: true}
@@ -87,15 +87,23 @@ func (q accounts) Insert(ctx context.Context, input repository.AccountRow) (repo
 	return scanAccount(q.db.QueryRow(ctx, query, args...))
 }
 
-func (q accounts) Get(ctx context.Context) (repository.AccountRow, error) {
+func (q *accounts) Get(ctx context.Context) (repository.AccountRow, error) {
 	query, args, err := q.selector.Limit(1).ToSql()
 	if err != nil {
 		return repository.AccountRow{}, fmt.Errorf("building get query for %s: %w", accountsTable, err)
 	}
-	return scanAccount(q.db.QueryRow(ctx, query, args...))
+
+	row := q.db.QueryRow(ctx, query, args...)
+	acc, err := scanAccount(row)
+
+	if err != nil {
+		return repository.AccountRow{}, err
+	}
+
+	return acc, nil
 }
 
-func (q accounts) Select(ctx context.Context) ([]repository.AccountRow, error) {
+func (q *accounts) Select(ctx context.Context) ([]repository.AccountRow, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building select query for %s: %w", accountsTable, err)
@@ -123,7 +131,7 @@ func (q accounts) Select(ctx context.Context) ([]repository.AccountRow, error) {
 	return out, nil
 }
 
-func (q accounts) UpdateMany(ctx context.Context) (int64, error) {
+func (q *accounts) UpdateMany(ctx context.Context) (int64, error) {
 	now := time.Now().UTC()
 
 	q.updater = q.updater.Set("replica_updated_at", pgtype.Timestamptz{Time: now, Valid: true})
@@ -141,7 +149,7 @@ func (q accounts) UpdateMany(ctx context.Context) (int64, error) {
 	return tag.RowsAffected(), nil
 }
 
-func (q accounts) UpdateOne(ctx context.Context) (repository.AccountRow, error) {
+func (q *accounts) UpdateOne(ctx context.Context) (repository.AccountRow, error) {
 	now := time.Now().UTC()
 
 	q.updater = q.updater.Set("replica_updated_at", pgtype.Timestamptz{Time: now, Valid: true})
@@ -154,27 +162,27 @@ func (q accounts) UpdateOne(ctx context.Context) (repository.AccountRow, error) 
 	return scanAccount(q.db.QueryRow(ctx, query, args...))
 }
 
-func (q accounts) UpdateRole(role string) repository.AccountsQ {
+func (q *accounts) UpdateRole(role string) repository.AccountsQ {
 	q.updater = q.updater.Set("role", pgtype.Text{String: role, Valid: true})
 	return q
 }
 
-func (q accounts) UpdateUsername(username string) repository.AccountsQ {
+func (q *accounts) UpdateUsername(username string) repository.AccountsQ {
 	q.updater = q.updater.Set("username", pgtype.Text{String: username, Valid: true})
 	return q
 }
 
-func (q accounts) UpdateVersion(version int32) repository.AccountsQ {
+func (q *accounts) UpdateVersion(version int32) repository.AccountsQ {
 	q.updater = q.updater.Set("version", pgtype.Int4{Int32: version, Valid: true})
 	return q
 }
 
-func (q accounts) UpdateSourceUpdatedAt(source time.Time) repository.AccountsQ {
+func (q *accounts) UpdateSourceUpdatedAt(source time.Time) repository.AccountsQ {
 	q.updater = q.updater.Set("source_updated_at", pgtype.Timestamp{Time: source, Valid: true})
 	return q
 }
 
-func (q accounts) Delete(ctx context.Context) error {
+func (q *accounts) Delete(ctx context.Context) error {
 	query, args, err := q.deleter.ToSql()
 	if err != nil {
 		return fmt.Errorf("building delete query for %s: %w", accountsTable, err)
@@ -183,7 +191,7 @@ func (q accounts) Delete(ctx context.Context) error {
 	return err
 }
 
-func (q accounts) Exists(ctx context.Context) (bool, error) {
+func (q *accounts) Exists(ctx context.Context) (bool, error) {
 	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
 	if err != nil {
 		return false, err
@@ -200,37 +208,37 @@ func (q accounts) Exists(ctx context.Context) (bool, error) {
 	return exists, nil
 }
 
-func (q accounts) FilterID(id uuid.UUID) repository.AccountsQ {
+func (q *accounts) FilterID(id uuid.UUID) repository.AccountsQ {
 	pid := pgtype.UUID{Bytes: [16]byte(id), Valid: true}
 
 	q.selector = q.selector.Where(sq.Eq{"id": pid})
 	q.counter = q.counter.Where(sq.Eq{"id": pid})
-	q.deleter = q.deleter.Where(sq.Eq{"id": pid})
 	q.updater = q.updater.Where(sq.Eq{"id": pid})
+	q.deleter = q.deleter.Where(sq.Eq{"id": pid})
 	return q
 }
 
-func (q accounts) FilterUsername(username string) repository.AccountsQ {
+func (q *accounts) FilterUsername(username string) repository.AccountsQ {
 	val := pgtype.Text{String: username, Valid: true}
 
 	q.selector = q.selector.Where(sq.Eq{"username": val})
 	q.counter = q.counter.Where(sq.Eq{"username": val})
-	q.deleter = q.deleter.Where(sq.Eq{"username": val})
 	q.updater = q.updater.Where(sq.Eq{"username": val})
+	q.deleter = q.deleter.Where(sq.Eq{"username": val})
 	return q
 }
 
-func (q accounts) FilterVersion(version int32) repository.AccountsQ {
+func (q *accounts) FilterVersion(version int32) repository.AccountsQ {
 	val := pgtype.Int4{Int32: version, Valid: true}
 
 	q.selector = q.selector.Where(sq.Eq{"version": val})
 	q.counter = q.counter.Where(sq.Eq{"version": val})
-	q.deleter = q.deleter.Where(sq.Eq{"version": val})
 	q.updater = q.updater.Where(sq.Eq{"version": val})
+	q.deleter = q.deleter.Where(sq.Eq{"version": val})
 	return q
 }
 
-func (q accounts) Count(ctx context.Context) (uint, error) {
+func (q *accounts) Count(ctx context.Context) (uint, error) {
 	query, args, err := q.counter.ToSql()
 	if err != nil {
 		return 0, fmt.Errorf("building count query for %s: %w", accountsTable, err)
@@ -248,7 +256,7 @@ func (q accounts) Count(ctx context.Context) (uint, error) {
 	return uint(count), nil
 }
 
-func (q accounts) Page(limit, offset uint) repository.AccountsQ {
+func (q *accounts) Page(limit, offset uint) repository.AccountsQ {
 	q.selector = q.selector.Limit(uint64(limit)).Offset(uint64(offset))
 	return q
 }

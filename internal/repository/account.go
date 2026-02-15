@@ -2,12 +2,10 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/models"
 	"github.com/netbill/profiles-svc/internal/core/modules/account"
@@ -23,6 +21,10 @@ type AccountRow struct {
 	ReplicaCreatedAt time.Time `db:"replica_created_at"`
 	SourceUpdatedAt  time.Time `db:"source_updated_at"`
 	ReplicaUpdatedAt time.Time `db:"replica_updated_at"`
+}
+
+func (a AccountRow) IsNil() bool {
+	return a.ID == uuid.Nil
 }
 
 func (a AccountRow) ToModel() models.Account {
@@ -61,10 +63,8 @@ type AccountsQ interface {
 }
 
 func (r *Repository) CreateAccount(ctx context.Context, params account.CreateAccountParams) (models.Account, error) {
-	accountID := uuid.New()
-
 	acc, err := r.accountsQ.New().Insert(ctx, AccountRow{
-		ID:              accountID,
+		ID:              params.ID,
 		Username:        params.Username,
 		Role:            params.Role,
 		Version:         params.Version,
@@ -79,17 +79,17 @@ func (r *Repository) CreateAccount(ctx context.Context, params account.CreateAcc
 }
 
 func (r *Repository) GetAccountByID(ctx context.Context, accountID uuid.UUID) (models.Account, error) {
-	acc, err := r.accountsQ.New().FilterID(accountID).Get(ctx)
+	row, err := r.accountsQ.New().FilterID(accountID).Get(ctx)
 	switch {
-	case errors.Is(err, pgx.ErrNoRows):
+	case err != nil:
+		return models.Account{}, fmt.Errorf("failed to get account, cause: %w", err)
+	case row.IsNil():
 		return models.Account{}, errx.ErrorAccountNotFound.Raise(
 			fmt.Errorf("account with id %s not found", accountID),
 		)
-	case err != nil:
-		return models.Account{}, fmt.Errorf("failed to get account, cause: %w", err)
 	}
 
-	return acc.ToModel(), nil
+	return row.ToModel(), nil
 }
 
 func (r *Repository) ExistsAccountByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
@@ -102,17 +102,17 @@ func (r *Repository) ExistsAccountByID(ctx context.Context, accountID uuid.UUID)
 }
 
 func (r *Repository) GetAccountByUsername(ctx context.Context, username string) (models.Account, error) {
-	acc, err := r.accountsQ.New().FilterUsername(username).Get(ctx)
+	row, err := r.accountsQ.New().FilterUsername(username).Get(ctx)
 	switch {
-	case errors.Is(err, pgx.ErrNoRows):
+	case err != nil:
+		return models.Account{}, fmt.Errorf("failed to get account by username, cause: %w", err)
+	case row.IsNil():
 		return models.Account{}, errx.ErrorAccountNotFound.Raise(
 			fmt.Errorf("account with username %s not found", username),
 		)
-	case err != nil:
-		return models.Account{}, fmt.Errorf("failed to get account by username, cause: %w", err)
 	}
 
-	return acc.ToModel(), nil
+	return row.ToModel(), nil
 }
 func (r *Repository) ExistsAccountByUsername(ctx context.Context, username string) (bool, error) {
 	exist, err := r.accountsQ.New().FilterUsername(username).Exists(ctx)

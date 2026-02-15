@@ -14,7 +14,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: "../components/schemas/responses/UpdateProfileSession.yaml"
+            $ref: "../components/schemas/responses/UploadProfileMediaLinks.yaml"
     "401":
       description: Unauthorized.
       content:

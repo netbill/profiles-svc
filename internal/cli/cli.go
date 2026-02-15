@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/netbill/logium"
 	"github.com/netbill/profiles-svc/internal/boot"
 	"github.com/netbill/profiles-svc/internal/messenger/cleaning"
 	"github.com/netbill/profiles-svc/migrations"

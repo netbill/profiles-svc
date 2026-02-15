@@ -370,7 +370,7 @@ import (
 )
 
 func main() {
-	updateProfile := *openapiclient.NewUpdateProfile(*openapiclient.NewUpdateProfileData("TODO", "Type_example", *openapiclient.NewUpdateProfileDataAttributes(false))) // UpdateProfile | 
+	updateProfile := *openapiclient.NewUpdateProfile(*openapiclient.NewUpdateProfileData("TODO", "Type_example", *openapiclient.NewUpdateProfileDataAttributes())) // UpdateProfile | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -417,7 +417,7 @@ No authorization required
 
 ## ProfilesSvcV1ProfilesMeUpdateSessionPost
 
-> UpdateProfileSession ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx).Execute()
+> UploadProfileMediaLinks ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx).Execute()
 
 Open profile update session
 
@@ -444,7 +444,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `ProfilesSvcV1ProfilesMeUpdateSessionPost`: UpdateProfileSession
+	// response from `ProfilesSvcV1ProfilesMeUpdateSessionPost`: UploadProfileMediaLinks
 	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost`: %v\n", resp)
 }
 ```
@@ -460,7 +460,7 @@ Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpd
 
 ### Return type
 
-[**UpdateProfileSession**](UpdateProfileSession.md)
+[**UploadProfileMediaLinks**](UploadProfileMediaLinks.md)
 
 ### Authorization
 

@@ -12,15 +12,13 @@ import (
 type Module struct {
 	repo      repo
 	messenger messenger
-	token     token
 	bucket    bucket
 }
 
-func New(repo repo, messenger messenger, token token, bucket bucket) *Module {
+func New(repo repo, messenger messenger, bucket bucket) *Module {
 	return &Module{
 		repo:      repo,
 		messenger: messenger,
-		token:     token,
 		bucket:    bucket,
 	}
 }
@@ -29,9 +27,11 @@ type repo interface {
 	GetProfileByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetProfileByUsername(ctx context.Context, username string) (models.Profile, error)
 
-	UpdateProfile(ctx context.Context, accountID uuid.UUID, params UpdateParams) (models.Profile, error)
-	UpdateProfileAvatar(ctx context.Context, accountID uuid.UUID, avatarURL string) (models.Profile, error)
-	DeleteProfileAvatar(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
+	UpdateProfile(
+		ctx context.Context,
+		accountID uuid.UUID,
+		params UpdateParams,
+	) (models.Profile, error)
 
 	UpdateProfileOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
@@ -50,36 +50,21 @@ type messenger interface {
 	WriteProfileUpdated(ctx context.Context, profile models.Profile) error
 }
 
-type token interface {
-	GenerateUploadProfileMediaToken(
-		OwnerAccountID uuid.UUID,
-		UploadSessionID uuid.UUID,
-	) (string, error)
-}
-
 type bucket interface {
-	GetPreloadLinkForProfileMedia(
+	GetPreloadLinkForProfileAvatar(
 		ctx context.Context,
-		accountID, sessionID uuid.UUID,
-	) (links models.UpdateProfileMediaLinks, err error)
+		accountID uuid.UUID,
+	) (models.UploadMediaLink, error)
 
 	UpdateProfileAvatar(
 		ctx context.Context,
-		accountID, sessionID uuid.UUID,
+		accountID uuid.UUID,
+		key string,
 	) (string, error)
 
-	CancelUpdateProfileAvatar(
-		ctx context.Context,
-		accountID, sessionID uuid.UUID,
-	) error
-
-	DeleteProfileAvatar(
+	DeleteUploadProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-	) error
-
-	CleanProfileMediaSession(
-		ctx context.Context,
-		accountID, sessionID uuid.UUID,
+		key string,
 	) error
 }

@@ -44,12 +44,3 @@ func AccountActor(r *http.Request) models.AccountActor {
 	claims := r.Context().Value(AccountDataCtxKey).(tokens.AccountAuthClaims)
 	return claims.GetAccountID()
 }
-
-func CtxUploadContent(ctx context.Context, content tokens.UploadContentClaims) context.Context {
-	return context.WithValue(ctx, UploadContentCtxKey, content)
-}
-
-func UploadScope(r *http.Request) models.UploadScope {
-	claims := r.Context().Value(UploadContentCtxKey).(tokens.UploadContentClaims)
-	return claims.GetSessionID()
-}

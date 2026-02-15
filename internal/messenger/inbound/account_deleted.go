@@ -17,5 +17,5 @@ func (i *Inbound) AccountDeleted(
 		return err
 	}
 
-	return i.modules.profile.Delete(ctx, payload.AccountID)
+	return i.modules.account.Delete(ctx, payload.AccountID)
 }

@@ -18,8 +18,6 @@ properties:
         enum: [ update_profile ]
       attributes:
         type: object
-        required:
-          - delete_avatar
         properties:
           pseudonym:
             type: string
@@ -27,6 +25,6 @@ properties:
           description:
             type: string
             description: "description"
-          delete_avatar:
-            type: boolean
-            description: "delete avatar"
+          avatar_key:
+            type: string
+            description: "avatar media key"

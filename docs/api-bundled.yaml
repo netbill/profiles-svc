@@ -133,7 +133,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateProfileSession'
+                $ref: '#/components/schemas/UploadProfileMediaLinks'
         '401':
           description: Unauthorized.
           content:
@@ -328,8 +328,6 @@ components:
                 - update_profile
             attributes:
               type: object
-              required:
-                - delete_avatar
               properties:
                 pseudonym:
                   type: string
@@ -337,9 +335,9 @@ components:
                 description:
                   type: string
                   description: description
-                delete_avatar:
-                  type: boolean
-                  description: delete avatar
+                avatar_key:
+                  type: string
+                  description: avatar media key
     UpdateProfileOfficial:
       type: object
       required:
@@ -368,6 +366,34 @@ components:
                 official:
                   type: boolean
                   description: official
+    DeleteUploadProfileAvatar:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: account id
+            type:
+              type: string
+              enum:
+                - delete_profile_upload_avatar
+            attributes:
+              type: object
+              required:
+                - avatar_key
+              properties:
+                avatar_key:
+                  type: string
+                  description: avatar media key
     Profile:
       type: object
       required:
@@ -439,7 +465,7 @@ components:
             $ref: '#/components/schemas/ProfileData'
         links:
           $ref: '#/components/schemas/PaginationData'
-    UpdateProfileSession:
+    UploadProfileMediaLinks:
       type: object
       required:
         - data
@@ -455,30 +481,25 @@ components:
           properties:
             id:
               type: string
-              format: uuid
-              description: Upload session id
+              description: key for the media
             type:
               type: string
               enum:
-                - profile_avatar_upload
+                - profile_avatar_upload_links
             attributes:
               type: object
               required:
-                - upload_token
                 - upload_url
-                - get_url
+                - preload_url
               properties:
-                upload_token:
-                  type: string
-                  description: JWT upload session token
                 upload_url:
                   type: string
                   format: uri
-                  description: Pre-signed PUT URL for avatar upload
-                get_url:
+                  description: Pre-signed URL for uploading the avatar
+                preload_url:
                   type: string
                   format: uri
-                  description: Pre-signed GET URL to read uploaded avatar
+                  description: URL for preloading the avatar after upload
             relationships:
               type: object
               properties:

@@ -54,9 +54,9 @@ type ProfilesQ interface {
 
 	UpdateUsername(username string) ProfilesQ
 	UpdateOfficial(official bool) ProfilesQ
-	UpdatePseudonym(v *string) ProfilesQ
-	UpdateDescription(v *string) ProfilesQ
-	UpdateAvatar(v *string) ProfilesQ
+	UpdatePseudonym(v string) ProfilesQ
+	UpdateDescription(v string) ProfilesQ
+	UpdateAvatar(v string) ProfilesQ
 
 	Delete(ctx context.Context) error
 
@@ -130,13 +130,13 @@ func (r *Repository) UpdateProfile(
 	accountID uuid.UUID,
 	input profile.UpdateParams,
 ) (models.Profile, error) {
-	q := r.profilesQ.New().
+	row, err := r.profilesQ.New().
 		FilterAccountID(accountID).
 		UpdatePseudonym(input.Pseudonym).
 		UpdateDescription(input.Description).
-		UpdateAvatar(input.GetUpdatedAvatar())
+		UpdateAvatar(input.AvatarKey).
+		UpdateOne(ctx)
 
-	row, err := q.UpdateOne(ctx)
 	switch {
 	case err != nil:
 		return models.Profile{}, fmt.Errorf(
@@ -197,36 +197,13 @@ func (r *Repository) UpdateProfileOfficial(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) UpdateProfileAvatar(
-	ctx context.Context,
-	accountID uuid.UUID,
-	avatarURL string,
-) (models.Profile, error) {
-	row, err := r.profilesQ.New().
-		FilterAccountID(accountID).
-		UpdateAvatar(&avatarURL).
-		UpdateOne(ctx)
-	switch {
-	case err != nil:
-		return models.Profile{}, fmt.Errorf(
-			"failed to update profile avatar by account id %s, cause: %w", accountID, err,
-		)
-	case row.IsNil():
-		return models.Profile{}, errx.ErrorProfileNotExists.Raise(
-			fmt.Errorf("failed to update profile avatar by account id %s, cause: %w", accountID, err),
-		)
-	}
-
-	return row.ToModel(), nil
-}
-
 func (r *Repository) DeleteProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) (models.Profile, error) {
 	row, err := r.profilesQ.New().
 		FilterAccountID(accountID).
-		UpdateAvatar(nil).
+		UpdateAvatar("").
 		UpdateOne(ctx)
 	switch {
 	case err != nil:

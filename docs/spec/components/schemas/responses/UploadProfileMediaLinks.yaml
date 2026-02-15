@@ -13,29 +13,24 @@ properties:
     properties:
       id:
         type: string
-        format: uuid
-        description: "Upload session id"
+        description: "key for the media"
       type:
         type: string
-        enum: [ profile_avatar_upload ]
+        enum: [ profile_avatar_upload_links ]
       attributes:
         type: object
         required:
-          - upload_token
           - upload_url
-          - get_url
+          - preload_url
         properties:
-          upload_token:
-            type: string
-            description: "JWT upload session token"
           upload_url:
             type: string
             format: uri
-            description: "Pre-signed PUT URL for avatar upload"
-          get_url:
+            description: "Pre-signed URL for uploading the avatar"
+          preload_url:
             type: string
             format: uri
-            description: "Pre-signed GET URL to read uploaded avatar"
+            description: "URL for preloading the avatar after upload"
       relationships:
         type: object
         properties:

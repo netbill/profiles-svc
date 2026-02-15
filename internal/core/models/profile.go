@@ -19,17 +19,8 @@ type Profile struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func (e Profile) IsNil() bool {
-	return e.AccountID == uuid.Nil
-}
-
-type UpdateProfileMediaLinks struct {
-	UploadURL string `json:"upload_url"`
-	GetURL    string `json:"get_url"`
-}
-
-type UpdateProfileMedia struct {
-	Links           UpdateProfileMediaLinks `json:"links"`
-	UploadSessionID uuid.UUID               `json:"upload_session_id"`
-	UploadToken     string                  `json:"upload_token"`
+type UploadMediaLink struct {
+	Key        string `json:"key"`
+	UploadURL  string `json:"upload_url"`
+	PreloadUrl string `json:"preload_url"`
 }

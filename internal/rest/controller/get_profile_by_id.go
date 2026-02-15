@@ -28,7 +28,7 @@ func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.modules.Profile.GetByAccountID(r.Context(), accountID)
+	res, err := c.modules.Profile.GetMy(r.Context(), accountID)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile not found")

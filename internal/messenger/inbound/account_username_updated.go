@@ -18,7 +18,7 @@ func (i *Inbound) AccountUsernameUpdated(
 		return err
 	}
 
-	return i.modules.profile.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
+	return i.modules.account.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
 		Username:  payload.NewUsername,
 		Version:   payload.Version,
 		UpdatedAt: payload.UpdatedAt,

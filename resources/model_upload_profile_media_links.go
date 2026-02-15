@@ -16,40 +16,40 @@ import (
 	"fmt"
 )
 
-// checks if the UpdateProfileSession type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UpdateProfileSession{}
+// checks if the UploadProfileMediaLinks type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &UploadProfileMediaLinks{}
 
-// UpdateProfileSession struct for UpdateProfileSession
-type UpdateProfileSession struct {
-	Data UpdateProfileSessionData `json:"data"`
+// UploadProfileMediaLinks struct for UploadProfileMediaLinks
+type UploadProfileMediaLinks struct {
+	Data UploadProfileMediaLinksData `json:"data"`
 	Included []ProfileData `json:"included"`
 }
 
-type _UpdateProfileSession UpdateProfileSession
+type _UploadProfileMediaLinks UploadProfileMediaLinks
 
-// NewUpdateProfileSession instantiates a new UpdateProfileSession object
+// NewUploadProfileMediaLinks instantiates a new UploadProfileMediaLinks object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateProfileSession(data UpdateProfileSessionData, included []ProfileData) *UpdateProfileSession {
-	this := UpdateProfileSession{}
+func NewUploadProfileMediaLinks(data UploadProfileMediaLinksData, included []ProfileData) *UploadProfileMediaLinks {
+	this := UploadProfileMediaLinks{}
 	this.Data = data
 	this.Included = included
 	return &this
 }
 
-// NewUpdateProfileSessionWithDefaults instantiates a new UpdateProfileSession object
+// NewUploadProfileMediaLinksWithDefaults instantiates a new UploadProfileMediaLinks object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUpdateProfileSessionWithDefaults() *UpdateProfileSession {
-	this := UpdateProfileSession{}
+func NewUploadProfileMediaLinksWithDefaults() *UploadProfileMediaLinks {
+	this := UploadProfileMediaLinks{}
 	return &this
 }
 
 // GetData returns the Data field value
-func (o *UpdateProfileSession) GetData() UpdateProfileSessionData {
+func (o *UploadProfileMediaLinks) GetData() UploadProfileMediaLinksData {
 	if o == nil {
-		var ret UpdateProfileSessionData
+		var ret UploadProfileMediaLinksData
 		return ret
 	}
 
@@ -58,7 +58,7 @@ func (o *UpdateProfileSession) GetData() UpdateProfileSessionData {
 
 // GetDataOk returns a tuple with the Data field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSession) GetDataOk() (*UpdateProfileSessionData, bool) {
+func (o *UploadProfileMediaLinks) GetDataOk() (*UploadProfileMediaLinksData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -66,12 +66,12 @@ func (o *UpdateProfileSession) GetDataOk() (*UpdateProfileSessionData, bool) {
 }
 
 // SetData sets field value
-func (o *UpdateProfileSession) SetData(v UpdateProfileSessionData) {
+func (o *UploadProfileMediaLinks) SetData(v UploadProfileMediaLinksData) {
 	o.Data = v
 }
 
 // GetIncluded returns the Included field value
-func (o *UpdateProfileSession) GetIncluded() []ProfileData {
+func (o *UploadProfileMediaLinks) GetIncluded() []ProfileData {
 	if o == nil {
 		var ret []ProfileData
 		return ret
@@ -82,7 +82,7 @@ func (o *UpdateProfileSession) GetIncluded() []ProfileData {
 
 // GetIncludedOk returns a tuple with the Included field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSession) GetIncludedOk() ([]ProfileData, bool) {
+func (o *UploadProfileMediaLinks) GetIncludedOk() ([]ProfileData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -90,11 +90,11 @@ func (o *UpdateProfileSession) GetIncludedOk() ([]ProfileData, bool) {
 }
 
 // SetIncluded sets field value
-func (o *UpdateProfileSession) SetIncluded(v []ProfileData) {
+func (o *UploadProfileMediaLinks) SetIncluded(v []ProfileData) {
 	o.Included = v
 }
 
-func (o UpdateProfileSession) MarshalJSON() ([]byte, error) {
+func (o UploadProfileMediaLinks) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -102,14 +102,14 @@ func (o UpdateProfileSession) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o UpdateProfileSession) ToMap() (map[string]interface{}, error) {
+func (o UploadProfileMediaLinks) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["data"] = o.Data
 	toSerialize["included"] = o.Included
 	return toSerialize, nil
 }
 
-func (o *UpdateProfileSession) UnmarshalJSON(data []byte) (err error) {
+func (o *UploadProfileMediaLinks) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -132,53 +132,53 @@ func (o *UpdateProfileSession) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varUpdateProfileSession := _UpdateProfileSession{}
+	varUploadProfileMediaLinks := _UploadProfileMediaLinks{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdateProfileSession)
+	err = decoder.Decode(&varUploadProfileMediaLinks)
 
 	if err != nil {
 		return err
 	}
 
-	*o = UpdateProfileSession(varUpdateProfileSession)
+	*o = UploadProfileMediaLinks(varUploadProfileMediaLinks)
 
 	return err
 }
 
-type NullableUpdateProfileSession struct {
-	value *UpdateProfileSession
+type NullableUploadProfileMediaLinks struct {
+	value *UploadProfileMediaLinks
 	isSet bool
 }
 
-func (v NullableUpdateProfileSession) Get() *UpdateProfileSession {
+func (v NullableUploadProfileMediaLinks) Get() *UploadProfileMediaLinks {
 	return v.value
 }
 
-func (v *NullableUpdateProfileSession) Set(val *UpdateProfileSession) {
+func (v *NullableUploadProfileMediaLinks) Set(val *UploadProfileMediaLinks) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUpdateProfileSession) IsSet() bool {
+func (v NullableUploadProfileMediaLinks) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUpdateProfileSession) Unset() {
+func (v *NullableUploadProfileMediaLinks) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUpdateProfileSession(val *UpdateProfileSession) *NullableUpdateProfileSession {
-	return &NullableUpdateProfileSession{value: val, isSet: true}
+func NewNullableUploadProfileMediaLinks(val *UploadProfileMediaLinks) *NullableUploadProfileMediaLinks {
+	return &NullableUploadProfileMediaLinks{value: val, isSet: true}
 }
 
-func (v NullableUpdateProfileSession) MarshalJSON() ([]byte, error) {
+func (v NullableUploadProfileMediaLinks) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUpdateProfileSession) UnmarshalJSON(src []byte) error {
+func (v *NullableUploadProfileMediaLinks) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

@@ -18,7 +18,7 @@ func (i *Inbound) AccountCreated(
 		return err
 	}
 
-	return i.modules.profile.Create(ctx, account.CreateAccountParams{
+	return i.modules.account.Create(ctx, account.CreateAccountParams{
 		ID:        payload.AccountID,
 		Username:  payload.Username,
 		Role:      payload.Role,

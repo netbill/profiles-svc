@@ -90,6 +90,9 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [DeleteUploadProfileAvatar](docs/DeleteUploadProfileAvatar.md)
+ - [DeleteUploadProfileAvatarData](docs/DeleteUploadProfileAvatarData.md)
+ - [DeleteUploadProfileAvatarDataAttributes](docs/DeleteUploadProfileAvatarDataAttributes.md)
  - [Errors](docs/Errors.md)
  - [ErrorsErrorsInner](docs/ErrorsErrorsInner.md)
  - [PaginationData](docs/PaginationData.md)
@@ -103,12 +106,12 @@ Class | Method | HTTP request | Description
  - [UpdateProfileOfficial](docs/UpdateProfileOfficial.md)
  - [UpdateProfileOfficialData](docs/UpdateProfileOfficialData.md)
  - [UpdateProfileOfficialDataAttributes](docs/UpdateProfileOfficialDataAttributes.md)
- - [UpdateProfileSession](docs/UpdateProfileSession.md)
- - [UpdateProfileSessionData](docs/UpdateProfileSessionData.md)
- - [UpdateProfileSessionDataAttributes](docs/UpdateProfileSessionDataAttributes.md)
- - [UpdateProfileSessionDataRelationships](docs/UpdateProfileSessionDataRelationships.md)
- - [UpdateProfileSessionDataRelationshipsProfile](docs/UpdateProfileSessionDataRelationshipsProfile.md)
- - [UpdateProfileSessionDataRelationshipsProfileData](docs/UpdateProfileSessionDataRelationshipsProfileData.md)
+ - [UploadProfileMediaLinks](docs/UploadProfileMediaLinks.md)
+ - [UploadProfileMediaLinksData](docs/UploadProfileMediaLinksData.md)
+ - [UploadProfileMediaLinksDataAttributes](docs/UploadProfileMediaLinksDataAttributes.md)
+ - [UploadProfileMediaLinksDataRelationships](docs/UploadProfileMediaLinksDataRelationships.md)
+ - [UploadProfileMediaLinksDataRelationshipsProfile](docs/UploadProfileMediaLinksDataRelationshipsProfile.md)
+ - [UploadProfileMediaLinksDataRelationshipsProfileData](docs/UploadProfileMediaLinksDataRelationshipsProfileData.md)
 
 
 ## Documentation For Authorization

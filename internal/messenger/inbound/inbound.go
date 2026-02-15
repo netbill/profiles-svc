@@ -12,13 +12,13 @@ type Inbound struct {
 }
 
 type modules struct {
-	profile accountModule
+	account accountModule
 }
 
 func New(profileModule accountModule) *Inbound {
 	return &Inbound{
 		modules: modules{
-			profile: profileModule,
+			account: profileModule,
 		},
 	}
 }

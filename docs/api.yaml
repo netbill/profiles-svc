@@ -36,6 +36,8 @@ components:
       $ref: './spec/components/schemas/requests/UpdateProfile.yaml'
     UpdateProfileOfficial:
       $ref: './spec/components/schemas/requests/UpdateProfileOfficial.yaml'
+    DeleteUploadProfileAvatar:
+      $ref: './spec/components/schemas/requests/DeleteUploadProfileAvatar.yaml'
 
     #responses
     Profile:
@@ -46,8 +48,8 @@ components:
       $ref: './spec/components/schemas/responses/ProfileAttributes.yaml'
     ProfilesCollection:
       $ref: './spec/components/schemas/responses/ProfilesCollection.yaml'
-    UpdateProfileSession:
-      $ref: './spec/components/schemas/responses/UpdateProfileSession.yaml'
+    UploadProfileMediaLinks:
+      $ref: './spec/components/schemas/responses/UploadProfileMediaLinks.yaml'
 
     Errors:
       $ref: './spec/components/schemas/responses/Errors.yaml'

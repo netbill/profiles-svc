@@ -836,7 +836,7 @@ type ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest struct {
 	ApiService *ProfilesAPIService
 }
 
-func (r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) Execute() (*UpdateProfileSession, *http.Response, error) {
+func (r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) Execute() (*UploadProfileMediaLinks, *http.Response, error) {
 	return r.ApiService.ProfilesSvcV1ProfilesMeUpdateSessionPostExecute(r)
 }
 
@@ -857,13 +857,13 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx contex
 }
 
 // Execute executes the request
-//  @return UpdateProfileSession
-func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionPostExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) (*UpdateProfileSession, *http.Response, error) {
+//  @return UploadProfileMediaLinks
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUpdateSessionPostExecute(r ApiProfilesSvcV1ProfilesMeUpdateSessionPostRequest) (*UploadProfileMediaLinks, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *UpdateProfileSession
+		localVarReturnValue  *UploadProfileMediaLinks
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeUpdateSessionPost")

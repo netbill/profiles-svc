@@ -137,7 +137,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateProfileSession"
+                $ref: "#/components/schemas/UploadProfileMediaLinks"
           description: Update session opened.
         "401":
           content:
@@ -324,7 +324,7 @@ components:
       example:
         data:
           attributes:
-            delete_avatar: true
+            avatar_key: avatar_key
             description: description
             pseudonym: pseudonym
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -344,6 +344,12 @@ components:
       properties:
         data:
           $ref: "#/components/schemas/UpdateProfileOfficial_data"
+      required:
+      - data
+    DeleteUploadProfileAvatar:
+      properties:
+        data:
+          $ref: "#/components/schemas/DeleteUploadProfileAvatar_data"
       required:
       - data
     Profile:
@@ -477,7 +483,7 @@ components:
       required:
       - data
       - links
-    UpdateProfileSession:
+    UploadProfileMediaLinks:
       example:
         data:
           relationships:
@@ -486,11 +492,10 @@ components:
                 id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
                 type: profile
           attributes:
-            upload_token: upload_token
+            preload_url: https://openapi-generator.tech
             upload_url: https://openapi-generator.tech
-            get_url: https://openapi-generator.tech
-          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          type: profile_avatar_upload
+          id: id
+          type: profile_avatar_upload_links
         included:
         - attributes:
             updated_at: 2000-01-23T04:56:07.000+00:00
@@ -516,7 +521,7 @@ components:
           type: profile
       properties:
         data:
-          $ref: "#/components/schemas/UpdateProfileSession_data"
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data"
         included:
           items:
             $ref: "#/components/schemas/ProfileData"
@@ -566,7 +571,7 @@ components:
       - self
     UpdateProfile_data_attributes:
       example:
-        delete_avatar: true
+        avatar_key: avatar_key
         description: description
         pseudonym: pseudonym
       properties:
@@ -576,15 +581,13 @@ components:
         description:
           description: description
           type: string
-        delete_avatar:
-          description: delete avatar
-          type: boolean
-      required:
-      - delete_avatar
+        avatar_key:
+          description: avatar media key
+          type: string
     UpdateProfile_data:
       example:
         attributes:
-          delete_avatar: true
+          avatar_key: avatar_key
           description: description
           pseudonym: pseudonym
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -634,28 +637,46 @@ components:
       - attributes
       - id
       - type
-    UpdateProfileSession_data_attributes:
-      example:
-        upload_token: upload_token
-        upload_url: https://openapi-generator.tech
-        get_url: https://openapi-generator.tech
+    DeleteUploadProfileAvatar_data_attributes:
       properties:
-        upload_token:
-          description: JWT upload session token
+        avatar_key:
+          description: avatar media key
           type: string
+      required:
+      - avatar_key
+    DeleteUploadProfileAvatar_data:
+      properties:
+        id:
+          description: account id
+          format: uuid
+          type: string
+        type:
+          enum:
+          - delete_profile_upload_avatar
+          type: string
+        attributes:
+          $ref: "#/components/schemas/DeleteUploadProfileAvatar_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    UploadProfileMediaLinks_data_attributes:
+      example:
+        preload_url: https://openapi-generator.tech
+        upload_url: https://openapi-generator.tech
+      properties:
         upload_url:
-          description: Pre-signed PUT URL for avatar upload
+          description: Pre-signed URL for uploading the avatar
           format: uri
           type: string
-        get_url:
-          description: Pre-signed GET URL to read uploaded avatar
+        preload_url:
+          description: URL for preloading the avatar after upload
           format: uri
           type: string
       required:
-      - get_url
-      - upload_token
+      - preload_url
       - upload_url
-    UpdateProfileSession_data_relationships_profile_data:
+    UploadProfileMediaLinks_data_relationships_profile_data:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         type: profile
@@ -671,17 +692,17 @@ components:
       required:
       - id
       - type
-    UpdateProfileSession_data_relationships_profile:
+    UploadProfileMediaLinks_data_relationships_profile:
       example:
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
       properties:
         data:
-          $ref: "#/components/schemas/UpdateProfileSession_data_relationships_profile_data"
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data_relationships_profile_data"
       required:
       - data
-    UpdateProfileSession_data_relationships:
+    UploadProfileMediaLinks_data_relationships:
       example:
         profile:
           data:
@@ -689,8 +710,8 @@ components:
             type: profile
       properties:
         profile:
-          $ref: "#/components/schemas/UpdateProfileSession_data_relationships_profile"
-    UpdateProfileSession_data:
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data_relationships_profile"
+    UploadProfileMediaLinks_data:
       example:
         relationships:
           profile:
@@ -698,24 +719,22 @@ components:
               id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               type: profile
         attributes:
-          upload_token: upload_token
+          preload_url: https://openapi-generator.tech
           upload_url: https://openapi-generator.tech
-          get_url: https://openapi-generator.tech
-        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        type: profile_avatar_upload
+        id: id
+        type: profile_avatar_upload_links
       properties:
         id:
-          description: Upload session id
-          format: uuid
+          description: key for the media
           type: string
         type:
           enum:
-          - profile_avatar_upload
+          - profile_avatar_upload_links
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateProfileSession_data_attributes"
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data_attributes"
         relationships:
-          $ref: "#/components/schemas/UpdateProfileSession_data_relationships"
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data_relationships"
       required:
       - attributes
       - id

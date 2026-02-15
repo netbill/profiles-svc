@@ -12,31 +12,30 @@ package resources
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"bytes"
 	"fmt"
 )
 
-// checks if the UpdateProfileSessionData type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UpdateProfileSessionData{}
+// checks if the UploadProfileMediaLinksData type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &UploadProfileMediaLinksData{}
 
-// UpdateProfileSessionData struct for UpdateProfileSessionData
-type UpdateProfileSessionData struct {
-	// Upload session id
-	Id uuid.UUID `json:"id"`
+// UploadProfileMediaLinksData struct for UploadProfileMediaLinksData
+type UploadProfileMediaLinksData struct {
+	// key for the media
+	Id string `json:"id"`
 	Type string `json:"type"`
-	Attributes UpdateProfileSessionDataAttributes `json:"attributes"`
-	Relationships UpdateProfileSessionDataRelationships `json:"relationships"`
+	Attributes UploadProfileMediaLinksDataAttributes `json:"attributes"`
+	Relationships UploadProfileMediaLinksDataRelationships `json:"relationships"`
 }
 
-type _UpdateProfileSessionData UpdateProfileSessionData
+type _UploadProfileMediaLinksData UploadProfileMediaLinksData
 
-// NewUpdateProfileSessionData instantiates a new UpdateProfileSessionData object
+// NewUploadProfileMediaLinksData instantiates a new UploadProfileMediaLinksData object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateProfileSessionData(id uuid.UUID, type_ string, attributes UpdateProfileSessionDataAttributes, relationships UpdateProfileSessionDataRelationships) *UpdateProfileSessionData {
-	this := UpdateProfileSessionData{}
+func NewUploadProfileMediaLinksData(id string, type_ string, attributes UploadProfileMediaLinksDataAttributes, relationships UploadProfileMediaLinksDataRelationships) *UploadProfileMediaLinksData {
+	this := UploadProfileMediaLinksData{}
 	this.Id = id
 	this.Type = type_
 	this.Attributes = attributes
@@ -44,18 +43,18 @@ func NewUpdateProfileSessionData(id uuid.UUID, type_ string, attributes UpdatePr
 	return &this
 }
 
-// NewUpdateProfileSessionDataWithDefaults instantiates a new UpdateProfileSessionData object
+// NewUploadProfileMediaLinksDataWithDefaults instantiates a new UploadProfileMediaLinksData object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUpdateProfileSessionDataWithDefaults() *UpdateProfileSessionData {
-	this := UpdateProfileSessionData{}
+func NewUploadProfileMediaLinksDataWithDefaults() *UploadProfileMediaLinksData {
+	this := UploadProfileMediaLinksData{}
 	return &this
 }
 
 // GetId returns the Id field value
-func (o *UpdateProfileSessionData) GetId() uuid.UUID {
+func (o *UploadProfileMediaLinksData) GetId() string {
 	if o == nil {
-		var ret uuid.UUID
+		var ret string
 		return ret
 	}
 
@@ -64,7 +63,7 @@ func (o *UpdateProfileSessionData) GetId() uuid.UUID {
 
 // GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSessionData) GetIdOk() (*uuid.UUID, bool) {
+func (o *UploadProfileMediaLinksData) GetIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -72,12 +71,12 @@ func (o *UpdateProfileSessionData) GetIdOk() (*uuid.UUID, bool) {
 }
 
 // SetId sets field value
-func (o *UpdateProfileSessionData) SetId(v uuid.UUID) {
+func (o *UploadProfileMediaLinksData) SetId(v string) {
 	o.Id = v
 }
 
 // GetType returns the Type field value
-func (o *UpdateProfileSessionData) GetType() string {
+func (o *UploadProfileMediaLinksData) GetType() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -88,7 +87,7 @@ func (o *UpdateProfileSessionData) GetType() string {
 
 // GetTypeOk returns a tuple with the Type field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSessionData) GetTypeOk() (*string, bool) {
+func (o *UploadProfileMediaLinksData) GetTypeOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -96,14 +95,14 @@ func (o *UpdateProfileSessionData) GetTypeOk() (*string, bool) {
 }
 
 // SetType sets field value
-func (o *UpdateProfileSessionData) SetType(v string) {
+func (o *UploadProfileMediaLinksData) SetType(v string) {
 	o.Type = v
 }
 
 // GetAttributes returns the Attributes field value
-func (o *UpdateProfileSessionData) GetAttributes() UpdateProfileSessionDataAttributes {
+func (o *UploadProfileMediaLinksData) GetAttributes() UploadProfileMediaLinksDataAttributes {
 	if o == nil {
-		var ret UpdateProfileSessionDataAttributes
+		var ret UploadProfileMediaLinksDataAttributes
 		return ret
 	}
 
@@ -112,7 +111,7 @@ func (o *UpdateProfileSessionData) GetAttributes() UpdateProfileSessionDataAttri
 
 // GetAttributesOk returns a tuple with the Attributes field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSessionData) GetAttributesOk() (*UpdateProfileSessionDataAttributes, bool) {
+func (o *UploadProfileMediaLinksData) GetAttributesOk() (*UploadProfileMediaLinksDataAttributes, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -120,14 +119,14 @@ func (o *UpdateProfileSessionData) GetAttributesOk() (*UpdateProfileSessionDataA
 }
 
 // SetAttributes sets field value
-func (o *UpdateProfileSessionData) SetAttributes(v UpdateProfileSessionDataAttributes) {
+func (o *UploadProfileMediaLinksData) SetAttributes(v UploadProfileMediaLinksDataAttributes) {
 	o.Attributes = v
 }
 
 // GetRelationships returns the Relationships field value
-func (o *UpdateProfileSessionData) GetRelationships() UpdateProfileSessionDataRelationships {
+func (o *UploadProfileMediaLinksData) GetRelationships() UploadProfileMediaLinksDataRelationships {
 	if o == nil {
-		var ret UpdateProfileSessionDataRelationships
+		var ret UploadProfileMediaLinksDataRelationships
 		return ret
 	}
 
@@ -136,7 +135,7 @@ func (o *UpdateProfileSessionData) GetRelationships() UpdateProfileSessionDataRe
 
 // GetRelationshipsOk returns a tuple with the Relationships field value
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileSessionData) GetRelationshipsOk() (*UpdateProfileSessionDataRelationships, bool) {
+func (o *UploadProfileMediaLinksData) GetRelationshipsOk() (*UploadProfileMediaLinksDataRelationships, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -144,11 +143,11 @@ func (o *UpdateProfileSessionData) GetRelationshipsOk() (*UpdateProfileSessionDa
 }
 
 // SetRelationships sets field value
-func (o *UpdateProfileSessionData) SetRelationships(v UpdateProfileSessionDataRelationships) {
+func (o *UploadProfileMediaLinksData) SetRelationships(v UploadProfileMediaLinksDataRelationships) {
 	o.Relationships = v
 }
 
-func (o UpdateProfileSessionData) MarshalJSON() ([]byte, error) {
+func (o UploadProfileMediaLinksData) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -156,7 +155,7 @@ func (o UpdateProfileSessionData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o UpdateProfileSessionData) ToMap() (map[string]interface{}, error) {
+func (o UploadProfileMediaLinksData) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
 	toSerialize["type"] = o.Type
@@ -165,7 +164,7 @@ func (o UpdateProfileSessionData) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *UpdateProfileSessionData) UnmarshalJSON(data []byte) (err error) {
+func (o *UploadProfileMediaLinksData) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -190,53 +189,53 @@ func (o *UpdateProfileSessionData) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varUpdateProfileSessionData := _UpdateProfileSessionData{}
+	varUploadProfileMediaLinksData := _UploadProfileMediaLinksData{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdateProfileSessionData)
+	err = decoder.Decode(&varUploadProfileMediaLinksData)
 
 	if err != nil {
 		return err
 	}
 
-	*o = UpdateProfileSessionData(varUpdateProfileSessionData)
+	*o = UploadProfileMediaLinksData(varUploadProfileMediaLinksData)
 
 	return err
 }
 
-type NullableUpdateProfileSessionData struct {
-	value *UpdateProfileSessionData
+type NullableUploadProfileMediaLinksData struct {
+	value *UploadProfileMediaLinksData
 	isSet bool
 }
 
-func (v NullableUpdateProfileSessionData) Get() *UpdateProfileSessionData {
+func (v NullableUploadProfileMediaLinksData) Get() *UploadProfileMediaLinksData {
 	return v.value
 }
 
-func (v *NullableUpdateProfileSessionData) Set(val *UpdateProfileSessionData) {
+func (v *NullableUploadProfileMediaLinksData) Set(val *UploadProfileMediaLinksData) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUpdateProfileSessionData) IsSet() bool {
+func (v NullableUploadProfileMediaLinksData) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUpdateProfileSessionData) Unset() {
+func (v *NullableUploadProfileMediaLinksData) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUpdateProfileSessionData(val *UpdateProfileSessionData) *NullableUpdateProfileSessionData {
-	return &NullableUpdateProfileSessionData{value: val, isSet: true}
+func NewNullableUploadProfileMediaLinksData(val *UploadProfileMediaLinksData) *NullableUploadProfileMediaLinksData {
+	return &NullableUploadProfileMediaLinksData{value: val, isSet: true}
 }
 
-func (v NullableUpdateProfileSessionData) MarshalJSON() ([]byte, error) {
+func (v NullableUploadProfileMediaLinksData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUpdateProfileSessionData) UnmarshalJSON(src []byte) error {
+func (v *NullableUploadProfileMediaLinksData) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

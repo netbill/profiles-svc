@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE accounts (
-    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id         UUID        PRIMARY KEY,
     username   VARCHAR(32) NOT NULL UNIQUE,
     role       VARCHAR     NOT NULL,
     version    INTEGER     NOT NULL DEFAULT 1 CHECK ( version > 0 ),
@@ -13,7 +13,7 @@ CREATE TABLE accounts (
 
 CREATE TABLE profiles (
     account_id  UUID PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
-    username    VARCHAR(32) NOT NULL UNIQUE REFERENCES accounts(username) ON DELETE CASCADE,
+    username    VARCHAR(32) NOT NULL UNIQUE,
     official    BOOLEAN NOT NULL DEFAULT FALSE,
     pseudonym   VARCHAR(128),
     description VARCHAR(255),

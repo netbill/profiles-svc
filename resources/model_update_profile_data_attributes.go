@@ -12,8 +12,6 @@ package resources
 
 import (
 	"encoding/json"
-	"bytes"
-	"fmt"
 )
 
 // checks if the UpdateProfileDataAttributes type satisfies the MappedNullable interface at compile time
@@ -25,19 +23,16 @@ type UpdateProfileDataAttributes struct {
 	Pseudonym *string `json:"pseudonym,omitempty"`
 	// description
 	Description *string `json:"description,omitempty"`
-	// delete avatar
-	DeleteAvatar bool `json:"delete_avatar"`
+	// avatar media key
+	AvatarKey *string `json:"avatar_key,omitempty"`
 }
-
-type _UpdateProfileDataAttributes UpdateProfileDataAttributes
 
 // NewUpdateProfileDataAttributes instantiates a new UpdateProfileDataAttributes object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateProfileDataAttributes(deleteAvatar bool) *UpdateProfileDataAttributes {
+func NewUpdateProfileDataAttributes() *UpdateProfileDataAttributes {
 	this := UpdateProfileDataAttributes{}
-	this.DeleteAvatar = deleteAvatar
 	return &this
 }
 
@@ -113,28 +108,36 @@ func (o *UpdateProfileDataAttributes) SetDescription(v string) {
 	o.Description = &v
 }
 
-// GetDeleteAvatar returns the DeleteAvatar field value
-func (o *UpdateProfileDataAttributes) GetDeleteAvatar() bool {
-	if o == nil {
-		var ret bool
+// GetAvatarKey returns the AvatarKey field value if set, zero value otherwise.
+func (o *UpdateProfileDataAttributes) GetAvatarKey() string {
+	if o == nil || IsNil(o.AvatarKey) {
+		var ret string
 		return ret
 	}
-
-	return o.DeleteAvatar
+	return *o.AvatarKey
 }
 
-// GetDeleteAvatarOk returns a tuple with the DeleteAvatar field value
+// GetAvatarKeyOk returns a tuple with the AvatarKey field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UpdateProfileDataAttributes) GetDeleteAvatarOk() (*bool, bool) {
-	if o == nil {
+func (o *UpdateProfileDataAttributes) GetAvatarKeyOk() (*string, bool) {
+	if o == nil || IsNil(o.AvatarKey) {
 		return nil, false
 	}
-	return &o.DeleteAvatar, true
+	return o.AvatarKey, true
 }
 
-// SetDeleteAvatar sets field value
-func (o *UpdateProfileDataAttributes) SetDeleteAvatar(v bool) {
-	o.DeleteAvatar = v
+// HasAvatarKey returns a boolean if a field has been set.
+func (o *UpdateProfileDataAttributes) HasAvatarKey() bool {
+	if o != nil && !IsNil(o.AvatarKey) {
+		return true
+	}
+
+	return false
+}
+
+// SetAvatarKey gets a reference to the given string and assigns it to the AvatarKey field.
+func (o *UpdateProfileDataAttributes) SetAvatarKey(v string) {
+	o.AvatarKey = &v
 }
 
 func (o UpdateProfileDataAttributes) MarshalJSON() ([]byte, error) {
@@ -153,45 +156,10 @@ func (o UpdateProfileDataAttributes) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	toSerialize["delete_avatar"] = o.DeleteAvatar
+	if !IsNil(o.AvatarKey) {
+		toSerialize["avatar_key"] = o.AvatarKey
+	}
 	return toSerialize, nil
-}
-
-func (o *UpdateProfileDataAttributes) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"delete_avatar",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err;
-	}
-
-	for _, requiredProperty := range(requiredProperties) {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varUpdateProfileDataAttributes := _UpdateProfileDataAttributes{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdateProfileDataAttributes)
-
-	if err != nil {
-		return err
-	}
-
-	*o = UpdateProfileDataAttributes(varUpdateProfileDataAttributes)
-
-	return err
 }
 
 type NullableUpdateProfileDataAttributes struct {

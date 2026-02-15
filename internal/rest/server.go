@@ -19,19 +19,17 @@ type Handlers interface {
 
 	FilterProfiles(w http.ResponseWriter, r *http.Request)
 
+	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
 
-	OenUpdateProfileSession(w http.ResponseWriter, r *http.Request)
-	ConfirmUpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	CancelUpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	DeleteUploadProfileAvatar(w http.ResponseWriter, r *http.Request)
+	GetMyProfileAvatarUploadMediaLink(w http.ResponseWriter, r *http.Request)
+	DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.Request)
 }
 
 type Middlewares interface {
 	AccountAuth(
 		allowedRoles ...string,
 	) func(next http.Handler) http.Handler
-	UpdateOwnProfileMediaContent() func(next http.Handler) http.Handler
 	Logger(log *logium.Entry) func(next http.Handler) http.Handler
 	CorsDocs() func(next http.Handler) http.Handler
 }
@@ -61,7 +59,6 @@ type Config struct {
 func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 	auth := s.middlewares.AccountAuth()
 	sysmoder := s.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
-	updateOwnProfile := s.middlewares.UpdateOwnProfileMediaContent()
 
 	log = log.WithField("component", "rest")
 
@@ -76,25 +73,22 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 			r.Route("/profiles", func(r chi.Router) {
 				r.Get("/", s.handlers.FilterProfiles)
 
-				r.Get("/u/{username}", s.handlers.GetProfileByUsername)
-
 				r.With(auth).Route("/me", func(r chi.Router) {
 					r.Get("/", s.handlers.GetMyProfile)
+					r.Put("/", s.handlers.UpdateMyProfile)
 
-					r.Route("/update-session", func(r chi.Router) {
-						r.Post("/", s.handlers.OenUpdateProfileSession)
-						r.With(updateOwnProfile).Delete("/", s.handlers.CancelUpdateMyProfile)
-
-						r.With(updateOwnProfile).Put("/confirm", s.handlers.ConfirmUpdateMyProfile)
-						r.With(updateOwnProfile).Delete("/upload-avatar", s.handlers.DeleteUploadProfileAvatar)
+					r.Route("/avatar", func(r chi.Router) {
+						r.Post("/upload-url", s.handlers.GetMyProfileAvatarUploadMediaLink)
+						r.Delete("/upload", s.handlers.DeleteMyProfileUploadAvatar)
 					})
 				})
-			})
 
-			r.Route("/{account_id}", func(r chi.Router) {
-				r.Get("/", s.handlers.GetProfileByID)
+				r.Get("/@{username}", s.handlers.GetProfileByUsername)
 
-				r.With(sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
+				r.Route("/{account_id:[0-9a-fA-F-]{36}}", func(r chi.Router) {
+					r.Get("/", s.handlers.GetProfileByID)
+					r.With(sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
+				})
 			})
 		})
 	})

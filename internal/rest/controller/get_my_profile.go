@@ -15,7 +15,7 @@ const operationGetMyProfile = "get_my_profile"
 func (c *Controller) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfile)
 
-	res, err := c.modules.Profile.GetByAccountID(r.Context(), scope.AccountActor(r))
+	res, err := c.modules.Profile.GetMy(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")

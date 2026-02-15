@@ -1,0 +1,26 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "account id"
+      type:
+        type: string
+        enum: [ delete_profile_upload_avatar ]
+      attributes:
+        type: object
+        required:
+          - avatar_key
+        properties:
+          avatar_key:
+            type: string
+            description: "avatar media key"

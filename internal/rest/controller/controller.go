@@ -21,34 +21,30 @@ type profileModule interface {
 		limit, offset uint,
 	) (pagi.Page[[]models.Profile], error)
 
-	GetByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
+	GetMy(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetByUsername(ctx context.Context, username string) (models.Profile, error)
 
 	UpdateOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
-	OpenUpdateSession(
+	GetAvatarUploadMediaLinks(
 		ctx context.Context,
-		account models.AccountActor,
-	) (models.UpdateProfileMedia, models.Profile, error)
-	ConfirmUpdateSession(ctx context.Context,
-		account models.AccountActor,
-		session models.UploadScope,
+		actor models.AccountActor,
+	) (models.UploadMediaLink, models.Profile, error)
+	Update(
+		ctx context.Context,
+		actor models.AccountActor,
 		params profile.UpdateParams,
-	) (models.Profile, error)
+	) (profile models.Profile, err error)
 	DeleteUploadAvatar(
 		ctx context.Context,
-		account models.AccountActor,
-		session models.UploadScope,
-	) error
-	CancelUpdateSession(
-		ctx context.Context,
-		account models.AccountActor,
-		session models.UploadScope,
+		actor models.AccountActor,
+		key string,
 	) error
 }
 
 type responser interface {
-	Render(w http.ResponseWriter, status int, res ...interface{})
+	Status(w http.ResponseWriter, status int)
+	Render(w http.ResponseWriter, status int, res interface{})
 	RenderErr(w http.ResponseWriter, errs ...error)
 }
 

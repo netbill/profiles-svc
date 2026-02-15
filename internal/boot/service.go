@@ -54,7 +54,7 @@ func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg 
 
 	tokenManager := tokenmanager.New(ServiceName, cfg.Auth.Tokens)
 
-	profileModule := profile.New(repo, kafkaOutbound, tokenManager, s3Bucket)
+	profileModule := profile.New(repo, kafkaOutbound, s3Bucket)
 	accountModule := account.New(repo, kafkaOutbound)
 
 	responser := restkit.NewResponser()

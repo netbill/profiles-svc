@@ -55,11 +55,11 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 
 type profiles struct {
 	db       *pgdbx.DB
-	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
+	selector sq.SelectBuilder
+	counter  sq.SelectBuilder
 	updater  sq.UpdateBuilder
 	deleter  sq.DeleteBuilder
-	counter  sq.SelectBuilder
 }
 
 func NewProfilesQ(db *pgdbx.DB) repository.ProfilesQ {
@@ -169,42 +169,42 @@ func (q *profiles) UpdateOfficial(official bool) repository.ProfilesQ {
 	return q
 }
 
-func (q *profiles) UpdatePseudonym(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("pseudonym", v)
+func (q *profiles) UpdatePseudonym(v string) repository.ProfilesQ {
+	q.updater = q.updater.Set("pseudonym", pgtype.Text{String: v, Valid: v != ""})
 	return q
 }
 
-func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("description", v)
+func (q *profiles) UpdateDescription(v string) repository.ProfilesQ {
+	q.updater = q.updater.Set("description", pgtype.Text{String: v, Valid: v != ""})
 	return q
 }
 
-func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("avatar", v)
+func (q *profiles) UpdateAvatar(v string) repository.ProfilesQ {
+	q.updater = q.updater.Set("avatar", pgtype.Text{String: v, Valid: v != ""})
 	return q
 }
 
 func (q *profiles) FilterAccountID(accountID ...uuid.UUID) repository.ProfilesQ {
 	q.selector = q.selector.Where(sq.Eq{"account_id": accountID})
 	q.counter = q.counter.Where(sq.Eq{"account_id": accountID})
-	q.deleter = q.deleter.Where(sq.Eq{"account_id": accountID})
 	q.updater = q.updater.Where(sq.Eq{"account_id": accountID})
+	q.deleter = q.deleter.Where(sq.Eq{"account_id": accountID})
 	return q
 }
 
 func (q *profiles) FilterUsername(username string) repository.ProfilesQ {
 	q.selector = q.selector.Where(sq.Eq{"username": username})
 	q.counter = q.counter.Where(sq.Eq{"username": username})
-	q.deleter = q.deleter.Where(sq.Eq{"username": username})
 	q.updater = q.updater.Where(sq.Eq{"username": username})
+	q.deleter = q.deleter.Where(sq.Eq{"username": username})
 	return q
 }
 
 func (q *profiles) FilterOfficial(official bool) repository.ProfilesQ {
 	q.selector = q.selector.Where(sq.Eq{"official": official})
 	q.counter = q.counter.Where(sq.Eq{"official": official})
-	q.deleter = q.deleter.Where(sq.Eq{"official": official})
 	q.updater = q.updater.Where(sq.Eq{"official": official})
+	q.deleter = q.deleter.Where(sq.Eq{"official": official})
 	return q
 }
 
