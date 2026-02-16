@@ -1,26 +1,34 @@
 package bucket
 
 import (
+	"context"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"time"
 
+	awscfg "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/netbill/awsx"
 )
 
 type Config struct {
-	Link struct {
-		TTL time.Duration `json:"ttl"`
-	} `json:"link"`
-	Profile struct {
-		Avatar struct {
-			AllowedFormats   []string `mapstructure:"allowed_formats" required:"true"`
-			MaxWidth         int      `mapstructure:"max_width" required:"true"`
-			MaxHeight        int      `mapstructure:"max_height" required:"true"`
-			ContentLengthMax int64    `mapstructure:"content_length_max" required:"true"`
-		} `mapstructure:"avatar"`
-	} `mapstructure:"profile"`
+	Aws struct {
+		BucketName      string `mapstructure:"bucket_name"`
+		Region          string `mapstructure:"region"`
+		AccessKeyID     string `mapstructure:"access_key_id"`
+		SecretAccessKey string `mapstructure:"secret_access_key"`
+		SessionToken    string `mapstructure:"session_token"`
+	} `mapstructure:"aws"`
+
+	Media struct {
+		Link struct {
+			TTL time.Duration `mapstructure:"ttl"`
+		} `mapstructure:"link"`
+		Profile struct {
+			Avatar awsx.ImageValidator `mapstructure:"avatar"`
+		} `mapstructure:"profile"`
+	}
 }
 
 type Bucket struct {
@@ -28,9 +36,26 @@ type Bucket struct {
 	config Config
 }
 
-func New(s3 awsx.Bucket, config Config) Bucket {
-	return Bucket{
-		s3:     s3,
-		config: config,
+func New(config Config) (Bucket, error) {
+	cfg, err := awscfg.LoadDefaultConfig(
+		context.Background(),
+		awscfg.WithRegion(config.Aws.Region),
+		awscfg.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(
+				config.Aws.AccessKeyID,
+				config.Aws.SecretAccessKey,
+				config.Aws.SessionToken,
+			),
+		),
+	)
+	if err != nil {
+		return Bucket{}, err
 	}
+
+	bucket := awsx.New(config.Aws.BucketName, cfg)
+
+	return Bucket{
+		s3:     bucket,
+		config: config,
+	}, nil
 }

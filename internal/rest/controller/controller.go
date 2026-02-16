@@ -26,10 +26,10 @@ type profileModule interface {
 
 	UpdateOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
-	GetAvatarUploadMediaLinks(
+	CreateProfileUploadMediaLinks(
 		ctx context.Context,
 		actor models.AccountActor,
-	) (models.UploadMediaLink, models.Profile, error)
+	) (models.Profile, models.UploadProfileMediaLinks, error)
 	Update(
 		ctx context.Context,
 		actor models.AccountActor,

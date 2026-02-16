@@ -4,14 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**UploadUrl** | **string** | Pre-signed URL for uploading the avatar | 
-**PreloadUrl** | **string** | URL for preloading the avatar after upload | 
+**Avatar** | [**UploadProfileMediaLinksDataAttributesAvatar**](UploadProfileMediaLinksDataAttributesAvatar.md) |  | 
 
 ## Methods
 
 ### NewUploadProfileMediaLinksDataAttributes
 
-`func NewUploadProfileMediaLinksDataAttributes(uploadUrl string, preloadUrl string, ) *UploadProfileMediaLinksDataAttributes`
+`func NewUploadProfileMediaLinksDataAttributes(avatar UploadProfileMediaLinksDataAttributesAvatar, ) *UploadProfileMediaLinksDataAttributes`
 
 NewUploadProfileMediaLinksDataAttributes instantiates a new UploadProfileMediaLinksDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -26,44 +25,24 @@ NewUploadProfileMediaLinksDataAttributesWithDefaults instantiates a new UploadPr
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetUploadUrl
+### GetAvatar
 
-`func (o *UploadProfileMediaLinksDataAttributes) GetUploadUrl() string`
+`func (o *UploadProfileMediaLinksDataAttributes) GetAvatar() UploadProfileMediaLinksDataAttributesAvatar`
 
-GetUploadUrl returns the UploadUrl field if non-nil, zero value otherwise.
+GetAvatar returns the Avatar field if non-nil, zero value otherwise.
 
-### GetUploadUrlOk
+### GetAvatarOk
 
-`func (o *UploadProfileMediaLinksDataAttributes) GetUploadUrlOk() (*string, bool)`
+`func (o *UploadProfileMediaLinksDataAttributes) GetAvatarOk() (*UploadProfileMediaLinksDataAttributesAvatar, bool)`
 
-GetUploadUrlOk returns a tuple with the UploadUrl field if it's non-nil, zero value otherwise
+GetAvatarOk returns a tuple with the Avatar field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUploadUrl
+### SetAvatar
 
-`func (o *UploadProfileMediaLinksDataAttributes) SetUploadUrl(v string)`
+`func (o *UploadProfileMediaLinksDataAttributes) SetAvatar(v UploadProfileMediaLinksDataAttributesAvatar)`
 
-SetUploadUrl sets UploadUrl field to given value.
-
-
-### GetPreloadUrl
-
-`func (o *UploadProfileMediaLinksDataAttributes) GetPreloadUrl() string`
-
-GetPreloadUrl returns the PreloadUrl field if non-nil, zero value otherwise.
-
-### GetPreloadUrlOk
-
-`func (o *UploadProfileMediaLinksDataAttributes) GetPreloadUrlOk() (*string, bool)`
-
-GetPreloadUrlOk returns a tuple with the PreloadUrl field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetPreloadUrl
-
-`func (o *UploadProfileMediaLinksDataAttributes) SetPreloadUrl(v string)`
-
-SetPreloadUrl sets PreloadUrl field to given value.
+SetAvatar sets Avatar field to given value.
 
 
 

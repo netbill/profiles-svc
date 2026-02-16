@@ -38,9 +38,10 @@ func RunService(ctx context.Context, log *logium.Entry, wg *sync.WaitGroup, cfg 
 
 	db := pgdbx.NewDB(pool)
 
-	s3 := newAws(cfg.S3.AWS)
-
-	s3Bucket := bucket.New(s3, cfg.S3.Media)
+	s3Bucket, err := bucket.New(cfg.S3)
+	if err != nil {
+		log.Fatal("failed to create s3 bucket", "error", err)
+	}
 
 	profilesSqlQ := pg.NewProfilesQ(db)
 	transactionSqlQ := pg.NewTransaction(db)

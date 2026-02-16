@@ -28,10 +28,6 @@ func Log(r *http.Request) *logium.Entry {
 	if ok {
 		log = log.WithAccountAuthClaims(authClaims)
 	}
-	contentClaims, ok := r.Context().Value(UploadContentCtxKey).(tokens.UploadContentClaims)
-	if ok {
-		log = log.WithUploadContentClaims(contentClaims)
-	}
 
 	return log
 }

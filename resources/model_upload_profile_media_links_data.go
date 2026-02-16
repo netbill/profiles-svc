@@ -12,6 +12,7 @@ package resources
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"bytes"
 	"fmt"
 )
@@ -21,8 +22,8 @@ var _ MappedNullable = &UploadProfileMediaLinksData{}
 
 // UploadProfileMediaLinksData struct for UploadProfileMediaLinksData
 type UploadProfileMediaLinksData struct {
-	// key for the media
-	Id string `json:"id"`
+	// account id
+	Id uuid.UUID `json:"id"`
 	Type string `json:"type"`
 	Attributes UploadProfileMediaLinksDataAttributes `json:"attributes"`
 	Relationships UploadProfileMediaLinksDataRelationships `json:"relationships"`
@@ -34,7 +35,7 @@ type _UploadProfileMediaLinksData UploadProfileMediaLinksData
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUploadProfileMediaLinksData(id string, type_ string, attributes UploadProfileMediaLinksDataAttributes, relationships UploadProfileMediaLinksDataRelationships) *UploadProfileMediaLinksData {
+func NewUploadProfileMediaLinksData(id uuid.UUID, type_ string, attributes UploadProfileMediaLinksDataAttributes, relationships UploadProfileMediaLinksDataRelationships) *UploadProfileMediaLinksData {
 	this := UploadProfileMediaLinksData{}
 	this.Id = id
 	this.Type = type_
@@ -52,9 +53,9 @@ func NewUploadProfileMediaLinksDataWithDefaults() *UploadProfileMediaLinksData {
 }
 
 // GetId returns the Id field value
-func (o *UploadProfileMediaLinksData) GetId() string {
+func (o *UploadProfileMediaLinksData) GetId() uuid.UUID {
 	if o == nil {
-		var ret string
+		var ret uuid.UUID
 		return ret
 	}
 
@@ -63,7 +64,7 @@ func (o *UploadProfileMediaLinksData) GetId() string {
 
 // GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
-func (o *UploadProfileMediaLinksData) GetIdOk() (*string, bool) {
+func (o *UploadProfileMediaLinksData) GetIdOk() (*uuid.UUID, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -71,7 +72,7 @@ func (o *UploadProfileMediaLinksData) GetIdOk() (*string, bool) {
 }
 
 // SetId sets field value
-func (o *UploadProfileMediaLinksData) SetId(v string) {
+func (o *UploadProfileMediaLinksData) SetId(v uuid.UUID) {
 	o.Id = v
 }
 

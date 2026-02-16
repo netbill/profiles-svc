@@ -13,24 +13,34 @@ properties:
     properties:
       id:
         type: string
-        description: "key for the media"
+        format: uuid
+        description: "account id"
       type:
         type: string
         enum: [ profile_avatar_upload_links ]
       attributes:
         type: object
         required:
-          - upload_url
-          - preload_url
+          - avatar
         properties:
-          upload_url:
-            type: string
-            format: uri
-            description: "Pre-signed URL for uploading the avatar"
-          preload_url:
-            type: string
-            format: uri
-            description: "URL for preloading the avatar after upload"
+          avatar:
+            type: object
+            required:
+              - key
+              - upload_url
+              - preload_url
+            properties:
+              key:
+                type: string
+                description: "Key for the avatar in the storage service"
+              upload_url:
+                type: string
+                format: uri
+                description: "Pre-signed URL for uploading the avatar"
+              preload_url:
+                type: string
+                format: uri
+                description: "URL for preloading the avatar after upload"
       relationships:
         type: object
         properties:

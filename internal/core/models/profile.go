@@ -19,6 +19,10 @@ type Profile struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type UploadProfileMediaLinks struct {
+	Avatar UploadMediaLink `json:"avatar"`
+}
+
 type UploadMediaLink struct {
 	Key        string `json:"key"`
 	UploadURL  string `json:"upload_url"`

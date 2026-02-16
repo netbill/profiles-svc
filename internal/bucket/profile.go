@@ -1,13 +1,10 @@
 package bucket
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"image"
-	"io"
-	"strings"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/netbill/awsx"
@@ -19,151 +16,185 @@ func CreateTempProfileAvatarKey(accountID uuid.UUID) string {
 	return fmt.Sprintf("profile/avatar/%s/temp/%s", accountID, uuid.New())
 }
 
-func CreateProfileAvatarKey(accountID uuid.UUID) string {
-	return fmt.Sprintf("profile/avatar/%s", accountID)
+func CreateFinalProfileAvatarKey(accountID uuid.UUID) string {
+	return fmt.Sprintf("profile/avatar/%s/%s", accountID, uuid.New())
 }
 
-func (b Bucket) GetPreloadLinkForProfileAvatar(
+func (b Bucket) CreateProfileUploadMediaLinks(
 	ctx context.Context,
 	accountID uuid.UUID,
-) (models.UploadMediaLink, error) {
+) (models.UploadProfileMediaLinks, error) {
 	key := CreateTempProfileAvatarKey(accountID)
 
-	uploadLink, getLink, err := b.s3.PresignPut(ctx, key, b.config.Link.TTL)
+	uploadLink, getLink, err := b.s3.PresignPut(ctx, key, b.config.Media.Link.TTL)
 	if err != nil {
-		return models.UploadMediaLink{}, fmt.Errorf("presign put object for profile avatar: %w", err)
+		return models.UploadProfileMediaLinks{}, fmt.Errorf("presign put object for profile avatar: %w", err)
 	}
 
-	return models.UploadMediaLink{
-		Key:        key,
-		PreloadUrl: getLink,
-		UploadURL:  uploadLink,
+	return models.UploadProfileMediaLinks{
+		Avatar: models.UploadMediaLink{
+			Key:        key,
+			PreloadUrl: getLink,
+			UploadURL:  uploadLink,
+		},
 	}, nil
 }
 
-func (b Bucket) UpdateProfileAvatar(
+func (b Bucket) ValidateProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
-	key string,
-) (string, error) {
-	if key == "" {
-		return "", nil
+	tempKey string,
+) error {
+	if err := validateTempProfileAvatarKey(accountID, tempKey); err != nil {
+		return err
 	}
 
-	if err := validateTempProfileAvatarKey(accountID, key); err != nil {
-		return "", err
+	out, err := b.s3.GetObjectRange(ctx, tempKey, 64*1024)
+	switch {
+	case errors.Is(err, awsx.ErrNotFound):
+		return errx.ErrorNoContentUploaded.Raise(
+			fmt.Errorf("profile avatar not found for key: %s", tempKey),
+		)
+	case err != nil:
+		return fmt.Errorf("get object range for profile avatar: %w", err)
 	}
+	defer out.Body.Close()
 
-	tempKey := key
-	finalKey := CreateProfileAvatarKey(accountID)
-
-	head, err := b.s3.HeadObject(ctx, tempKey)
-	if err != nil {
-		if errors.Is(err, awsx.ErrNotFound) {
-			return "", errx.ErrorNoContentUploaded.Raise(
-				fmt.Errorf("profile avatar not found for key: %s", tempKey),
-			)
+	if err = b.config.Media.Profile.Avatar.Validate(out); err != nil {
+		switch {
+		case errors.Is(err, awsx.ErrorNoContentUploaded):
+			return errx.ErrorNoContentUploaded.Raise(err)
+		case errors.Is(err, awsx.ErrorSizeExceedsMax):
+			return errx.ErrorProfileAvatarContentIsExceedsMax.Raise(err)
+		case errors.Is(err, awsx.ErrorResolutionIsInvalid):
+			return errx.ErrorProfileAvatarResolutionIsInvalid.Raise(err)
+		case errors.Is(err, awsx.ErrorFormatNotAllowed):
+			return errx.ErrorProfileAvatarFormatIsNotAllowed.Raise(err)
+		default:
+			return fmt.Errorf("validate profile avatar content: %w", err)
 		}
-
-		return "", fmt.Errorf("head object for profile avatar: %w", err)
 	}
 
-	if head.ContentLength == nil || *head.ContentLength == 0 {
-		return "", errx.ErrorNoContentUploaded.Raise(
-			fmt.Errorf("no content uploaded for profile avatar"),
-		)
-	}
-
-	if *head.ContentLength > b.config.Profile.Avatar.ContentLengthMax {
-		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
-			fmt.Errorf("uploaded profile avatar size %d exceeds the maximum allowed size", *head.ContentLength),
-		)
-	}
-
-	rc, err := b.s3.GetObjectRange(ctx, tempKey, 2048)
-	if err != nil {
-		return "", fmt.Errorf("get object range for profile avatar: %w", err)
-	}
-	defer rc.Close()
-
-	probe, err := io.ReadAll(rc)
-	if err != nil {
-		return "", fmt.Errorf("read avatar probe bytes: %w", err)
-	}
-
-	cfg, format, err := image.DecodeConfig(bytes.NewReader(probe))
-	if err != nil {
-		return "", fmt.Errorf("decode config: %w", err)
-	}
-
-	if cfg.Width > b.config.Profile.Avatar.MaxWidth {
-		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
-			fmt.Errorf("uploaded profile avatar width %d exceeds the maximum allowed width", cfg.Width),
-		)
-	}
-
-	if cfg.Height > b.config.Profile.Avatar.MaxHeight {
-		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
-			fmt.Errorf("uploaded profile avatar height %d exceeds the maximum allowed height", cfg.Height),
-		)
-	}
-
-	if !contains(b.config.Profile.Avatar.AllowedFormats, format) {
-		return "", errx.ErrorProfileAvatarContentIsInvalid.Raise(
-			fmt.Errorf("uploaded profile avatar format %s is not allowed", format),
-		)
-	}
-
-	err = b.s3.CopyObject(ctx, tempKey, finalKey)
-	if err != nil {
-		return "", fmt.Errorf("copy object for profile avatar: %w", err)
-	}
-
-	_ = b.s3.DeleteObject(ctx, tempKey)
-
-	return finalKey, nil
+	return nil
 }
 
 func (b Bucket) DeleteUploadProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
-	key string,
+	tempKey string,
 ) error {
-	if err := validateTempProfileAvatarKey(accountID, key); err != nil {
+	if err := validateTempProfileAvatarKey(accountID, tempKey); err != nil {
 		return err
 	}
 
-	if err := b.s3.DeleteObject(ctx, key); err != nil {
+	if err := b.s3.DeleteObject(ctx, tempKey); err != nil {
 		return fmt.Errorf("delete temp profile avatar: %w", err)
 	}
 
 	return nil
 }
 
-func validateTempProfileAvatarKey(accountID uuid.UUID, key string) error {
-	if key == "" {
-		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("empty key"))
+func (b Bucket) DeleteProfileAvatar(
+	ctx context.Context,
+	accountID uuid.UUID,
+	finalKey string,
+) error {
+	if err := validateFinalProfileAvatarKey(accountID, finalKey); err != nil {
+		return err
 	}
 
-	prefix := tempProfileAvatarPrefix(accountID)
-	if !strings.HasPrefix(key, prefix) {
-		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(
-			fmt.Errorf("key does not belong to the account"),
-		)
+	if err := b.s3.DeleteObject(ctx, finalKey); err != nil {
+		return fmt.Errorf("delete profile avatar: %w", err)
 	}
 
 	return nil
 }
 
-func tempProfileAvatarPrefix(accountID uuid.UUID) string {
-	return fmt.Sprintf("profile/avatar/%s/temp/", accountID.String())
+func ptrStrEq(a, b *string) bool {
+	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }
 
-func contains(values []string, target string) bool {
-	for _, v := range values {
-		if v == target {
-			return true
+func (b Bucket) UpdateProfileAvatar(
+	ctx context.Context,
+	accountID uuid.UUID,
+	oldFinalKey *string,
+	tempKey *string,
+) (*string, error) {
+	if ptrStrEq(oldFinalKey, tempKey) {
+		return oldFinalKey, nil
+	}
+
+	if tempKey == nil {
+		return nil, b.DeleteProfileAvatar(ctx, accountID, *oldFinalKey)
+	}
+
+	if err := b.ValidateProfileAvatar(ctx, accountID, *tempKey); err != nil {
+		return nil, err
+	}
+
+	finalKey := CreateFinalProfileAvatarKey(accountID)
+
+	if err := b.s3.CopyObject(ctx, *tempKey, finalKey); err != nil {
+		return nil, fmt.Errorf("copy object for profile avatar: %w", err)
+	}
+
+	err := b.s3.DeleteObject(ctx, *tempKey)
+	if err != nil {
+		return nil, fmt.Errorf("delete temp profile avatar: %w", err)
+	}
+
+	if oldFinalKey != nil {
+		if err = b.DeleteProfileAvatar(ctx, accountID, *oldFinalKey); err != nil {
+			return nil, err
 		}
 	}
-	return false
+
+	return &finalKey, nil
+}
+
+var (
+	tempAvatarKeyRe = regexp.MustCompile(
+		`^profile/avatar/([0-9a-fA-F-]{36})/temp/([0-9a-fA-F-]{36})$`,
+	)
+	finalAvatarKeyRe = regexp.MustCompile(
+		`^profile/avatar/([0-9a-fA-F-]{36})/([0-9a-fA-F-]{36})$`,
+	)
+)
+
+func validateTempProfileAvatarKey(accountID uuid.UUID, key string) error {
+	if key == "" {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("empty key"))
+	}
+
+	matches := tempAvatarKeyRe.FindStringSubmatch(key)
+	if matches == nil {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("invalid key format"))
+	}
+
+	if matches[1] != accountID.String() {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("key does not belong to the account"))
+	}
+
+	return nil
+}
+
+func validateFinalProfileAvatarKey(accountID uuid.UUID, key string) error {
+	if key == "" {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("empty key"))
+	}
+
+	matches := finalAvatarKeyRe.FindStringSubmatch(key)
+	if matches == nil {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("invalid key format"))
+	}
+
+	if matches[1] != accountID.String() {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("key does not belong to the account"))
+	}
+
+	if tempAvatarKeyRe.MatchString(key) {
+		return errx.ErrorProfileAvatarKeyIsInvalid.Raise(fmt.Errorf("final key cannot be temp key"))
+	}
+
+	return nil
 }

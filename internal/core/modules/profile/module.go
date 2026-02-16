@@ -51,20 +51,33 @@ type messenger interface {
 }
 
 type bucket interface {
-	GetPreloadLinkForProfileAvatar(
+	CreateProfileUploadMediaLinks(
 		ctx context.Context,
 		accountID uuid.UUID,
-	) (models.UploadMediaLink, error)
+	) (models.UploadProfileMediaLinks, error)
 
-	UpdateProfileAvatar(
+	ValidateProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		key string,
-	) (string, error)
+		tempKey string,
+	) error
 
 	DeleteUploadProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		key string,
+		tempKey string,
 	) error
+
+	DeleteProfileAvatar(
+		ctx context.Context,
+		accountID uuid.UUID,
+		finalKey string,
+	) error
+
+	UpdateProfileAvatar(
+		ctx context.Context,
+		accountID uuid.UUID,
+		oldFinalKey *string,
+		tempKey *string,
+	) (*string, error)
 }

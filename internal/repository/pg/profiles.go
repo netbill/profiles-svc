@@ -169,18 +169,18 @@ func (q *profiles) UpdateOfficial(official bool) repository.ProfilesQ {
 	return q
 }
 
-func (q *profiles) UpdatePseudonym(v string) repository.ProfilesQ {
-	q.updater = q.updater.Set("pseudonym", pgtype.Text{String: v, Valid: v != ""})
+func (q *profiles) UpdatePseudonym(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("pseudonym", v)
 	return q
 }
 
-func (q *profiles) UpdateDescription(v string) repository.ProfilesQ {
-	q.updater = q.updater.Set("description", pgtype.Text{String: v, Valid: v != ""})
+func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("description", v)
 	return q
 }
 
-func (q *profiles) UpdateAvatar(v string) repository.ProfilesQ {
-	q.updater = q.updater.Set("avatar", pgtype.Text{String: v, Valid: v != ""})
+func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
+	q.updater = q.updater.Set("avatar", v)
 	return q
 }
 

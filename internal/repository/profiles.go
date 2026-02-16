@@ -54,9 +54,9 @@ type ProfilesQ interface {
 
 	UpdateUsername(username string) ProfilesQ
 	UpdateOfficial(official bool) ProfilesQ
-	UpdatePseudonym(v string) ProfilesQ
-	UpdateDescription(v string) ProfilesQ
-	UpdateAvatar(v string) ProfilesQ
+	UpdatePseudonym(v *string) ProfilesQ
+	UpdateDescription(v *string) ProfilesQ
+	UpdateAvatar(v *string) ProfilesQ
 
 	Delete(ctx context.Context) error
 
@@ -203,7 +203,7 @@ func (r *Repository) DeleteProfileAvatar(
 ) (models.Profile, error) {
 	row, err := r.profilesQ.New().
 		FilterAccountID(accountID).
-		UpdateAvatar("").
+		UpdateAvatar(nil).
 		UpdateOne(ctx)
 	switch {
 	case err != nil:

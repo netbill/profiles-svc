@@ -9,6 +9,8 @@ var (
 
 	ErrorNoContentUploaded = ape.DeclareError("NO_CONTENT_UPLOADED")
 
-	ErrorProfileAvatarKeyIsInvalid     = ape.DeclareError("PROFILE_AVATAR_KEY_IS_INVALID")
-	ErrorProfileAvatarContentIsInvalid = ape.DeclareError("PROFILE_AVATAR_CONTENT_IS_INVALID")
+	ErrorProfileAvatarKeyIsInvalid        = ape.DeclareError("PROFILE_AVATAR_KEY_IS_INVALID")
+	ErrorProfileAvatarContentIsExceedsMax = ape.DeclareError("PROFILE_AVATAR_CONTENT_EXCEEDS_MAX")
+	ErrorProfileAvatarResolutionIsInvalid = ape.DeclareError("PROFILE_AVATAR_RESOLUTION_IS_INVALID")
+	ErrorProfileAvatarFormatIsNotAllowed  = ape.DeclareError("PROFILE_AVATAR_FORMAT_IS_NOT_ALLOWED")
 )

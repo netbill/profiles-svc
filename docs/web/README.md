@@ -109,6 +109,7 @@ Class | Method | HTTP request | Description
  - [UploadProfileMediaLinks](docs/UploadProfileMediaLinks.md)
  - [UploadProfileMediaLinksData](docs/UploadProfileMediaLinksData.md)
  - [UploadProfileMediaLinksDataAttributes](docs/UploadProfileMediaLinksDataAttributes.md)
+ - [UploadProfileMediaLinksDataAttributesAvatar](docs/UploadProfileMediaLinksDataAttributesAvatar.md)
  - [UploadProfileMediaLinksDataRelationships](docs/UploadProfileMediaLinksDataRelationships.md)
  - [UploadProfileMediaLinksDataRelationshipsProfile](docs/UploadProfileMediaLinksDataRelationshipsProfile.md)
  - [UploadProfileMediaLinksDataRelationshipsProfileData](docs/UploadProfileMediaLinksDataRelationshipsProfileData.md)

@@ -36,14 +36,16 @@ s3:
 
     profile:
       avatar:
-        content_length_max: 5242880 # 5 MB
         allowed_formats:
           - "jpeg"
           - "jpg"
           - "png"
           - "gif"
-        max_width:  512
+        max_width: 512
+        min_width: 512
         max_height: 512
+        min_height: 512
+        content_size_max: 5242880 # 5 MB
 
 kafka:
   brokers:

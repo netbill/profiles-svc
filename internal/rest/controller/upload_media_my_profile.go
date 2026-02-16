@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
@@ -13,10 +14,10 @@ import (
 
 const operationGetMyProfileAvatarUploadMediaLink = "get_my_profile_avatar_upload_media_link"
 
-func (c *Controller) GetMyProfileAvatarUploadMediaLink(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfileAvatarUploadMediaLink)
 
-	media, profile, err := c.modules.Profile.GetAvatarUploadMediaLinks(r.Context(), scope.AccountActor(r))
+	profile, media, err := c.modules.Profile.CreateProfileUploadMediaLinks(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
@@ -26,7 +27,7 @@ func (c *Controller) GetMyProfileAvatarUploadMediaLink(w http.ResponseWriter, r 
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		log.Debug("update profile session opened")
-		c.responser.Render(w, http.StatusOK, responses.UpdateProfileSession(media, profile))
+		c.responser.Render(w, http.StatusOK, responses.UpdateProfileSession(profile, media))
 	}
 }
 
@@ -52,6 +53,11 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
 		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+	case errors.Is(err, errx.ErrorProfileAvatarKeyIsInvalid):
+		log.WithError(err).Info("avatar key is invalid")
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+			"avatar": errors.New("avatar key is invalid"),
+		})...)
 	case err != nil:
 		log.WithError(err).Error("failed to cancel update profile session")
 		c.responser.RenderErr(w, problems.InternalError())

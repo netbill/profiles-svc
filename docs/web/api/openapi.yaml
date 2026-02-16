@@ -492,9 +492,11 @@ components:
                 id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
                 type: profile
           attributes:
-            preload_url: https://openapi-generator.tech
-            upload_url: https://openapi-generator.tech
-          id: id
+            avatar:
+              preload_url: https://openapi-generator.tech
+              upload_url: https://openapi-generator.tech
+              key: key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile_avatar_upload_links
         included:
         - attributes:
@@ -660,11 +662,15 @@ components:
       - attributes
       - id
       - type
-    UploadProfileMediaLinks_data_attributes:
+    UploadProfileMediaLinks_data_attributes_avatar:
       example:
         preload_url: https://openapi-generator.tech
         upload_url: https://openapi-generator.tech
+        key: key
       properties:
+        key:
+          description: Key for the avatar in the storage service
+          type: string
         upload_url:
           description: Pre-signed URL for uploading the avatar
           format: uri
@@ -674,8 +680,20 @@ components:
           format: uri
           type: string
       required:
+      - key
       - preload_url
       - upload_url
+    UploadProfileMediaLinks_data_attributes:
+      example:
+        avatar:
+          preload_url: https://openapi-generator.tech
+          upload_url: https://openapi-generator.tech
+          key: key
+      properties:
+        avatar:
+          $ref: "#/components/schemas/UploadProfileMediaLinks_data_attributes_avatar"
+      required:
+      - avatar
     UploadProfileMediaLinks_data_relationships_profile_data:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -719,13 +737,16 @@ components:
               id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               type: profile
         attributes:
-          preload_url: https://openapi-generator.tech
-          upload_url: https://openapi-generator.tech
-        id: id
+          avatar:
+            preload_url: https://openapi-generator.tech
+            upload_url: https://openapi-generator.tech
+            key: key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         type: profile_avatar_upload_links
       properties:
         id:
-          description: key for the media
+          description: account id
+          format: uuid
           type: string
         type:
           enum:

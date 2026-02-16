@@ -21,10 +21,7 @@ var _ MappedNullable = &UploadProfileMediaLinksDataAttributes{}
 
 // UploadProfileMediaLinksDataAttributes struct for UploadProfileMediaLinksDataAttributes
 type UploadProfileMediaLinksDataAttributes struct {
-	// Pre-signed URL for uploading the avatar
-	UploadUrl string `json:"upload_url"`
-	// URL for preloading the avatar after upload
-	PreloadUrl string `json:"preload_url"`
+	Avatar UploadProfileMediaLinksDataAttributesAvatar `json:"avatar"`
 }
 
 type _UploadProfileMediaLinksDataAttributes UploadProfileMediaLinksDataAttributes
@@ -33,10 +30,9 @@ type _UploadProfileMediaLinksDataAttributes UploadProfileMediaLinksDataAttribute
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUploadProfileMediaLinksDataAttributes(uploadUrl string, preloadUrl string) *UploadProfileMediaLinksDataAttributes {
+func NewUploadProfileMediaLinksDataAttributes(avatar UploadProfileMediaLinksDataAttributesAvatar) *UploadProfileMediaLinksDataAttributes {
 	this := UploadProfileMediaLinksDataAttributes{}
-	this.UploadUrl = uploadUrl
-	this.PreloadUrl = preloadUrl
+	this.Avatar = avatar
 	return &this
 }
 
@@ -48,52 +44,28 @@ func NewUploadProfileMediaLinksDataAttributesWithDefaults() *UploadProfileMediaL
 	return &this
 }
 
-// GetUploadUrl returns the UploadUrl field value
-func (o *UploadProfileMediaLinksDataAttributes) GetUploadUrl() string {
+// GetAvatar returns the Avatar field value
+func (o *UploadProfileMediaLinksDataAttributes) GetAvatar() UploadProfileMediaLinksDataAttributesAvatar {
 	if o == nil {
-		var ret string
+		var ret UploadProfileMediaLinksDataAttributesAvatar
 		return ret
 	}
 
-	return o.UploadUrl
+	return o.Avatar
 }
 
-// GetUploadUrlOk returns a tuple with the UploadUrl field value
+// GetAvatarOk returns a tuple with the Avatar field value
 // and a boolean to check if the value has been set.
-func (o *UploadProfileMediaLinksDataAttributes) GetUploadUrlOk() (*string, bool) {
+func (o *UploadProfileMediaLinksDataAttributes) GetAvatarOk() (*UploadProfileMediaLinksDataAttributesAvatar, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.UploadUrl, true
+	return &o.Avatar, true
 }
 
-// SetUploadUrl sets field value
-func (o *UploadProfileMediaLinksDataAttributes) SetUploadUrl(v string) {
-	o.UploadUrl = v
-}
-
-// GetPreloadUrl returns the PreloadUrl field value
-func (o *UploadProfileMediaLinksDataAttributes) GetPreloadUrl() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.PreloadUrl
-}
-
-// GetPreloadUrlOk returns a tuple with the PreloadUrl field value
-// and a boolean to check if the value has been set.
-func (o *UploadProfileMediaLinksDataAttributes) GetPreloadUrlOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.PreloadUrl, true
-}
-
-// SetPreloadUrl sets field value
-func (o *UploadProfileMediaLinksDataAttributes) SetPreloadUrl(v string) {
-	o.PreloadUrl = v
+// SetAvatar sets field value
+func (o *UploadProfileMediaLinksDataAttributes) SetAvatar(v UploadProfileMediaLinksDataAttributesAvatar) {
+	o.Avatar = v
 }
 
 func (o UploadProfileMediaLinksDataAttributes) MarshalJSON() ([]byte, error) {
@@ -106,8 +78,7 @@ func (o UploadProfileMediaLinksDataAttributes) MarshalJSON() ([]byte, error) {
 
 func (o UploadProfileMediaLinksDataAttributes) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["upload_url"] = o.UploadUrl
-	toSerialize["preload_url"] = o.PreloadUrl
+	toSerialize["avatar"] = o.Avatar
 	return toSerialize, nil
 }
 
@@ -116,8 +87,7 @@ func (o *UploadProfileMediaLinksDataAttributes) UnmarshalJSON(data []byte) (err 
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"upload_url",
-		"preload_url",
+		"avatar",
 	}
 
 	allProperties := make(map[string]interface{})

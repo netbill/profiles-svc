@@ -50,14 +50,17 @@ func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources
 	}
 }
 
-func UpdateProfileSession(uploadLinks models.UploadMediaLink, profile models.Profile) resources.UploadProfileMediaLinks {
+func UpdateProfileSession(profile models.Profile, links models.UploadProfileMediaLinks) resources.UploadProfileMediaLinks {
 	return resources.UploadProfileMediaLinks{
 		Data: resources.UploadProfileMediaLinksData{
-			Id:   uploadLinks.Key,
+			Id:   profile.AccountID,
 			Type: "profile_avatar_upload_links",
 			Attributes: resources.UploadProfileMediaLinksDataAttributes{
-				UploadUrl:  uploadLinks.UploadURL,
-				PreloadUrl: uploadLinks.PreloadUrl,
+				Avatar: resources.UploadProfileMediaLinksDataAttributesAvatar{
+					Key:        links.Avatar.Key,
+					UploadUrl:  links.Avatar.UploadURL,
+					PreloadUrl: links.Avatar.PreloadUrl,
+				},
 			},
 			Relationships: resources.UploadProfileMediaLinksDataRelationships{
 				Profile: &resources.UploadProfileMediaLinksDataRelationshipsProfile{

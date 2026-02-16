@@ -22,7 +22,7 @@ type Handlers interface {
 	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
 	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
 
-	GetMyProfileAvatarUploadMediaLink(w http.ResponseWriter, r *http.Request)
+	CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *http.Request)
 	DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.Request)
 }
 
@@ -77,9 +77,12 @@ func (s *Server) Run(ctx context.Context, log *logium.Entry, cfg Config) {
 					r.Get("/", s.handlers.GetMyProfile)
 					r.Put("/", s.handlers.UpdateMyProfile)
 
-					r.Route("/avatar", func(r chi.Router) {
-						r.Post("/upload-url", s.handlers.GetMyProfileAvatarUploadMediaLink)
-						r.Delete("/upload", s.handlers.DeleteMyProfileUploadAvatar)
+					r.Route("/media", func(r chi.Router) {
+						r.Route("/upload", func(r chi.Router) {
+							r.Post("/url", s.handlers.CreateMyProfileUploadMediaLink)
+
+							r.Delete("/avatar", s.handlers.DeleteMyProfileUploadAvatar)
+						})
 					})
 				})
 

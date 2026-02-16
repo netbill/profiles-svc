@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Key** | **string** | Media key for the avatar | 
-**GetUrl** | **string** | Pre-signed URL for uploading the avatar | 
-**PreloadUrl** | **string** | Pre-signed URL for preloading the avatar | 
+**Key** | **string** | Key for the avatar in the storage service | 
+**UploadUrl** | **string** | Pre-signed URL for uploading the avatar | 
+**PreloadUrl** | **string** | URL for preloading the avatar after upload | 
 
 ## Methods
 
 ### NewUploadProfileMediaLinksDataAttributesAvatar
 
-`func NewUploadProfileMediaLinksDataAttributesAvatar(key string, getUrl string, preloadUrl string, ) *UploadProfileMediaLinksDataAttributesAvatar`
+`func NewUploadProfileMediaLinksDataAttributesAvatar(key string, uploadUrl string, preloadUrl string, ) *UploadProfileMediaLinksDataAttributesAvatar`
 
 NewUploadProfileMediaLinksDataAttributesAvatar instantiates a new UploadProfileMediaLinksDataAttributesAvatar object
 This constructor will assign default values to properties that have it defined,
@@ -47,24 +47,24 @@ and a boolean to check if the value has been set.
 SetKey sets Key field to given value.
 
 
-### GetGetUrl
+### GetUploadUrl
 
-`func (o *UploadProfileMediaLinksDataAttributesAvatar) GetGetUrl() string`
+`func (o *UploadProfileMediaLinksDataAttributesAvatar) GetUploadUrl() string`
 
-GetGetUrl returns the GetUrl field if non-nil, zero value otherwise.
+GetUploadUrl returns the UploadUrl field if non-nil, zero value otherwise.
 
-### GetGetUrlOk
+### GetUploadUrlOk
 
-`func (o *UploadProfileMediaLinksDataAttributesAvatar) GetGetUrlOk() (*string, bool)`
+`func (o *UploadProfileMediaLinksDataAttributesAvatar) GetUploadUrlOk() (*string, bool)`
 
-GetGetUrlOk returns a tuple with the GetUrl field if it's non-nil, zero value otherwise
+GetUploadUrlOk returns a tuple with the UploadUrl field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetGetUrl
+### SetUploadUrl
 
-`func (o *UploadProfileMediaLinksDataAttributesAvatar) SetGetUrl(v string)`
+`func (o *UploadProfileMediaLinksDataAttributesAvatar) SetUploadUrl(v string)`
 
-SetGetUrl sets GetUrl field to given value.
+SetUploadUrl sets UploadUrl field to given value.
 
 
 ### GetPreloadUrl
