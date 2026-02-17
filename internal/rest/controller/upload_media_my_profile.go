@@ -27,7 +27,7 @@ func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *ht
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		log.Debug("update profile session opened")
-		c.responser.Render(w, http.StatusOK, responses.UpdateProfileSession(profile, media))
+		c.responser.Render(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
 	}
 }
 
@@ -44,7 +44,7 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err = c.modules.Profile.DeleteUploadAvatar(
+	err = c.modules.Profile.DeleteProfileUploadAvatar(
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Attributes.AvatarKey,

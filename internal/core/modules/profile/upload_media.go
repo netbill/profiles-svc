@@ -15,15 +15,17 @@ func (m *Module) CreateProfileUploadMediaLinks(
 		return models.Profile{}, models.UploadProfileMediaLinks{}, err
 	}
 
-	links, err := m.bucket.CreateProfileUploadMediaLinks(ctx, actor)
+	links, err := m.bucket.CreateProfileAvatarUploadMediaLinks(ctx, actor)
 	if err != nil {
 		return models.Profile{}, models.UploadProfileMediaLinks{}, err
 	}
 
-	return profile, links, nil
+	return profile, models.UploadProfileMediaLinks{
+		Avatar: links,
+	}, nil
 }
 
-func (m *Module) DeleteUploadAvatar(
+func (m *Module) DeleteProfileUploadAvatar(
 	ctx context.Context,
 	actor models.AccountActor,
 	key string,

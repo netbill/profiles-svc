@@ -51,10 +51,10 @@ type messenger interface {
 }
 
 type bucket interface {
-	CreateProfileUploadMediaLinks(
+	CreateProfileAvatarUploadMediaLinks(
 		ctx context.Context,
 		accountID uuid.UUID,
-	) (models.UploadProfileMediaLinks, error)
+	) (models.UploadMediaLink, error)
 
 	ValidateProfileAvatar(
 		ctx context.Context,

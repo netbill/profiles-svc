@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/netbill/profiles-svc/internal/core/models"
-	"github.com/netbill/profiles-svc/resources"
+	resources2 "github.com/netbill/profiles-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
 
-func Profile(m models.Profile) resources.Profile {
-	resp := resources.Profile{
-		Data: resources.ProfileData{
+func Profile(m models.Profile) resources2.Profile {
+	resp := resources2.Profile{
+		Data: resources2.ProfileData{
 			Id:   m.AccountID,
 			Type: "profile",
-			Attributes: resources.ProfileAttributes{
+			Attributes: resources2.ProfileAttributes{
 				Username:    m.Username,
 				Pseudonym:   m.Pseudonym,
 				Description: m.Description,
@@ -29,8 +29,8 @@ func Profile(m models.Profile) resources.Profile {
 	return resp
 }
 
-func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources.ProfilesCollection {
-	data := make([]resources.ProfileData, len(m.Data))
+func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources2.ProfilesCollection {
+	data := make([]resources2.ProfileData, len(m.Data))
 
 	for i, profile := range m.Data {
 		data[i] = Profile(profile).Data
@@ -38,9 +38,9 @@ func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources
 
 	links := pagi.BuildPageLinks(r, m.Page, m.Size, m.Total)
 
-	return resources.ProfilesCollection{
+	return resources2.ProfilesCollection{
 		Data: data,
-		Links: resources.PaginationData{
+		Links: resources2.PaginationData{
 			First: links.First,
 			Last:  links.Last,
 			Prev:  links.Prev,
@@ -50,28 +50,28 @@ func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources
 	}
 }
 
-func UpdateProfileSession(profile models.Profile, links models.UploadProfileMediaLinks) resources.UploadProfileMediaLinks {
-	return resources.UploadProfileMediaLinks{
-		Data: resources.UploadProfileMediaLinksData{
+func UploadProfileMediaLinks(profile models.Profile, links models.UploadProfileMediaLinks) resources2.UploadProfileMediaLinks {
+	return resources2.UploadProfileMediaLinks{
+		Data: resources2.UploadProfileMediaLinksData{
 			Id:   profile.AccountID,
 			Type: "profile_avatar_upload_links",
-			Attributes: resources.UploadProfileMediaLinksDataAttributes{
-				Avatar: resources.UploadProfileMediaLinksDataAttributesAvatar{
+			Attributes: resources2.UploadProfileMediaLinksDataAttributes{
+				Avatar: resources2.UploadProfileMediaLinksDataAttributesAvatar{
 					Key:        links.Avatar.Key,
 					UploadUrl:  links.Avatar.UploadURL,
 					PreloadUrl: links.Avatar.PreloadUrl,
 				},
 			},
-			Relationships: resources.UploadProfileMediaLinksDataRelationships{
-				Profile: &resources.UploadProfileMediaLinksDataRelationshipsProfile{
-					Data: resources.UploadProfileMediaLinksDataRelationshipsProfileData{
+			Relationships: resources2.UploadProfileMediaLinksDataRelationships{
+				Profile: &resources2.UploadProfileMediaLinksDataRelationshipsProfile{
+					Data: resources2.UploadProfileMediaLinksDataRelationshipsProfileData{
 						Id:   profile.AccountID,
 						Type: "profile",
 					},
 				},
 			},
 		},
-		Included: []resources.ProfileData{
+		Included: []resources2.ProfileData{
 			Profile(profile).Data,
 		},
 	}

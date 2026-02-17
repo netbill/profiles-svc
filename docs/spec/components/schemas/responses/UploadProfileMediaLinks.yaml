@@ -17,7 +17,7 @@ properties:
         description: "account id"
       type:
         type: string
-        enum: [ profile_avatar_upload_links ]
+        enum: [ profile_upload_links ]
       attributes:
         type: object
         required:

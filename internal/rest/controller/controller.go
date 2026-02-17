@@ -35,7 +35,7 @@ type profileModule interface {
 		actor models.AccountActor,
 		params profile.UpdateParams,
 	) (profile models.Profile, err error)
-	DeleteUploadAvatar(
+	DeleteProfileUploadAvatar(
 		ctx context.Context,
 		actor models.AccountActor,
 		key string,

@@ -20,23 +20,21 @@ func CreateFinalProfileAvatarKey(accountID uuid.UUID) string {
 	return fmt.Sprintf("profile/avatar/%s/%s", accountID, uuid.New())
 }
 
-func (b Bucket) CreateProfileUploadMediaLinks(
+func (b Bucket) CreateProfileAvatarUploadMediaLinks(
 	ctx context.Context,
 	accountID uuid.UUID,
-) (models.UploadProfileMediaLinks, error) {
+) (models.UploadMediaLink, error) {
 	key := CreateTempProfileAvatarKey(accountID)
 
 	uploadLink, getLink, err := b.s3.PresignPut(ctx, key, b.config.Media.Link.TTL)
 	if err != nil {
-		return models.UploadProfileMediaLinks{}, fmt.Errorf("presign put object for profile avatar: %w", err)
+		return models.UploadMediaLink{}, fmt.Errorf("presign put object for profile avatar: %w", err)
 	}
 
-	return models.UploadProfileMediaLinks{
-		Avatar: models.UploadMediaLink{
-			Key:        key,
-			PreloadUrl: getLink,
-			UploadURL:  uploadLink,
-		},
+	return models.UploadMediaLink{
+		Key:        key,
+		PreloadUrl: getLink,
+		UploadURL:  uploadLink,
 	}, nil
 }
 
@@ -108,10 +106,6 @@ func (b Bucket) DeleteProfileAvatar(
 	}
 
 	return nil
-}
-
-func ptrStrEq(a, b *string) bool {
-	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }
 
 func (b Bucket) UpdateProfileAvatar(

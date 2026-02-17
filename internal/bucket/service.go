@@ -59,3 +59,7 @@ func New(config Config) (Bucket, error) {
 		config: config,
 	}, nil
 }
+
+func ptrStrEq(a, b *string) bool {
+	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
+}

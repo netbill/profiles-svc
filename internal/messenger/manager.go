@@ -9,6 +9,8 @@ import (
 	"github.com/netbill/pgdbx"
 )
 
+const ProfilesSvcGroup = "profiles-svc"
+
 type Config struct {
 	Brokers []string `mapstructure:"brokers" validate:"required"`
 	Writer  struct {

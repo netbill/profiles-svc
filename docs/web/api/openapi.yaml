@@ -497,7 +497,7 @@ components:
               upload_url: https://openapi-generator.tech
               key: key
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          type: profile_avatar_upload_links
+          type: profile_upload_links
         included:
         - attributes:
             updated_at: 2000-01-23T04:56:07.000+00:00
@@ -742,7 +742,7 @@ components:
             upload_url: https://openapi-generator.tech
             key: key
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        type: profile_avatar_upload_links
+        type: profile_upload_links
       properties:
         id:
           description: account id
@@ -750,7 +750,7 @@ components:
           type: string
         type:
           enum:
-          - profile_avatar_upload_links
+          - profile_upload_links
           type: string
         attributes:
           $ref: "#/components/schemas/UploadProfileMediaLinks_data_attributes"

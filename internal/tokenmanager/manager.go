@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+const Issuer = "profiles-svc"
+
 type Config struct {
 	AccountAccess struct {
 		SecretKey string `mapstructure:"secret_key" reqquire:"true"`
@@ -17,9 +19,9 @@ type Manager struct {
 	mediaTTL time.Duration
 }
 
-func New(issuer string, config Config) *Manager {
+func New(config Config) *Manager {
 	return &Manager{
-		issuer:   issuer,
+		issuer:   Issuer,
 		accessSK: config.AccountAccess.SecretKey,
 	}
 }

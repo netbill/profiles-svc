@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/netbill/profiles-svc/resources"
+	"github.com/netbill/profiles-svc/pkg/resources"
 	"github.com/netbill/restkit"
 )
 
