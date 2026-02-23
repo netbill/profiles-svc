@@ -20,13 +20,13 @@ func CreateFinalProfileAvatarKey(accountID uuid.UUID) string {
 	return fmt.Sprintf("profile/avatar/%s/%s", accountID, uuid.New())
 }
 
-func (b Bucket) CreateProfileAvatarUploadMediaLinks(
+func (s *Storage) CreateProfileAvatarUploadMediaLinks(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) (models.UploadMediaLink, error) {
 	key := CreateTempProfileAvatarKey(accountID)
 
-	uploadLink, getLink, err := b.s3.PresignPut(ctx, key, b.config.Media.Link.TTL)
+	uploadLink, getLink, err := s.s3.PresignPut(ctx, key, s.config.LinkTTL)
 	if err != nil {
 		return models.UploadMediaLink{}, fmt.Errorf("presign put object for profile avatar: %w", err)
 	}
@@ -38,7 +38,7 @@ func (b Bucket) CreateProfileAvatarUploadMediaLinks(
 	}, nil
 }
 
-func (b Bucket) ValidateProfileAvatar(
+func (s *Storage) ValidateProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 	tempKey string,
@@ -47,7 +47,7 @@ func (b Bucket) ValidateProfileAvatar(
 		return err
 	}
 
-	out, err := b.s3.GetObjectRange(ctx, tempKey, 64*1024)
+	out, err := s.s3.GetObjectRange(ctx, tempKey, 64*1024)
 	switch {
 	case errors.Is(err, awsx.ErrNotFound):
 		return errx.ErrorNoContentUploaded.Raise(
@@ -58,7 +58,7 @@ func (b Bucket) ValidateProfileAvatar(
 	}
 	defer out.Body.Close()
 
-	if err = b.config.Media.Profile.Avatar.Validate(out); err != nil {
+	if err = s.config.ProfileAvatar.Validate(out); err != nil {
 		switch {
 		case errors.Is(err, awsx.ErrorNoContentUploaded):
 			return errx.ErrorNoContentUploaded.Raise(err)
@@ -76,7 +76,7 @@ func (b Bucket) ValidateProfileAvatar(
 	return nil
 }
 
-func (b Bucket) DeleteUploadProfileAvatar(
+func (s *Storage) DeleteUploadProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 	tempKey string,
@@ -85,14 +85,14 @@ func (b Bucket) DeleteUploadProfileAvatar(
 		return err
 	}
 
-	if err := b.s3.DeleteObject(ctx, tempKey); err != nil {
+	if err := s.s3.DeleteObject(ctx, tempKey); err != nil {
 		return fmt.Errorf("delete temp profile avatar: %w", err)
 	}
 
 	return nil
 }
 
-func (b Bucket) DeleteProfileAvatar(
+func (s *Storage) DeleteProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 	finalKey string,
@@ -101,14 +101,14 @@ func (b Bucket) DeleteProfileAvatar(
 		return err
 	}
 
-	if err := b.s3.DeleteObject(ctx, finalKey); err != nil {
+	if err := s.s3.DeleteObject(ctx, finalKey); err != nil {
 		return fmt.Errorf("delete profile avatar: %w", err)
 	}
 
 	return nil
 }
 
-func (b Bucket) UpdateProfileAvatar(
+func (s *Storage) UpdateProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 	oldFinalKey *string,
@@ -119,26 +119,26 @@ func (b Bucket) UpdateProfileAvatar(
 	}
 
 	if tempKey == nil {
-		return nil, b.DeleteProfileAvatar(ctx, accountID, *oldFinalKey)
+		return nil, s.DeleteProfileAvatar(ctx, accountID, *oldFinalKey)
 	}
 
-	if err := b.ValidateProfileAvatar(ctx, accountID, *tempKey); err != nil {
+	if err := s.ValidateProfileAvatar(ctx, accountID, *tempKey); err != nil {
 		return nil, err
 	}
 
 	finalKey := CreateFinalProfileAvatarKey(accountID)
 
-	if err := b.s3.CopyObject(ctx, *tempKey, finalKey); err != nil {
+	if err := s.s3.CopyObject(ctx, *tempKey, finalKey); err != nil {
 		return nil, fmt.Errorf("copy object for profile avatar: %w", err)
 	}
 
-	err := b.s3.DeleteObject(ctx, *tempKey)
+	err := s.s3.DeleteObject(ctx, *tempKey)
 	if err != nil {
 		return nil, fmt.Errorf("delete temp profile avatar: %w", err)
 	}
 
 	if oldFinalKey != nil {
-		if err = b.DeleteProfileAvatar(ctx, accountID, *oldFinalKey); err != nil {
+		if err = s.DeleteProfileAvatar(ctx, accountID, *oldFinalKey); err != nil {
 			return nil, err
 		}
 	}

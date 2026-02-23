@@ -12,7 +12,7 @@ type Profile struct {
 	Official    bool      `json:"official"`
 	Pseudonym   *string   `json:"pseudonym,omitempty"`
 	Description *string   `json:"description,omitempty"`
-	Avatar      *string   `json:"avatar,omitempty"`
+	AvatarKey   *string   `json:"avatar_key,omitempty"`
 	Version     int32     `json:"version"`
 
 	UpdatedAt time.Time `json:"updated_at"`

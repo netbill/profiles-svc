@@ -67,7 +67,6 @@ func (q *accounts) Insert(ctx context.Context, input repository.AccountRow) (rep
 	id := pgtype.UUID{Bytes: [16]byte(input.ID), Valid: true}
 	username := pgtype.Text{String: input.Username, Valid: true}
 	role := pgtype.Text{String: input.Role, Valid: true}
-	version := pgtype.Int4{Int32: input.Version, Valid: true}
 
 	sca := pgtype.Timestamptz{Time: input.SourceCreatedAt, Valid: !input.SourceCreatedAt.IsZero()}
 	sua := pgtype.Timestamptz{Time: input.SourceUpdatedAt, Valid: !input.SourceUpdatedAt.IsZero()}
@@ -76,7 +75,6 @@ func (q *accounts) Insert(ctx context.Context, input repository.AccountRow) (rep
 		"id":                id,
 		"username":          username,
 		"role":              role,
-		"version":           version,
 		"source_created_at": sca,
 		"source_updated_at": sua,
 	}).Suffix("RETURNING " + accountsColumns).ToSql()

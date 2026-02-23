@@ -1,27 +1,19 @@
 package tokenmanager
 
-import (
-	"time"
-)
-
-const Issuer = "profiles-svc"
-
 type Config struct {
-	AccountAccess struct {
-		SecretKey string `mapstructure:"secret_key" reqquire:"true"`
-	} `mapstructure:"account_access" reqquire:"true"`
+	Issuer   string
+	AccessSK string
 }
 
 type Manager struct {
-	issuer   string
-	accessSK string
+	issuer string
 
-	mediaTTL time.Duration
+	accessSK string
 }
 
 func New(config Config) *Manager {
 	return &Manager{
-		issuer:   Issuer,
-		accessSK: config.AccountAccess.SecretKey,
+		issuer:   config.Issuer,
+		accessSK: config.AccessSK,
 	}
 }

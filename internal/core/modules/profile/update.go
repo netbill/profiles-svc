@@ -22,7 +22,7 @@ func (m *Module) Update(
 		return models.Profile{}, err
 	}
 
-	avatarKey, err := m.bucket.UpdateProfileAvatar(ctx, actor, profile.Avatar, params.AvatarKey)
+	avatarKey, err := m.bucket.UpdateProfileAvatar(ctx, actor, profile.AvatarKey, params.AvatarKey)
 	if err != nil {
 		return models.Profile{}, err
 	}

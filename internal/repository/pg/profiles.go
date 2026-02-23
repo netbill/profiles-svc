@@ -15,12 +15,12 @@ import (
 )
 
 const profilesTable = "profiles"
-const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar, version, created_at, updated_at"
+const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar_key, version, created_at, updated_at"
 
 func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 	pseudonym := pgtype.Text{}
 	description := pgtype.Text{}
-	avatarURL := pgtype.Text{}
+	avatarKey := pgtype.Text{}
 
 	err = row.Scan(
 		&p.AccountID,
@@ -28,7 +28,7 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 		&p.Official,
 		&pseudonym,
 		&description,
-		&avatarURL,
+		&avatarKey,
 		&p.Version,
 		&p.CreatedAt,
 		&p.UpdatedAt,
@@ -46,8 +46,8 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 	if description.Valid {
 		p.Description = &description.String
 	}
-	if avatarURL.Valid {
-		p.Avatar = &avatarURL.String
+	if avatarKey.Valid {
+		p.AvatarKey = &avatarKey.String
 	}
 
 	return p, nil
@@ -180,7 +180,7 @@ func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
 }
 
 func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("avatar", v)
+	q.updater = q.updater.Set("avatar_key", v)
 	return q
 }
 

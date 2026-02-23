@@ -17,7 +17,7 @@ CREATE TABLE profiles (
     official    BOOLEAN NOT NULL DEFAULT FALSE,
     pseudonym   VARCHAR(128),
     description VARCHAR(255),
-    avatar      TEXT,
+    avatar_key  TEXT,
     version     INTEGER NOT NULL DEFAULT 1 CHECK ( version > 0 ),
 
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),

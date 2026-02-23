@@ -1,9 +1,12 @@
+service:
+  name: "profiles-svc"
+
 log:
   level: "debug"
   format: "text"
 
 rest:
-  port: ":8002"
+  port: "8002"
   timeouts:
     read: 15s #seconds
     read_header: 15s #seconds
@@ -51,27 +54,33 @@ kafka:
   brokers:
     - "localhost:9092"
 
-  writer:
-    required_acks: "all"     # "all" | "one" | "none"
-    compression: "snappy"    # "snappy" | "gzip" | "lz4" | "zstd" | "none"
-    balancer: "least_bytes"  # "least_bytes" | "round_robin" | "hash"
-    batch_size: 100          # writer batching (0 = default)
-    batch_timeout: 10ms      # writer batching timeout (0 = default)
-    write_timeout: 5s        # timeout for a write call (0 = default)
-    read_timeout: 5s         # broker read timeout (0 = default)
-    dial_timeout: 5s         # dial timeout (0 = default)
-    idle_timeout: 30s        # close idle connections (0 = default)
+  identity: "profiles-svc" # used for consumer group and client id
 
-  reader:
+  produce:
     topics:
-      accounts_v1:             #topic name for accounts events
-        num_readers: 1         #number of readers for this topic which will be started in each process
-        min_bytes: 1           #minimum bytes to fetch in each request
-        max_bytes: 10e6        #maximum bytes to fetch in each request
-        max_wait: 1s           #maximum time to wait for messages in each request
-        commit_interval: 0s    # 0s = synchronous commits (CommitMessages does commit immediately)
-        start_offset: "latest" # used only if group has no committed offset: "earliest"|"latest"
-        queue_capacity: 100    #capacity of the internal queue for messages fetched from Kafka (should be >= batch_size)
+      profiles_v1: #topic name for profile events
+        required_acks: "all"     # "all" | "one" | "none"
+        compression: "snappy"    # "snappy" | "gzip" | "lz4" | "zstd" | "none"
+        balancer: "least_bytes"  # "least_bytes" | "round_robin" | "hash"
+        batch_size: 100          # sender batching (0 = default)
+        batch_timeout: 10ms      # sender batching timeout (0 = default)
+        write_timeout: 5s        # timeout for a write call (0 = default)
+        read_timeout: 5s         # broker read timeout (0 = default)
+        dial_timeout: 5s         # dial timeout (0 = default)
+        idle_timeout: 30s        # close idle connections (0 = default)
+
+  consume:
+    backoff:
+      min: 100ms # minimum backoff time after an error
+      max: 1s   # maximum backoff time after an error
+
+    topics:
+      accounts_v1:
+        instances: 4           # number of readers for this topic which will be started in each process
+        min_bytes: 1           # minimum bytes to fetch in each request
+        max_bytes: 10e6        # maximum bytes to fetch in each request
+        max_wait: 1s           # maximum time to wait for messages in each request
+        queue_capacity: 10     # capacity of the internal queue for messages fetched from Kafka
 
   inbox:
     routines: 10          #number of goroutines which can process messages in each process

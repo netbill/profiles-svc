@@ -1,41 +1,51 @@
 package messenger
 
 import (
-	"context"
-	"sync"
 	"time"
 
-	eventpg "github.com/netbill/eventbox/pg"
-	"github.com/netbill/profiles-svc/pkg/evtypes"
-	"github.com/segmentio/kafka-go"
+	"github.com/netbill/eventbox"
+	"github.com/netbill/evtypes"
+	"github.com/netbill/profiles-svc/pkg/log"
 )
 
-func (m *Manager) RunConsumer(ctx context.Context) {
-	var wg sync.WaitGroup
+type ConsumerConfig struct {
+	GroupID string   `json:"group_id"`
+	Brokers []string `json:"brokers"`
 
-	consumer := eventpg.NewConsumer(m.log, m.db, eventpg.ConsumerConfig{
-		MinBackoff: time.Millisecond * 100,
-		MaxBackoff: time.Second * 10,
+	MinBackoff time.Duration `json:"min_backoff"`
+	MaxBackoff time.Duration `json:"max_backoff"`
+
+	AccountsV1 ConsumeKafkaConfig `json:"accounts_v1"`
+}
+
+type ConsumeKafkaConfig struct {
+	Instances     int           `json:"instances"`
+	MinBytes      int           `json:"min_bytes"`
+	MaxBytes      int           `json:"max_bytes"`
+	MaxWait       time.Duration `json:"max_wait"`
+	QueueCapacity int           `json:"queue_capacity"`
+}
+
+func NewConsumer(
+	logger *log.Logger,
+	inbox eventbox.Inbox,
+	config ConsumerConfig,
+) *eventbox.Consumer {
+	consumer := eventbox.NewConsumer(logger, inbox, eventbox.ConsumerConfig{
+		MinBackoff: config.MinBackoff,
+		MaxBackoff: config.MaxBackoff,
 	})
 
-	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        m.config.Brokers,
-		Topic:          evtypes.AccountsTopicV1,
-		GroupID:        ProfilesSvcGroup,
-		QueueCapacity:  m.config.Reader.Topics.AccountsV1.QueueCapacity,
-		MaxBytes:       m.config.Reader.Topics.AccountsV1.MaxBytes,
-		MinBytes:       m.config.Reader.Topics.AccountsV1.MinBytes,
-		MaxWait:        m.config.Reader.Topics.AccountsV1.MaxWait,
-		CommitInterval: m.config.Reader.Topics.AccountsV1.CommitInterval,
+	consumer.AddReader(eventbox.ReaderConfig{
+		Brokers:       config.Brokers,
+		GroupID:       config.GroupID,
+		Topic:         evtypes.AccountsTopicV1,
+		Instances:     config.AccountsV1.Instances,
+		MaxWait:       config.AccountsV1.MaxWait,
+		MinBytes:      config.AccountsV1.MinBytes,
+		MaxBytes:      config.AccountsV1.MaxBytes,
+		QueueCapacity: config.AccountsV1.QueueCapacity,
 	})
 
-	wg.Add(1)
-	go func(r *kafka.Reader) {
-		defer r.Close()
-		defer wg.Done()
-
-		consumer.Read(ctx, r)
-	}(reader)
-
-	wg.Wait()
+	return consumer
 }

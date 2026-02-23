@@ -18,7 +18,7 @@ func Profile(m models.Profile) resources2.Profile {
 				Pseudonym:   m.Pseudonym,
 				Description: m.Description,
 				Official:    m.Official,
-				Avatar:      m.Avatar,
+				Avatar:      m.AvatarKey,
 				Version:     m.Version,
 				UpdatedAt:   m.UpdatedAt,
 				CreatedAt:   m.CreatedAt,
