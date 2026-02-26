@@ -52,6 +52,7 @@ func (p *Publisher) WriteProfileUpdated(
 		Pseudonym:   profile.Pseudonym,
 		Description: profile.Description,
 		AvatarKey:   profile.AvatarKey,
+		Version:     profile.Version,
 		UpdatedAt:   profile.UpdatedAt,
 	})
 	if err != nil {

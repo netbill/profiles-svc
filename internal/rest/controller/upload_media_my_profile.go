@@ -10,6 +10,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationGetMyProfileAvatarUploadMediaLink = "get_my_profile_avatar_upload_media_link"
@@ -17,17 +18,17 @@ const operationGetMyProfileAvatarUploadMediaLink = "get_my_profile_avatar_upload
 func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfileAvatarUploadMediaLink)
 
-	profile, media, err := c.modules.Profile.CreateProfileUploadMediaLinks(r.Context(), scope.AccountActor(r))
+	profile, media, err := c.modules.Profile.CreateUploadMediaLinks(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
-		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to open update profile session")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		log.Debug("update profile session opened")
-		c.responser.Render(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
+		render.Response(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
 	}
 }
 
@@ -39,12 +40,12 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 	req, err := requests.DeleteUploadProfileAvatar(r)
 	if err != nil {
 		log.WithError(err).Info("invalid delete upload profile avatar request")
-		c.responser.RenderErr(w, problems.BadRequest(err)...)
+		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
 	}
 
-	err = c.modules.Profile.DeleteProfileUploadAvatar(
+	err = c.modules.Profile.DeleteUploadAvatar(
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Attributes.AvatarKey,
@@ -52,17 +53,17 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
-		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case errors.Is(err, errx.ErrorProfileAvatarKeyIsInvalid):
 		log.WithError(err).Info("avatar key is invalid")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": errors.New("avatar key is invalid"),
 		})...)
 	case err != nil:
 		log.WithError(err).Error("failed to cancel update profile session")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		log.Debug("profile update session cancelled")
-		c.responser.Status(w, http.StatusOK)
+		render.Response(w, http.StatusOK, nil)
 	}
 }

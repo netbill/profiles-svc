@@ -28,7 +28,7 @@ func Log(r *http.Request) *log.Logger {
 		log = log.WithAccountAuthClaims(authClaims)
 	}
 
-	return log
+	return log.WithRequest(r)
 }
 
 func CtxAccountAuth(ctx context.Context, accountData tokens.AccountAuthClaims) context.Context {

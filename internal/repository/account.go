@@ -67,6 +67,7 @@ func (r *Repository) CreateAccount(ctx context.Context, params account.CreateAcc
 		ID:              params.ID,
 		Username:        params.Username,
 		Role:            params.Role,
+		Version:         1,
 		SourceCreatedAt: params.CreatedAt,
 		SourceUpdatedAt: params.CreatedAt,
 	})

@@ -15,7 +15,7 @@ properties:
         description: "account id"
       type:
         type: string
-        enum: [ update_profile ]
+        enum: [ profile ]
       attributes:
         type: object
         properties:

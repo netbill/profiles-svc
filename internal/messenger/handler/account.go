@@ -48,7 +48,7 @@ func (h *Handler) AccountUsernameUpdated(
 	}
 
 	return h.modules.account.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
-		Username:  payload.NewUsername,
+		Username:  payload.Username,
 		Version:   payload.Version,
 		UpdatedAt: payload.UpdatedAt,
 	})

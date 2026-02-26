@@ -23,7 +23,6 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/controller"
 	"github.com/netbill/profiles-svc/internal/rest/middlewares"
 	"github.com/netbill/profiles-svc/internal/tokenmanager"
-	"github.com/netbill/restkit"
 )
 
 func (a *App) Run(ctx context.Context) error {
@@ -99,11 +98,10 @@ func (a *App) Run(ctx context.Context) error {
 	profileModule := profile.New(repo, outbound, s3)
 	accountModule := account.New(repo, outbound)
 
-	responser := restkit.NewResponser()
 	ctrl := controller.New(controller.Modules{
 		Profile: profileModule,
-	}, responser)
-	mdll := middlewares.New(responser, tokenManager)
+	})
+	mdll := middlewares.New(tokenManager)
 	router := rest.New(mdll, ctrl)
 
 	run(func() {

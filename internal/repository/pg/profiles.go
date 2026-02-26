@@ -148,7 +148,8 @@ func (q *profiles) Exists(ctx context.Context) (bool, error) {
 }
 
 func (q *profiles) UpdateOne(ctx context.Context) (repository.ProfileRow, error) {
-	q.updater = q.updater.Set("updated_at", time.Now().UTC()).
+	q.updater = q.updater.
+		Set("updated_at", time.Now().UTC()).
 		Set("version", sq.Expr("version + 1"))
 
 	query, args, err := q.updater.Suffix("RETURNING " + ProfilesColumns).ToSql()

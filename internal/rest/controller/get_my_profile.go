@@ -8,6 +8,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationGetMyProfile = "get_my_profile"
@@ -19,11 +20,11 @@ func (c *Controller) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
-		c.responser.RenderErr(w, problems.Unauthorized("profile for user does not exist"))
+		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to get profile by account id")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
-		c.responser.Render(w, http.StatusOK, responses.Profile(res))
+		render.Response(w, http.StatusOK, responses.Profile(res))
 	}
 }

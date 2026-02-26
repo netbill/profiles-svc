@@ -15,7 +15,7 @@ properties:
         description: "account id"
       type:
         type: string
-        enum: [ delete_profile_upload_avatar ]
+        enum: [ profile ]
       attributes:
         type: object
         required:

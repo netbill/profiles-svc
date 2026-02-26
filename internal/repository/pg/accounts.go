@@ -75,6 +75,7 @@ func (q *accounts) Insert(ctx context.Context, input repository.AccountRow) (rep
 		"id":                id,
 		"username":          username,
 		"role":              role,
+		"version":           input.Version,
 		"source_created_at": sca,
 		"source_updated_at": sua,
 	}).Suffix("RETURNING " + accountsColumns).ToSql()

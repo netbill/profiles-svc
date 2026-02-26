@@ -328,7 +328,7 @@ components:
             description: description
             pseudonym: pseudonym
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          type: update_profile
+          type: profile
       properties:
         data:
           $ref: "#/components/schemas/UpdateProfile_data"
@@ -340,7 +340,7 @@ components:
           attributes:
             official: true
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          type: update_profile_official
+          type: profile
       properties:
         data:
           $ref: "#/components/schemas/UpdateProfileOfficial_data"
@@ -593,7 +593,7 @@ components:
           description: description
           pseudonym: pseudonym
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        type: update_profile
+        type: profile
       properties:
         id:
           description: account id
@@ -601,7 +601,7 @@ components:
           type: string
         type:
           enum:
-          - update_profile
+          - profile
           type: string
         attributes:
           $ref: "#/components/schemas/UpdateProfile_data_attributes"
@@ -623,7 +623,7 @@ components:
         attributes:
           official: true
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        type: update_profile_official
+        type: profile
       properties:
         id:
           description: account id
@@ -631,7 +631,7 @@ components:
           type: string
         type:
           enum:
-          - update_profile_official
+          - profile
           type: string
         attributes:
           $ref: "#/components/schemas/UpdateProfileOfficial_data_attributes"
@@ -654,7 +654,7 @@ components:
           type: string
         type:
           enum:
-          - delete_profile_upload_avatar
+          - profile
           type: string
         attributes:
           $ref: "#/components/schemas/DeleteUploadProfileAvatar_data_attributes"

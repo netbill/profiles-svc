@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/netbill/profiles-svc/internal/core/models"
@@ -26,7 +25,7 @@ type profileModule interface {
 
 	UpdateOfficial(ctx context.Context, accountID uuid.UUID, official bool) (models.Profile, error)
 
-	CreateProfileUploadMediaLinks(
+	CreateUploadMediaLinks(
 		ctx context.Context,
 		actor models.AccountActor,
 	) (models.Profile, models.UploadProfileMediaLinks, error)
@@ -35,27 +34,19 @@ type profileModule interface {
 		actor models.AccountActor,
 		params profile.UpdateParams,
 	) (profile models.Profile, err error)
-	DeleteProfileUploadAvatar(
+	DeleteUploadAvatar(
 		ctx context.Context,
 		actor models.AccountActor,
 		key string,
 	) error
 }
 
-type responser interface {
-	Status(w http.ResponseWriter, status int)
-	Render(w http.ResponseWriter, status int, res interface{})
-	RenderErr(w http.ResponseWriter, errs ...error)
-}
-
 type Controller struct {
-	modules   Modules
-	responser responser
+	modules Modules
 }
 
-func New(modules Modules, responser responser) *Controller {
+func New(modules Modules) *Controller {
 	return &Controller{
-		modules:   modules,
-		responser: responser,
+		modules: modules,
 	}
 }

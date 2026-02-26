@@ -6,7 +6,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) CreateProfileUploadMediaLinks(
+func (m *Module) CreateUploadMediaLinks(
 	ctx context.Context,
 	actor models.AccountActor,
 ) (models.Profile, models.UploadProfileMediaLinks, error) {
@@ -25,7 +25,7 @@ func (m *Module) CreateProfileUploadMediaLinks(
 	}, nil
 }
 
-func (m *Module) DeleteProfileUploadAvatar(
+func (m *Module) DeleteUploadAvatar(
 	ctx context.Context,
 	actor models.AccountActor,
 	key string,

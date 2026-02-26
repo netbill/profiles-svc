@@ -12,6 +12,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationGetProfileByID = "get_profile_by_id"
@@ -22,7 +23,7 @@ func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 	accountID, err := uuid.Parse(chi.URLParam(r, "account_id"))
 	if err != nil {
 		log.WithError(err).Warn("invalid account id")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"path": fmt.Errorf("invalid account id: %s", chi.URLParam(r, "account_id")),
 		})...)
 		return
@@ -32,11 +33,11 @@ func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile not found")
-		c.responser.RenderErr(w, problems.NotFound("profile for user does not exist"))
+		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to get profile by account id")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
-		c.responser.Render(w, http.StatusOK, responses.Profile(res))
+		render.Response(w, http.StatusOK, responses.Profile(res))
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/restkit/pagi"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationFilterProfiles = "filter_profiles"
@@ -34,8 +35,8 @@ func (c *Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case err != nil:
 		log.WithError(err).Error("failed to filter profiles")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
-		c.responser.Render(w, http.StatusOK, responses.ProfileCollection(r, res))
+		render.Response(w, http.StatusOK, responses.ProfileCollection(r, res))
 	}
 }

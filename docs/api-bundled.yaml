@@ -325,7 +325,7 @@ components:
             type:
               type: string
               enum:
-                - update_profile
+                - profile
             attributes:
               type: object
               properties:
@@ -357,7 +357,7 @@ components:
             type:
               type: string
               enum:
-                - update_profile_official
+                - profile
             attributes:
               type: object
               required:
@@ -385,7 +385,7 @@ components:
             type:
               type: string
               enum:
-                - delete_profile_upload_avatar
+                - profile
             attributes:
               type: object
               required:
