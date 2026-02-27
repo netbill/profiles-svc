@@ -18,6 +18,14 @@ func (m *Module) UpdateUsername(
 	accountID uuid.UUID,
 	params UpdateUsernameParams,
 ) error {
+	buried, err := m.repo.AccountIsBuried(ctx, accountID)
+	if err != nil {
+		return err
+	}
+	if buried {
+		return nil
+	}
+
 	account, err := m.repo.GetAccountByID(ctx, accountID)
 	if err != nil {
 		return err
@@ -38,11 +46,6 @@ func (m *Module) UpdateUsername(
 			return err
 		}
 
-		err = m.messenger.WriteProfileUpdated(ctx, profile)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.WriteProfileUpdated(ctx, profile)
 	})
 }

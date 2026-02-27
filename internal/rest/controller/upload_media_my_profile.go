@@ -27,7 +27,6 @@ func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *ht
 		log.WithError(err).Error("failed to open update profile session")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.Debug("update profile session opened")
 		render.Response(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
 	}
 }
@@ -63,7 +62,6 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 		log.WithError(err).Error("failed to cancel update profile session")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.Debug("profile update session cancelled")
 		render.Response(w, http.StatusOK, nil)
 	}
 }

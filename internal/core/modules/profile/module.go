@@ -56,28 +56,27 @@ type bucket interface {
 		accountID uuid.UUID,
 	) (models.UploadMediaLink, error)
 
-	ValidateProfileAvatar(
+	ValidateUploadProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		tempKey string,
+		key string,
 	) error
 
 	DeleteUploadProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		tempKey string,
+		key string,
 	) error
 
 	DeleteProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		finalKey string,
+		key string,
 	) error
 
 	UpdateProfileAvatar(
 		ctx context.Context,
 		accountID uuid.UUID,
-		oldFinalKey *string,
-		tempKey *string,
-	) (*string, error)
+		key string,
+	) (string, error)
 }

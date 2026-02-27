@@ -21,14 +21,14 @@ func CtxLog(ctx context.Context, log *log.Logger) context.Context {
 }
 
 func Log(r *http.Request) *log.Logger {
-	log := r.Context().Value(LogCtxKey).(*log.Logger)
+	logger := r.Context().Value(LogCtxKey).(*log.Logger)
 
 	authClaims, ok := r.Context().Value(AccountDataCtxKey).(tokens.AccountAuthClaims)
 	if ok {
-		log = log.WithAccountAuthClaims(authClaims)
+		logger = logger.WithAccountAuthClaims(authClaims)
 	}
 
-	return log.WithRequest(r)
+	return logger.WithRequest(r)
 }
 
 func CtxAccountAuth(ctx context.Context, accountData tokens.AccountAuthClaims) context.Context {

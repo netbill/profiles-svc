@@ -43,6 +43,9 @@ type repo interface {
 	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
 	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
 
+	BuryAccount(ctx context.Context, accountID uuid.UUID) error
+	AccountIsBuried(ctx context.Context, accountID uuid.UUID) (bool, error)
+
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 

@@ -5,11 +5,12 @@ import (
 )
 
 type Repository struct {
-	ProfilesQ ProfilesQ
-	AccountsQ AccountsQ
-	Transactioner
+	ProfilesSQl ProfilesQ
+	AccountsSql AccountsQ
+	TombstonesSql
+	TransactionSql
 }
 
-type Transactioner interface {
+type TransactionSql interface {
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }

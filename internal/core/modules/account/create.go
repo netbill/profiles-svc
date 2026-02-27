@@ -19,8 +19,15 @@ func (m *Module) Create(
 	ctx context.Context,
 	params CreateAccountParams,
 ) error {
-	exist, err := m.repo.ExistsAccountByID(ctx, params.ID)
+	buried, err := m.repo.AccountIsBuried(ctx, params.ID)
+	if err != nil {
+		return err
+	}
+	if buried {
+		return nil
+	}
 
+	exist, err := m.repo.ExistsAccountByID(ctx, params.ID)
 	if err != nil {
 		return err
 	}

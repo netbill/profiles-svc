@@ -17,7 +17,7 @@ func DeleteUploadProfileAvatar(r *http.Request) (req resources.DeleteUploadProfi
 
 	errs := validation.Errors{
 		"data/id":         validation.Validate(req.Data.Id, validation.Required),
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("delete_profile_upload_avatar")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("profile_avatar")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
 

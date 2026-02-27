@@ -38,7 +38,3 @@ func NewStorage(s3 bucket, config Config) *Storage {
 		config: config,
 	}
 }
-
-func ptrStrEq(a, b *string) bool {
-	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
-}

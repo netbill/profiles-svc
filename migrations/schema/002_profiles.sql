@@ -24,11 +24,16 @@ CREATE TABLE profiles (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE tombstones (
+    id           UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    entity_type  VARCHAR(64) NOT NULL,
+    entity_id    UUID        NOT NULL,
+    deleted_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    UNIQUE (entity_type, entity_id)
+);
+
 -- +migrate Down
 DROP TABLE IF EXISTS accounts CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
-DROP TABLE IF EXISTS outbox_events CASCADE;
-DROP TABLE IF EXISTS inbox_events CASCADE;
-
-DROP TYPE IF EXISTS outbox_event_status;
-DROP TYPE IF EXISTS inbox_event_status;
+DROP TABLE IF EXISTS tombstones CASCADE;

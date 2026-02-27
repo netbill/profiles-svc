@@ -47,9 +47,10 @@ func (a *App) Run(ctx context.Context) error {
 	a.log.Info("starting application")
 
 	repo := &repository.Repository{
-		ProfilesQ:     pg.NewProfilesQ(db),
-		AccountsQ:     pg.NewAccountsQ(db),
-		Transactioner: pg.NewTransaction(db),
+		ProfilesSQl:    pg.NewProfilesQ(db),
+		AccountsSql:    pg.NewAccountsQ(db),
+		TombstonesSql:  pg.NewTombstonesQ(db),
+		TransactionSql: db,
 	}
 
 	cfg, err := awscfg.LoadDefaultConfig(

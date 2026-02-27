@@ -70,7 +70,7 @@ type ProfilesQ interface {
 }
 
 func (r *Repository) CreateProfile(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error) {
-	res, err := r.ProfilesQ.New().Insert(ctx, ProfileRow{
+	res, err := r.ProfilesSQl.New().Insert(ctx, ProfileRow{
 		AccountID: accountID,
 		Username:  username,
 		Official:  false,
@@ -85,7 +85,7 @@ func (r *Repository) CreateProfile(ctx context.Context, accountID uuid.UUID, use
 }
 
 func (r *Repository) GetProfileByAccountID(ctx context.Context, accountID uuid.UUID) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().FilterAccountID(accountID).Get(ctx)
+	row, err := r.ProfilesSQl.New().FilterAccountID(accountID).Get(ctx)
 	switch {
 	case err != nil:
 		return models.Profile{}, fmt.Errorf(
@@ -101,7 +101,7 @@ func (r *Repository) GetProfileByAccountID(ctx context.Context, accountID uuid.U
 }
 
 func (r *Repository) ExistsProfileByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	exist, err := r.ProfilesQ.New().FilterAccountID(accountID).Exists(ctx)
+	exist, err := r.ProfilesSQl.New().FilterAccountID(accountID).Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to check account existence by id %s, cause: %w", accountID, err)
 	}
@@ -110,7 +110,7 @@ func (r *Repository) ExistsProfileByID(ctx context.Context, accountID uuid.UUID)
 }
 
 func (r *Repository) GetProfileByUsername(ctx context.Context, username string) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().FilterUsername(username).Get(ctx)
+	row, err := r.ProfilesSQl.New().FilterUsername(username).Get(ctx)
 	switch {
 	case err != nil:
 		return models.Profile{}, fmt.Errorf(
@@ -130,7 +130,7 @@ func (r *Repository) UpdateProfile(
 	accountID uuid.UUID,
 	input profile.UpdateParams,
 ) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().
+	row, err := r.ProfilesSQl.New().
 		FilterAccountID(accountID).
 		UpdatePseudonym(input.Pseudonym).
 		UpdateDescription(input.Description).
@@ -156,7 +156,7 @@ func (r *Repository) UpdateProfileUsername(
 	accountID uuid.UUID,
 	username string,
 ) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().
+	row, err := r.ProfilesSQl.New().
 		FilterAccountID(accountID).
 		UpdateUsername(username).
 		UpdateOne(ctx)
@@ -179,7 +179,7 @@ func (r *Repository) UpdateProfileOfficial(
 	accountID uuid.UUID,
 	official bool,
 ) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().
+	row, err := r.ProfilesSQl.New().
 		FilterAccountID(accountID).
 		UpdateOfficial(official).
 		UpdateOne(ctx)
@@ -201,7 +201,7 @@ func (r *Repository) DeleteProfileAvatar(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) (models.Profile, error) {
-	row, err := r.ProfilesQ.New().
+	row, err := r.ProfilesSQl.New().
 		FilterAccountID(accountID).
 		UpdateAvatar(nil).
 		UpdateOne(ctx)
@@ -224,7 +224,7 @@ func (r *Repository) FilterProfiles(
 	params profile.FilterParams,
 	limit, offset uint,
 ) (pagi.Page[[]models.Profile], error) {
-	q := r.ProfilesQ
+	q := r.ProfilesSQl
 
 	if params.Text != nil {
 		q = q.FilterBestMatch(*params.Text)
@@ -265,5 +265,5 @@ func (r *Repository) FilterProfiles(
 }
 
 func (r *Repository) DeleteProfile(ctx context.Context, accountID uuid.UUID) error {
-	return r.ProfilesQ.New().FilterAccountID(accountID).Delete(ctx)
+	return r.ProfilesSQl.New().FilterAccountID(accountID).Delete(ctx)
 }

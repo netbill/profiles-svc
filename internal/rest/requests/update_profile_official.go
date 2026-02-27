@@ -19,7 +19,7 @@ func UpdateProfileOfficial(r *http.Request) (req resources.UpdateProfileOfficial
 
 	errs := validation.Errors{
 		"data/id":         validation.Validate(&req.Data.Id, validation.Required),
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("update_profile_official")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("profile_official")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
 

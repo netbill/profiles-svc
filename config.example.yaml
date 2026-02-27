@@ -37,18 +37,19 @@ s3:
     link:
       ttl: 24h
 
-    profile:
-      avatar:
-        allowed_formats:
-          - "jpeg"
-          - "jpg"
-          - "png"
-          - "gif"
-        max_width: 512
-        min_width: 512
-        max_height: 512
-        min_height: 512
-        content_size_max: 5242880 # 5 MB
+    resources:
+      profile:
+        avatar:
+          allowed_formats:
+            - "jpeg"
+            - "jpg"
+            - "png"
+            - "gif"
+          max_width:  512
+          min_width:  512
+          max_height: 512
+          min_height: 512
+          content_size_max: 5242880 # 5 MB
 
 kafka:
   brokers:
@@ -61,7 +62,7 @@ kafka:
       profiles_v1: #topic name for profile events
         required_acks: "all"     # "all" | "one" | "none"
         compression: "snappy"    # "snappy" | "gzip" | "lz4" | "zstd" | "none"
-        balancer: "least_bytes"  # "least_bytes" | "round_robin" | "hash"
+        balancer: "hash"         # "least_bytes" | "round_robin" | "hash"
         batch_size: 100          # sender batching (0 = default)
         batch_timeout: 10ms      # sender batching timeout (0 = default)
         write_timeout: 5s        # timeout for a write call (0 = default)
