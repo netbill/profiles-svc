@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
 	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/modules/account"
 )
+
+const operationAccountCreated = "account_created"
 
 func (h *Handler) AccountCreated(
 	ctx context.Context,
@@ -20,7 +23,8 @@ func (h *Handler) AccountCreated(
 		return err
 	}
 
-	log := h.log.WithInboxEvent(event)
+	log := h.log.WithOperation(operationAccountCreated).
+		With(slog.String("account_id", payload.AccountID.String()))
 
 	err := h.modules.Account.Create(ctx, account.CreateAccountParams{
 		ID:        payload.AccountID,
@@ -36,12 +40,15 @@ func (h *Handler) AccountCreated(
 		log.Debug("received account created event for already existing account")
 		return nil
 	case err != nil:
+		log.WithError(err).Error("failed to create account: %v", err)
 		return err
 	default:
-		log.Debug("account created successfully")
+		log.Info("account created successfully")
 		return nil
 	}
 }
+
+const operationAccountDeleted = "account_deleted"
 
 func (h *Handler) AccountDeleted(
 	ctx context.Context,
@@ -52,18 +59,24 @@ func (h *Handler) AccountDeleted(
 		return err
 	}
 
+	log := h.log.WithOperation(operationAccountDeleted).
+		With(slog.String("account_id", payload.AccountID.String()))
+
 	err := h.modules.Account.Delete(ctx, payload.AccountID)
 	switch {
 	case errors.Is(err, errx.ErrorAccountDeleted):
-		h.log.WithInboxEvent(event).Debug("received account deleted event for already deleted account")
+		log.Debug("received account deleted event for already deleted account")
 		return nil
 	case err != nil:
+		log.WithError(err).Error("failed to delete account: %v", err)
 		return err
 	default:
-		h.log.WithInboxEvent(event).Debug("account deleted successfully")
+		log.Debug("account deleted successfully")
 		return nil
 	}
 }
+
+const operationAccountUpdated = "account_updated"
 
 func (h *Handler) AccountUsernameUpdated(
 	ctx context.Context,
@@ -74,6 +87,9 @@ func (h *Handler) AccountUsernameUpdated(
 		return err
 	}
 
+	log := h.log.WithOperation(operationAccountUpdated).
+		With(slog.String("account_id", payload.AccountID.String()))
+
 	err := h.modules.Account.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
 		Username:  payload.Username,
 		Version:   payload.Version,
@@ -81,12 +97,13 @@ func (h *Handler) AccountUsernameUpdated(
 	})
 	switch {
 	case errors.Is(err, errx.ErrorAccountDeleted):
-		h.log.WithInboxEvent(event).Debug("received account username updated event for already deleted account")
+		log.Debug("received account username updated event for already deleted account")
 		return nil
 	case err != nil:
+		log.WithError(err).Error("failed to update account username: %v", err)
 		return err
 	default:
-		h.log.WithInboxEvent(event).Debug("account username updated successfully")
+		log.Debug("account username updated successfully")
 		return nil
 	}
 }
