@@ -2,9 +2,11 @@ package account
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 )
 
 type UpdateUsernameParams struct {
@@ -23,14 +25,15 @@ func (m *Module) UpdateUsername(
 		return err
 	}
 	if buried {
-		return nil
+		return errx.ErrorAccountDeleted.Raise(
+			fmt.Errorf("account with id %s is already deleted", accountID),
+		)
 	}
 
 	account, err := m.repo.GetAccountByID(ctx, accountID)
 	if err != nil {
 		return err
 	}
-
 	if account.Version >= params.Version {
 		return nil
 	}

@@ -130,7 +130,9 @@ func (a *App) Run(ctx context.Context) error {
 		outboxWorker.Run(ctx)
 	})
 
-	inbound := handler.New(accountModule)
+	inbound := handler.New(a.log, handler.Modules{
+		Account: accountModule,
+	})
 
 	inboxWorker := messenger.NewInboxWorker(a.log, inbox, eventbox.InboxWorkerConfig{
 		Routines:       a.config.Kafka.Inbox.Routines,

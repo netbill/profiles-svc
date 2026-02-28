@@ -2,9 +2,11 @@ package account
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 )
 
 type CreateAccountParams struct {
@@ -24,7 +26,9 @@ func (m *Module) Create(
 		return err
 	}
 	if buried {
-		return nil
+		return errx.ErrorAccountDeleted.Raise(
+			fmt.Errorf("account with id %s is already deleted", params.ID),
+		)
 	}
 
 	exist, err := m.repo.ExistsAccountByID(ctx, params.ID)
@@ -32,7 +36,9 @@ func (m *Module) Create(
 		return err
 	}
 	if exist {
-		return nil
+		return errx.ErrorAccountAlreadyExists.Raise(
+			fmt.Errorf("account with id %s already exists", params.ID),
+		)
 	}
 
 	return m.repo.Transaction(ctx, func(ctx context.Context) error {

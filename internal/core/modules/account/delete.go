@@ -7,14 +7,6 @@ import (
 )
 
 func (m *Module) Delete(ctx context.Context, accountID uuid.UUID) error {
-	buried, err := m.repo.AccountIsBuried(ctx, accountID)
-	if err != nil {
-		return err
-	}
-	if buried {
-		return nil
-	}
-
 	return m.repo.Transaction(ctx, func(ctx context.Context) error {
 		if err := m.repo.BuryAccount(ctx, accountID); err != nil {
 			return err

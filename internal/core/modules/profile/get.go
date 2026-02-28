@@ -7,7 +7,7 @@ import (
 	"github.com/netbill/profiles-svc/internal/core/models"
 )
 
-func (m *Module) GetMy(
+func (m *Module) GetByID(
 	ctx context.Context,
 	accountID uuid.UUID,
 ) (models.Profile, error) {

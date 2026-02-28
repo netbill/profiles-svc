@@ -5,21 +5,22 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/profiles-svc/internal/core/modules/account"
+	"github.com/netbill/profiles-svc/pkg/log"
 )
 
 type Handler struct {
-	modules
+	log     *log.Logger
+	modules Modules
 }
 
-type modules struct {
-	account accountModule
+type Modules struct {
+	Account accountModule
 }
 
-func New(profileModule accountModule) *Handler {
+func New(log *log.Logger, modules Modules) *Handler {
 	return &Handler{
-		modules: modules{
-			account: profileModule,
-		},
+		log:     log,
+		modules: modules,
 	}
 }
 

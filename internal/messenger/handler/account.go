@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
+	"github.com/netbill/profiles-svc/internal/core/errx"
 	"github.com/netbill/profiles-svc/internal/core/modules/account"
 )
 
@@ -18,12 +20,27 @@ func (h *Handler) AccountCreated(
 		return err
 	}
 
-	return h.modules.account.Create(ctx, account.CreateAccountParams{
+	log := h.log.WithInboxEvent(event)
+
+	err := h.modules.Account.Create(ctx, account.CreateAccountParams{
 		ID:        payload.AccountID,
 		Username:  payload.Username,
 		Role:      payload.Role,
 		CreatedAt: payload.CreatedAt,
 	})
+	switch {
+	case errors.Is(err, errx.ErrorAccountDeleted):
+		log.Debug("received account already deleted account")
+		return nil
+	case errors.Is(err, errx.ErrorAccountAlreadyExists):
+		log.Debug("received account created event for already existing account")
+		return nil
+	case err != nil:
+		return err
+	default:
+		log.Debug("account created successfully")
+		return nil
+	}
 }
 
 func (h *Handler) AccountDeleted(
@@ -35,7 +52,17 @@ func (h *Handler) AccountDeleted(
 		return err
 	}
 
-	return h.modules.account.Delete(ctx, payload.AccountID)
+	err := h.modules.Account.Delete(ctx, payload.AccountID)
+	switch {
+	case errors.Is(err, errx.ErrorAccountDeleted):
+		h.log.WithInboxEvent(event).Debug("received account deleted event for already deleted account")
+		return nil
+	case err != nil:
+		return err
+	default:
+		h.log.WithInboxEvent(event).Debug("account deleted successfully")
+		return nil
+	}
 }
 
 func (h *Handler) AccountUsernameUpdated(
@@ -47,9 +74,19 @@ func (h *Handler) AccountUsernameUpdated(
 		return err
 	}
 
-	return h.modules.account.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
+	err := h.modules.Account.UpdateUsername(ctx, payload.AccountID, account.UpdateUsernameParams{
 		Username:  payload.Username,
 		Version:   payload.Version,
 		UpdatedAt: payload.UpdatedAt,
 	})
+	switch {
+	case errors.Is(err, errx.ErrorAccountDeleted):
+		h.log.WithInboxEvent(event).Debug("received account username updated event for already deleted account")
+		return nil
+	case err != nil:
+		return err
+	default:
+		h.log.WithInboxEvent(event).Debug("account username updated successfully")
+		return nil
+	}
 }

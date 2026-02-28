@@ -84,7 +84,7 @@ func (r *Repository) GetAccountByID(ctx context.Context, accountID uuid.UUID) (m
 	case err != nil:
 		return models.Account{}, fmt.Errorf("failed to get account, cause: %w", err)
 	case row.IsNil():
-		return models.Account{}, errx.ErrorAccountNotFound.Raise(
+		return models.Account{}, errx.ErrorAccountNotExists.Raise(
 			fmt.Errorf("account with id %s not found", accountID),
 		)
 	}
@@ -107,7 +107,7 @@ func (r *Repository) GetAccountByUsername(ctx context.Context, username string) 
 	case err != nil:
 		return models.Account{}, fmt.Errorf("failed to get account by username, cause: %w", err)
 	case row.IsNil():
-		return models.Account{}, errx.ErrorAccountNotFound.Raise(
+		return models.Account{}, errx.ErrorAccountNotExists.Raise(
 			fmt.Errorf("account with username %s not found", username),
 		)
 	}
