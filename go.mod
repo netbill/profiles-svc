@@ -15,8 +15,8 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/netbill/ape v0.1.3
 	github.com/netbill/awsx v0.3.3
-	github.com/netbill/eventbox v0.1.9
-	github.com/netbill/evtypes v0.1.1
+	github.com/netbill/eventbox v0.1.12
+	github.com/netbill/evtypes v0.1.2
 	github.com/netbill/logium v0.3.1
 	github.com/netbill/pgdbx v0.3.1
 	github.com/netbill/restkit v0.2.5

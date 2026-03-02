@@ -16,13 +16,15 @@ const operationGetMyProfile = "get_my_profile"
 func (c *Controller) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfile)
 
+	log = log.With("target_account_id", scope.AccountActor(r))
+
 	res, err := c.modules.Profile.GetByID(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.Info("profile for user does not exist")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to get profile by account id")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.Profile(res))

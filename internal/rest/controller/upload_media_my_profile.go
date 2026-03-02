@@ -24,7 +24,7 @@ func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *ht
 		log.Info("profile for user does not exist")
 		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to open update profile session")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
@@ -44,6 +44,8 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 		return
 	}
 
+	log = log.With("target_avatar_id", req.Data.Id)
+
 	err = c.modules.Profile.DeleteUploadAvatar(
 		r.Context(),
 		scope.AccountActor(r),
@@ -51,15 +53,15 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 	)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.Info("profile for user does not exist")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
 	case errors.Is(err, errx.ErrorProfileAvatarKeyIsInvalid):
-		log.WithError(err).Info("avatar key is invalid")
+		log.WithError(err).Warn("avatar key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": errors.New("avatar key is invalid"),
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to cancel update profile session")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, nil)

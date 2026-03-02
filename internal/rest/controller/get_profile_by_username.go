@@ -19,13 +19,15 @@ func (c *Controller) GetProfileByUsername(w http.ResponseWriter, r *http.Request
 
 	username := chi.URLParam(r, "username")
 
+	log = log.With("username", username)
+
 	res, err := c.modules.Profile.GetByUsername(r.Context(), username)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.Info("profile not found")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to get profile by username")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.Profile(res))

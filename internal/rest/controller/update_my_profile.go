@@ -22,11 +22,13 @@ func (c *Controller) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdateProfile(r)
 	if err != nil {
-		log.WithError(err).Info("invalid request body")
+		log.WithError(err).Warn("invalid request body")
 		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
 	}
+
+	log = log.With("target_account_id", scope.AccountActor(r))
 
 	res, err := c.modules.Profile.Update(r.Context(), scope.AccountActor(r), profile.UpdateParams{
 		AvatarKey:   req.Data.Attributes.AvatarKey,
@@ -35,30 +37,30 @@ func (c *Controller) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
 	})
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.WithError(err).Info("account not found by credentials")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
 	case errors.Is(err, errx.ErrorProfileAvatarKeyIsInvalid):
-		log.WithError(err).Info("avatar key is invalid")
+		log.WithError(err).Warn("avatar key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": fmt.Errorf("avatar key is invalid"),
 		})...)
 	case errors.Is(err, errx.ErrorNoContentUploaded):
-		log.WithError(err).Info("no content uploaded for avatar")
+		log.WithError(err).Warn("no content uploaded for avatar")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": fmt.Errorf("no content uploaded for avatar"),
 		})...)
 	case errors.Is(err, errx.ErrorProfileAvatarContentIsExceedsMax):
-		log.WithError(err).Info("avatar content is exceeds max")
+		log.WithError(err).Warn("avatar content is exceeds max")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": err,
 		})...)
 	case errors.Is(err, errx.ErrorProfileAvatarResolutionIsInvalid):
-		log.WithError(err).Info("avatar resolution is invalid")
+		log.WithError(err).Warn("avatar resolution is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": err,
 		})...)
 	case errors.Is(err, errx.ErrorProfileAvatarFormatIsNotAllowed):
-		log.WithError(err).Info("avatar format is not allowed")
+		log.WithError(err).Warn("avatar format is not allowed")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": err,
 		})...)

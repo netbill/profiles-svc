@@ -34,7 +34,7 @@ func (c *Controller) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	res, err := c.modules.Profile.GetList(r.Context(), filters, limit, offset)
 	switch {
 	case err != nil:
-		log.WithError(err).Error("failed to filter profiles")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.ProfileCollection(r, res))

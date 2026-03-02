@@ -24,13 +24,15 @@ func (c *Controller) UpdateProfileOfficial(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	log = log.With("target_account_id", req.Data.Id)
+
 	res, err := c.modules.Profile.UpdateOfficial(r.Context(), req.Data.Id, req.Data.Attributes.Official)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.Info("profile for user does not exist")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to update profile official")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.Profile(res))

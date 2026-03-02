@@ -29,13 +29,15 @@ func (c *Controller) GetProfileByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log = log.With("target_account_id", accountID)
+
 	res, err := c.modules.Profile.GetByID(r.Context(), accountID)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
-		log.Info("profile not found")
+		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to get profile by account id")
+		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.Profile(res))
