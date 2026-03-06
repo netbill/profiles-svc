@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/core/errx"
-	"github.com/netbill/profiles-svc/internal/core/models"
-	"github.com/netbill/profiles-svc/internal/core/modules/account"
+	"github.com/netbill/profiles-svc/internal/core/account"
+	"github.com/netbill/profiles-svc/internal/errx"
+	"github.com/netbill/profiles-svc/internal/models"
 )
 
 type AccountRow struct {
@@ -62,8 +62,18 @@ type AccountsQ interface {
 	FilterVersion(version int32) AccountsQ
 }
 
-func (r *Repository) CreateAccount(ctx context.Context, params account.CreateAccountParams) (models.Account, error) {
-	acc, err := r.AccountsSql.New().Insert(ctx, AccountRow{
+type AccountRepo struct {
+	query AccountsQ
+}
+
+func NewAccountRepo(accountsSql AccountsQ) *AccountRepo {
+	return &AccountRepo{
+		query: accountsSql,
+	}
+}
+
+func (r *AccountRepo) Create(ctx context.Context, params account.CreateAccountParams) (models.Account, error) {
+	acc, err := r.query.New().Insert(ctx, AccountRow{
 		ID:              params.ID,
 		Username:        params.Username,
 		Role:            params.Role,
@@ -78,8 +88,8 @@ func (r *Repository) CreateAccount(ctx context.Context, params account.CreateAcc
 	return acc.ToModel(), nil
 }
 
-func (r *Repository) GetAccountByID(ctx context.Context, accountID uuid.UUID) (models.Account, error) {
-	row, err := r.AccountsSql.New().FilterID(accountID).Get(ctx)
+func (r *AccountRepo) GetByID(ctx context.Context, accountID uuid.UUID) (models.Account, error) {
+	row, err := r.query.New().FilterID(accountID).Get(ctx)
 	switch {
 	case err != nil:
 		return models.Account{}, fmt.Errorf("failed to get account, cause: %w", err)
@@ -92,8 +102,8 @@ func (r *Repository) GetAccountByID(ctx context.Context, accountID uuid.UUID) (m
 	return row.ToModel(), nil
 }
 
-func (r *Repository) ExistsAccountByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	exist, err := r.AccountsSql.New().FilterID(accountID).Exists(ctx)
+func (r *AccountRepo) ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
+	exist, err := r.query.New().FilterID(accountID).Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to check account existence by id %s, cause: %w", accountID, err)
 	}
@@ -101,8 +111,8 @@ func (r *Repository) ExistsAccountByID(ctx context.Context, accountID uuid.UUID)
 	return exist, nil
 }
 
-func (r *Repository) GetAccountByUsername(ctx context.Context, username string) (models.Account, error) {
-	row, err := r.AccountsSql.New().FilterUsername(username).Get(ctx)
+func (r *AccountRepo) GetAccountByUsername(ctx context.Context, username string) (models.Account, error) {
+	row, err := r.query.New().FilterUsername(username).Get(ctx)
 	switch {
 	case err != nil:
 		return models.Account{}, fmt.Errorf("failed to get account by username, cause: %w", err)
@@ -114,8 +124,8 @@ func (r *Repository) GetAccountByUsername(ctx context.Context, username string) 
 
 	return row.ToModel(), nil
 }
-func (r *Repository) ExistsAccountByUsername(ctx context.Context, username string) (bool, error) {
-	exist, err := r.AccountsSql.New().FilterUsername(username).Exists(ctx)
+func (r *AccountRepo) ExistsAccountByUsername(ctx context.Context, username string) (bool, error) {
+	exist, err := r.query.New().FilterUsername(username).Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to check account existence by username %s, cause: %w", username, err)
 	}
@@ -123,12 +133,12 @@ func (r *Repository) ExistsAccountByUsername(ctx context.Context, username strin
 	return exist, nil
 }
 
-func (r *Repository) UpdateAccountUsername(
+func (r *AccountRepo) UpdateUsername(
 	ctx context.Context,
 	accountID uuid.UUID,
 	params account.UpdateUsernameParams,
 ) (models.Account, error) {
-	row, err := r.AccountsSql.New().
+	row, err := r.query.New().
 		FilterID(accountID).
 		UpdateUsername(params.Username).
 		UpdateVersion(params.Version).
@@ -144,8 +154,8 @@ func (r *Repository) UpdateAccountUsername(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) DeleteAccount(ctx context.Context, accountID uuid.UUID) error {
-	err := r.AccountsSql.New().FilterID(accountID).Delete(ctx)
+func (r *AccountRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
+	err := r.query.New().FilterID(accountID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete account %s, cause: %w", accountID, err)
 	}

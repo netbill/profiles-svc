@@ -19,9 +19,6 @@ docs/ProfilesCollection.md
 docs/UpdateProfile.md
 docs/UpdateProfileData.md
 docs/UpdateProfileDataAttributes.md
-docs/UpdateProfileOfficial.md
-docs/UpdateProfileOfficialData.md
-docs/UpdateProfileOfficialDataAttributes.md
 docs/UploadProfileMediaLinks.md
 docs/UploadProfileMediaLinksData.md
 docs/UploadProfileMediaLinksDataAttributes.md
@@ -45,9 +42,6 @@ model_profiles_collection.go
 model_update_profile.go
 model_update_profile_data.go
 model_update_profile_data_attributes.go
-model_update_profile_official.go
-model_update_profile_official_data.go
-model_update_profile_official_data_attributes.go
 model_upload_profile_media_links.go
 model_upload_profile_media_links_data.go
 model_upload_profile_media_links_data_attributes.go

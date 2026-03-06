@@ -28,10 +28,8 @@ type ProfileAttributes struct {
 	Pseudonym *string `json:"pseudonym,omitempty"`
 	// description of profile
 	Description *string `json:"description,omitempty"`
-	// official mark
-	Official bool `json:"official"`
 	// avatar key
-	Avatar *string `json:"avatar,omitempty"`
+	AvatarUrl *string `json:"avatar_url,omitempty"`
 	// profile version
 	Version int32 `json:"version"`
 	// updated at
@@ -46,10 +44,9 @@ type _ProfileAttributes ProfileAttributes
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProfileAttributes(username string, official bool, version int32, updatedAt time.Time, createdAt time.Time) *ProfileAttributes {
+func NewProfileAttributes(username string, version int32, updatedAt time.Time, createdAt time.Time) *ProfileAttributes {
 	this := ProfileAttributes{}
 	this.Username = username
-	this.Official = official
 	this.Version = version
 	this.UpdatedAt = updatedAt
 	this.CreatedAt = createdAt
@@ -152,60 +149,36 @@ func (o *ProfileAttributes) SetDescription(v string) {
 	o.Description = &v
 }
 
-// GetOfficial returns the Official field value
-func (o *ProfileAttributes) GetOfficial() bool {
-	if o == nil {
-		var ret bool
-		return ret
-	}
-
-	return o.Official
-}
-
-// GetOfficialOk returns a tuple with the Official field value
-// and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetOfficialOk() (*bool, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Official, true
-}
-
-// SetOfficial sets field value
-func (o *ProfileAttributes) SetOfficial(v bool) {
-	o.Official = v
-}
-
-// GetAvatar returns the Avatar field value if set, zero value otherwise.
-func (o *ProfileAttributes) GetAvatar() string {
-	if o == nil || IsNil(o.Avatar) {
+// GetAvatarUrl returns the AvatarUrl field value if set, zero value otherwise.
+func (o *ProfileAttributes) GetAvatarUrl() string {
+	if o == nil || IsNil(o.AvatarUrl) {
 		var ret string
 		return ret
 	}
-	return *o.Avatar
+	return *o.AvatarUrl
 }
 
-// GetAvatarOk returns a tuple with the Avatar field value if set, nil otherwise
+// GetAvatarUrlOk returns a tuple with the AvatarUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProfileAttributes) GetAvatarOk() (*string, bool) {
-	if o == nil || IsNil(o.Avatar) {
+func (o *ProfileAttributes) GetAvatarUrlOk() (*string, bool) {
+	if o == nil || IsNil(o.AvatarUrl) {
 		return nil, false
 	}
-	return o.Avatar, true
+	return o.AvatarUrl, true
 }
 
-// HasAvatar returns a boolean if a field has been set.
-func (o *ProfileAttributes) HasAvatar() bool {
-	if o != nil && !IsNil(o.Avatar) {
+// HasAvatarUrl returns a boolean if a field has been set.
+func (o *ProfileAttributes) HasAvatarUrl() bool {
+	if o != nil && !IsNil(o.AvatarUrl) {
 		return true
 	}
 
 	return false
 }
 
-// SetAvatar gets a reference to the given string and assigns it to the Avatar field.
-func (o *ProfileAttributes) SetAvatar(v string) {
-	o.Avatar = &v
+// SetAvatarUrl gets a reference to the given string and assigns it to the AvatarUrl field.
+func (o *ProfileAttributes) SetAvatarUrl(v string) {
+	o.AvatarUrl = &v
 }
 
 // GetVersion returns the Version field value
@@ -297,9 +270,8 @@ func (o ProfileAttributes) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	toSerialize["official"] = o.Official
-	if !IsNil(o.Avatar) {
-		toSerialize["avatar"] = o.Avatar
+	if !IsNil(o.AvatarUrl) {
+		toSerialize["avatar_url"] = o.AvatarUrl
 	}
 	toSerialize["version"] = o.Version
 	toSerialize["updated_at"] = o.UpdatedAt
@@ -313,7 +285,6 @@ func (o *ProfileAttributes) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"username",
-		"official",
 		"version",
 		"updated_at",
 		"created_at",

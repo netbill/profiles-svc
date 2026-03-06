@@ -268,56 +268,6 @@ paths:
       summary: Get profile by account id
       tags:
       - Profiles
-  /profiles-svc/v1/profiles/{account_id}/official:
-    patch:
-      description: |
-        Updates the `official` status of a profile by profile id.
-      parameters:
-      - description: Account id (UUID).
-        explode: false
-        in: path
-        name: account_id
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateProfileOfficial"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Profile"
-          description: Official status updated.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Errors"
-          description: Bad request (invalid payload / validation error).
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Errors"
-          description: Profile for account does not exist.
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Errors"
-          description: Internal server error.
-      security:
-      - bearerAuth: []
-      summary: Update profile official status
-      tags:
-      - Profiles
 components:
   schemas:
     UpdateProfile:
@@ -334,18 +284,6 @@ components:
           $ref: "#/components/schemas/UpdateProfile_data"
       required:
       - data
-    UpdateProfileOfficial:
-      example:
-        data:
-          attributes:
-            official: true
-          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          type: profile
-      properties:
-        data:
-          $ref: "#/components/schemas/UpdateProfileOfficial_data"
-      required:
-      - data
     DeleteUploadProfileAvatar:
       properties:
         data:
@@ -356,11 +294,10 @@ components:
       example:
         data:
           attributes:
+            avatar_url: avatar_url
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
-            official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: avatar
             pseudonym: pseudonym
             version: 0
             username: username
@@ -374,11 +311,10 @@ components:
     ProfileData:
       example:
         attributes:
+          avatar_url: avatar_url
           updated_at: 2000-01-23T04:56:07.000+00:00
           description: description
-          official: true
           created_at: 2000-01-23T04:56:07.000+00:00
-          avatar: avatar
           pseudonym: pseudonym
           version: 0
           username: username
@@ -401,11 +337,10 @@ components:
       - type
     ProfileAttributes:
       example:
+        avatar_url: avatar_url
         updated_at: 2000-01-23T04:56:07.000+00:00
         description: description
-        official: true
         created_at: 2000-01-23T04:56:07.000+00:00
-        avatar: avatar
         pseudonym: pseudonym
         version: 0
         username: username
@@ -419,10 +354,7 @@ components:
         description:
           description: description of profile
           type: string
-        official:
-          description: official mark
-          type: boolean
-        avatar:
+        avatar_url:
           description: avatar key
           type: string
         version:
@@ -438,7 +370,6 @@ components:
           type: string
       required:
       - created_at
-      - official
       - updated_at
       - username
       - version
@@ -446,22 +377,20 @@ components:
       example:
         data:
         - attributes:
+            avatar_url: avatar_url
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
-            official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: avatar
             pseudonym: pseudonym
             version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
         - attributes:
+            avatar_url: avatar_url
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
-            official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: avatar
             pseudonym: pseudonym
             version: 0
             username: username
@@ -500,22 +429,20 @@ components:
           type: profile_upload_links
         included:
         - attributes:
+            avatar_url: avatar_url
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
-            official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: avatar
             pseudonym: pseudonym
             version: 0
             username: username
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           type: profile
         - attributes:
+            avatar_url: avatar_url
             updated_at: 2000-01-23T04:56:07.000+00:00
             description: description
-            official: true
             created_at: 2000-01-23T04:56:07.000+00:00
-            avatar: avatar
             pseudonym: pseudonym
             version: 0
             username: username
@@ -609,43 +536,11 @@ components:
       - attributes
       - id
       - type
-    UpdateProfileOfficial_data_attributes:
-      example:
-        official: true
-      properties:
-        official:
-          description: official
-          type: boolean
-      required:
-      - official
-    UpdateProfileOfficial_data:
-      example:
-        attributes:
-          official: true
-        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        type: profile
-      properties:
-        id:
-          description: account id
-          format: uuid
-          type: string
-        type:
-          enum:
-          - profile
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateProfileOfficial_data_attributes"
-      required:
-      - attributes
-      - id
-      - type
     DeleteUploadProfileAvatar_data_attributes:
       properties:
         avatar_key:
           description: avatar media key
           type: string
-      required:
-      - avatar_key
     DeleteUploadProfileAvatar_data:
       properties:
         id:

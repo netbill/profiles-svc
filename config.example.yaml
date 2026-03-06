@@ -28,10 +28,11 @@ auth:
 s3:
   aws:
     region: "us-east-1"
-    bucket_name: "my-app-bucket"
+    bucket_name: "my-app-media"
     access_key_id: "your-access-key-id"
     secret_access_key: "your-secret-access-key"
     session_token: "your-session-token"
+    base_url: "https://s3.amazonaws.com/my-app-bucket"
 
   media:
     link:

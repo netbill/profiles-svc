@@ -14,7 +14,6 @@ CREATE TABLE accounts (
 CREATE TABLE profiles (
     account_id  UUID PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
     username    VARCHAR(32) NOT NULL UNIQUE,
-    official    BOOLEAN NOT NULL DEFAULT FALSE,
     pseudonym   VARCHAR(128),
     description VARCHAR(255),
     avatar_key  TEXT,

@@ -15,10 +15,7 @@ properties:
   description:
     type: string
     description: "description of profile"
-  official:
-    type: boolean
-    description: "official mark"
-  avatar:
+  avatar_url:
     type: string
     description: "avatar key"
   version:

@@ -11,9 +11,9 @@ import (
 	"github.com/netbill/eventbox"
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/profiles-svc/internal/bucket"
-	"github.com/netbill/profiles-svc/internal/core/modules/account"
-	"github.com/netbill/profiles-svc/internal/core/modules/profile"
+	"github.com/netbill/profiles-svc/internal/core/account"
+	"github.com/netbill/profiles-svc/internal/core/profile"
+	"github.com/netbill/profiles-svc/internal/media"
 	"github.com/netbill/profiles-svc/internal/messenger"
 	"github.com/netbill/profiles-svc/internal/messenger/handler"
 	"github.com/netbill/profiles-svc/internal/messenger/publisher"
@@ -46,13 +46,6 @@ func (a *App) Run(ctx context.Context) error {
 
 	a.log.Info("starting application")
 
-	repo := &repository.Repository{
-		ProfilesSQl:    pg.NewProfilesQ(db),
-		AccountsSql:    pg.NewAccountsQ(db),
-		TombstonesSql:  pg.NewTombstonesQ(db),
-		TransactionSql: db,
-	}
-
 	cfg, err := awscfg.LoadDefaultConfig(
 		context.Background(),
 		awscfg.WithRegion(a.config.S3.Aws.Region),
@@ -68,7 +61,7 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("load aws config: %w", err)
 	}
 
-	s3 := bucket.NewStorage(awsx.New(a.config.S3.Aws.BucketName, cfg), bucket.Config{
+	s3 := media.NewStorage(awsx.New(a.config.S3.Aws.BucketName, cfg), media.Config{
 		LinkTTL:       a.config.S3.Media.Link.TTL,
 		ProfileAvatar: a.config.S3.Media.Resources.Profile.Avatar,
 	})
@@ -96,17 +89,37 @@ func (a *App) Run(ctx context.Context) error {
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
 	})
 
-	profileModule := profile.New(repo, outbound, s3)
-	accountModule := account.New(repo, outbound)
+	profileRepo := repository.NewProfileRepo(pg.NewProfilesQ(db))
+	accountRepo := repository.NewAccountRepo(pg.NewAccountsQ(db))
+	tombstoneRepo := pg.NewTombstonesQ(db)
 
-	ctrl := controller.New(controller.Modules{
-		Profile: profileModule,
+	profileModule := profile.NewProfileModule(profile.ServiceDeps{
+		Repo:      profileRepo,
+		Bucket:    s3,
+		Messenger: outbound,
+		Tx:        db,
 	})
+
+	accountModule := account.NewAccountModule(account.ServiceDeps{
+		AccountRepo: accountRepo,
+		ProfileRepo: profileRepo,
+		Tombstone:   tombstoneRepo,
+		Transaction: db,
+
+		Messenger: outbound,
+	})
+
+	ctrl := controller.New(profileModule)
 	mdll := middlewares.New(tokenManager)
-	router := rest.New(mdll, ctrl)
+	router := rest.NewServer(rest.ServerDeps{
+		Middlewares: mdll,
+		Profile:     ctrl,
+		Log:         a.log,
+		Resolver:    media.NewResolver(a.config.S3.Aws.BaseURL),
+	})
 
 	run(func() {
-		router.Run(ctx, a.log, rest.Config{
+		router.Run(ctx, rest.Config{
 			Port:              a.config.Rest.Port,
 			ReadTimeout:       a.config.Rest.Timeouts.Read,
 			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,

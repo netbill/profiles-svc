@@ -79,7 +79,6 @@ All URIs are relative to *http://localhost:8002*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesAccountIdGet**](docs/ProfilesAPI.md#profilessvcv1profilesaccountidget) | **Get** /profiles-svc/v1/profiles/{account_id} | Get profile by account id
-*ProfilesAPI* | [**ProfilesSvcV1ProfilesAccountIdOfficialPatch**](docs/ProfilesAPI.md#profilessvcv1profilesaccountidofficialpatch) | **Patch** /profiles-svc/v1/profiles/{account_id}/official | Update profile official status
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesGet**](docs/ProfilesAPI.md#profilessvcv1profilesget) | **Get** /profiles-svc/v1/profiles/ | Filter profiles
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMeGet**](docs/ProfilesAPI.md#profilessvcv1profilesmeget) | **Get** /profiles-svc/v1/profiles/me/ | Get my profile
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete**](docs/ProfilesAPI.md#profilessvcv1profilesmeupdatesessionavatardelete) | **Delete** /profiles-svc/v1/profiles/me/update-session/avatar/ | Delete uploaded avatar in session
@@ -103,9 +102,6 @@ Class | Method | HTTP request | Description
  - [UpdateProfile](docs/UpdateProfile.md)
  - [UpdateProfileData](docs/UpdateProfileData.md)
  - [UpdateProfileDataAttributes](docs/UpdateProfileDataAttributes.md)
- - [UpdateProfileOfficial](docs/UpdateProfileOfficial.md)
- - [UpdateProfileOfficialData](docs/UpdateProfileOfficialData.md)
- - [UpdateProfileOfficialDataAttributes](docs/UpdateProfileOfficialDataAttributes.md)
  - [UploadProfileMediaLinks](docs/UploadProfileMediaLinks.md)
  - [UploadProfileMediaLinksData](docs/UploadProfileMediaLinksData.md)
  - [UploadProfileMediaLinksDataAttributes](docs/UploadProfileMediaLinksDataAttributes.md)

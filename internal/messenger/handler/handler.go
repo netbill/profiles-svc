@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/core/modules/account"
+	"github.com/netbill/profiles-svc/internal/core/account"
 	"github.com/netbill/profiles-svc/pkg/log"
 )
 

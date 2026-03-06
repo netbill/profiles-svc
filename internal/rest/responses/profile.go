@@ -3,40 +3,46 @@ package responses
 import (
 	"net/http"
 
-	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/profiles-svc/internal/models"
+	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/profiles-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
 
-func Profile(m models.Profile) resources.Profile {
-	resp := resources.Profile{
-		Data: resources.ProfileData{
-			Id:   m.AccountID,
-			Type: "profile",
-			Attributes: resources.ProfileAttributes{
-				Username:    m.Username,
-				Pseudonym:   m.Pseudonym,
-				Description: m.Description,
-				Official:    m.Official,
-				Avatar:      m.AvatarKey,
-				Version:     m.Version,
-				UpdatedAt:   m.UpdatedAt,
-				CreatedAt:   m.CreatedAt,
-			},
-		},
+func Profile(r *http.Request, m models.Profile) resources.Profile {
+	return resources.Profile{
+		Data: profileData(r, m),
 	}
-
-	return resp
 }
 
-func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources.ProfilesCollection {
-	data := make([]resources.ProfileData, len(m.Data))
-
-	for i, profile := range m.Data {
-		data[i] = Profile(profile).Data
+func profileData(r *http.Request, m models.Profile) resources.ProfileData {
+	res := resources.ProfileData{
+		Id:   m.AccountID,
+		Type: "profile",
+		Attributes: resources.ProfileAttributes{
+			Username:    m.Username,
+			Pseudonym:   m.Pseudonym,
+			Description: m.Description,
+			Version:     m.Version,
+			UpdatedAt:   m.UpdatedAt,
+			CreatedAt:   m.CreatedAt,
+		},
+	}
+	if m.AvatarKey != nil {
+		url := scope.ResolverURL(r, *m.AvatarKey)
+		res.Attributes.AvatarUrl = &url
 	}
 
-	links := pagi.BuildPageLinks(r, m.Page, m.Size, m.Total)
+	return res
+}
+
+func ProfileCollection(r *http.Request, page pagi.Page[[]models.Profile]) resources.ProfilesCollection {
+	data := make([]resources.ProfileData, len(page.Data))
+	for i, profile := range page.Data {
+		data[i] = profileData(r, profile)
+	}
+
+	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
 
 	return resources.ProfilesCollection{
 		Data: data,
@@ -50,7 +56,7 @@ func ProfileCollection(r *http.Request, m pagi.Page[[]models.Profile]) resources
 	}
 }
 
-func UploadProfileMediaLinks(profile models.Profile, links models.UploadProfileMediaLinks) resources.UploadProfileMediaLinks {
+func UploadProfileMediaLinks(r *http.Request, profile models.Profile, links models.UploadProfileMediaLinks) resources.UploadProfileMediaLinks {
 	return resources.UploadProfileMediaLinks{
 		Data: resources.UploadProfileMediaLinksData{
 			Id:   profile.AccountID,
@@ -72,7 +78,7 @@ func UploadProfileMediaLinks(profile models.Profile, links models.UploadProfileM
 			},
 		},
 		Included: []resources.ProfileData{
-			Profile(profile).Data,
+			profileData(r, profile),
 		},
 	}
 }

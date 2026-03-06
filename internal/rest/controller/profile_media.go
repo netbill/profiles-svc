@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/netbill/profiles-svc/internal/core/errx"
+	"github.com/netbill/profiles-svc/internal/core/profile"
+	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/rest/requests"
 	"github.com/netbill/profiles-svc/internal/rest/responses"
 	"github.com/netbill/profiles-svc/internal/rest/scope"
@@ -15,25 +16,25 @@ import (
 
 const operationGetMyProfileAvatarUploadMediaLink = "get_my_profile_avatar_upload_media_link"
 
-func (c *Controller) CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *http.Request) {
+func (c *ProfileController) CreateUploadMediaLink(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfileAvatarUploadMediaLink)
 
-	profile, media, err := c.modules.Profile.CreateUploadMediaLinks(r.Context(), scope.AccountActor(r))
+	profile, media, err := c.profile.CreateUploadMediaLinks(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.Info("profile for user does not exist")
-		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
+		render.ResponseError(w, problems.Unauthorized())
 	case err != nil:
 		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		render.Response(w, http.StatusOK, responses.UploadProfileMediaLinks(profile, media))
+		render.Response(w, http.StatusOK, responses.UploadProfileMediaLinks(r, profile, media))
 	}
 }
 
 const operationDeleteMyProfileUploadAvatar = "delete_my_profile_upload_avatar"
 
-func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.Request) {
+func (c *ProfileController) DeleteUploadMedia(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationDeleteMyProfileUploadAvatar)
 
 	req, err := requests.DeleteUploadProfileAvatar(r)
@@ -46,16 +47,18 @@ func (c *Controller) DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.
 
 	log = log.With("target_avatar_id", req.Data.Id)
 
-	err = c.modules.Profile.DeleteUploadAvatar(
+	err = c.profile.DeleteUploadMedia(
 		r.Context(),
 		scope.AccountActor(r),
-		req.Data.Attributes.AvatarKey,
+		profile.DeleteUploadMediaParams{
+			Avatar: req.Data.Attributes.AvatarKey,
+		},
 	)
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.WithError(err).Warn("profile for user does not exist")
-		render.ResponseError(w, problems.Unauthorized("profile for user does not exist"))
-	case errors.Is(err, errx.ErrorProfileAvatarKeyIsInvalid):
+		render.ResponseError(w, problems.Unauthorized())
+	case errors.Is(err, errx.ErrorProfileUploadedAvatarInvalid):
 		log.WithError(err).Warn("avatar key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"avatar": errors.New("avatar key is invalid"),

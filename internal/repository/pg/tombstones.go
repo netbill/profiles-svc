@@ -46,3 +46,18 @@ func (t *tombstones) AccountIsBuried(ctx context.Context, accountID uuid.UUID) (
 
 	return exists, nil
 }
+
+func (t *tombstones) ProfileIsBuried(ctx context.Context, accountID uuid.UUID) (bool, error) {
+	var exists bool
+	err := t.db.QueryRow(ctx, `
+		SELECT EXISTS (
+			SELECT 1 FROM tombstones
+			WHERE entity_type = 'profile' AND entity_id = $1
+		)
+	`, accountID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("checking profile is buried: %w", err)
+	}
+
+	return exists, nil
+}

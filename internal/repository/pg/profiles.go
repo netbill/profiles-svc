@@ -15,7 +15,7 @@ import (
 )
 
 const profilesTable = "profiles"
-const ProfilesColumns = "account_id, username, official, pseudonym, description, avatar_key, version, created_at, updated_at"
+const ProfilesColumns = "account_id, username, pseudonym, description, avatar_key, version, created_at, updated_at"
 
 func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 	pseudonym := pgtype.Text{}
@@ -25,7 +25,6 @@ func scanProfile(row sq.RowScanner) (p repository.ProfileRow, err error) {
 	err = row.Scan(
 		&p.AccountID,
 		&p.Username,
-		&p.Official,
 		&pseudonym,
 		&description,
 		&avatarKey,
@@ -82,7 +81,6 @@ func (q *profiles) Insert(ctx context.Context, input repository.ProfileRow) (rep
 	query, args, err := q.inserter.SetMap(map[string]interface{}{
 		"account_id":  input.AccountID,
 		"username":    input.Username,
-		"official":    input.Official,
 		"pseudonym":   input.Pseudonym,
 		"description": input.Description,
 	}).Suffix("RETURNING " + ProfilesColumns).ToSql()
@@ -165,23 +163,33 @@ func (q *profiles) UpdateUsername(username string) repository.ProfilesQ {
 	return q
 }
 
-func (q *profiles) UpdateOfficial(official bool) repository.ProfilesQ {
-	q.updater = q.updater.Set("official", official)
-	return q
-}
-
 func (q *profiles) UpdatePseudonym(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("pseudonym", v)
+	value := pgtype.Text{Valid: v != nil, String: ""}
+	if v != nil {
+		value = pgtype.Text{String: *v, Valid: *v != ""}
+	}
+
+	q.updater = q.updater.Set("pseudonym", value)
 	return q
 }
 
 func (q *profiles) UpdateDescription(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("description", v)
+	value := pgtype.Text{Valid: v != nil, String: ""}
+	if v != nil {
+		value = pgtype.Text{String: *v, Valid: *v != ""}
+	}
+
+	q.updater = q.updater.Set("description", value)
 	return q
 }
 
 func (q *profiles) UpdateAvatar(v *string) repository.ProfilesQ {
-	q.updater = q.updater.Set("avatar_key", v)
+	value := pgtype.Text{Valid: v != nil, String: ""}
+	if v != nil {
+		value = pgtype.Text{String: *v, Valid: *v != ""}
+	}
+
+	q.updater = q.updater.Set("avatar_key", value)
 	return q
 }
 
@@ -198,14 +206,6 @@ func (q *profiles) FilterUsername(username string) repository.ProfilesQ {
 	q.counter = q.counter.Where(sq.Eq{"username": username})
 	q.updater = q.updater.Where(sq.Eq{"username": username})
 	q.deleter = q.deleter.Where(sq.Eq{"username": username})
-	return q
-}
-
-func (q *profiles) FilterOfficial(official bool) repository.ProfilesQ {
-	q.selector = q.selector.Where(sq.Eq{"official": official})
-	q.counter = q.counter.Where(sq.Eq{"official": official})
-	q.updater = q.updater.Where(sq.Eq{"official": official})
-	q.deleter = q.deleter.Where(sq.Eq{"official": official})
 	return q
 }
 

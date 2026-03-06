@@ -8,8 +8,8 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/profiles-svc/internal/core/errx"
-	"github.com/netbill/profiles-svc/internal/core/modules/account"
+	"github.com/netbill/profiles-svc/internal/core/account"
+	"github.com/netbill/profiles-svc/internal/errx"
 )
 
 const operationAccountCreated = "account_created"

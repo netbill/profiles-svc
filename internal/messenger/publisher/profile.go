@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/profiles-svc/internal/core/models"
+	"github.com/netbill/profiles-svc/internal/models"
 )
 
 func (p *Publisher) WriteProfileCreated(
@@ -48,7 +48,6 @@ func (p *Publisher) WriteProfileUpdated(
 	payload, err := json.Marshal(evtypes.ProfileUpdatedPayload{
 		AccountID:   profile.AccountID,
 		Username:    profile.Username,
-		Official:    profile.Official,
 		Pseudonym:   profile.Pseudonym,
 		Description: profile.Description,
 		AvatarKey:   profile.AvatarKey,

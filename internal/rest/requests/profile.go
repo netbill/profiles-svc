@@ -9,6 +9,21 @@ import (
 	"github.com/netbill/restkit"
 )
 
+func DeleteUploadProfileAvatar(r *http.Request) (req resources.DeleteUploadProfileAvatar, err error) {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
+		err = restkit.NewDecodeError("body", err)
+		return
+	}
+
+	errs := validation.Errors{
+		"data/id":         validation.Validate(req.Data.Id, validation.Required),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("profile_avatar")),
+		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
+	}
+
+	return req, errs.Filter()
+}
+
 func UpdateProfile(r *http.Request) (req resources.UpdateProfile, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)

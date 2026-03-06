@@ -8,23 +8,22 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/netbill/profiles-svc/internal/media"
 	"github.com/netbill/profiles-svc/pkg/log"
-	"github.com/netbill/restkit/tokens"
 )
 
-type Handlers interface {
-	GetMyProfile(w http.ResponseWriter, r *http.Request)
+type profileController interface {
+	GetMy(w http.ResponseWriter, r *http.Request)
 
-	GetProfileByUsername(w http.ResponseWriter, r *http.Request)
-	GetProfileByID(w http.ResponseWriter, r *http.Request)
+	GetByUsername(w http.ResponseWriter, r *http.Request)
+	GetByID(w http.ResponseWriter, r *http.Request)
 
-	FilterProfiles(w http.ResponseWriter, r *http.Request)
+	Filter(w http.ResponseWriter, r *http.Request)
 
-	UpdateMyProfile(w http.ResponseWriter, r *http.Request)
-	UpdateProfileOfficial(w http.ResponseWriter, r *http.Request)
+	UpdateMy(w http.ResponseWriter, r *http.Request)
 
-	CreateMyProfileUploadMediaLink(w http.ResponseWriter, r *http.Request)
-	DeleteMyProfileUploadAvatar(w http.ResponseWriter, r *http.Request)
+	CreateUploadMediaLink(w http.ResponseWriter, r *http.Request)
+	DeleteUploadMedia(w http.ResponseWriter, r *http.Request)
 }
 
 type Middlewares interface {
@@ -33,18 +32,17 @@ type Middlewares interface {
 	) func(next http.Handler) http.Handler
 	Logger(log *log.Logger) func(next http.Handler) http.Handler
 	CorsDocs() func(next http.Handler) http.Handler
+	ResolverUrl(resolver *media.Resolver) func(next http.Handler) http.Handler
 }
 
 type Server struct {
-	handlers    Handlers
 	middlewares Middlewares
-}
 
-func New(m Middlewares, h Handlers) *Server {
-	return &Server{
-		middlewares: m,
-		handlers:    h,
-	}
+	profile profileController
+
+	log      *log.Logger
+	resolver *media.Resolver
+	config   Config
 }
 
 type Config struct {
@@ -55,54 +53,67 @@ type Config struct {
 	IdleTimeout       time.Duration
 }
 
-func (s *Server) Run(ctx context.Context, log *log.Logger, cfg Config) {
+type ServerDeps struct {
+	Middlewares Middlewares
+
+	Profile profileController
+
+	Log      *log.Logger
+	Resolver *media.Resolver
+}
+
+func NewServer(deps ServerDeps) *Server {
+	return &Server{
+		middlewares: deps.Middlewares,
+
+		profile: deps.Profile,
+
+		log:      deps.Log,
+		resolver: deps.Resolver,
+	}
+}
+
+func (s *Server) Run(ctx context.Context, config Config) {
 	auth := s.middlewares.AccountAuth()
-	sysmoder := s.middlewares.AccountAuth(tokens.RoleSystemAdmin, tokens.RoleSystemModer)
 
 	r := chi.NewRouter()
 	r.Use(
-		s.middlewares.Logger(log),
+		s.middlewares.Logger(s.log),
+		s.middlewares.ResolverUrl(s.resolver),
 		s.middlewares.CorsDocs(),
 	)
 
 	r.Route("/profiles-svc", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/profiles", func(r chi.Router) {
-				r.Get("/", s.handlers.FilterProfiles)
+				r.Get("/", s.profile.Filter)
 
 				r.With(auth).Route("/me", func(r chi.Router) {
-					r.Get("/", s.handlers.GetMyProfile)
-					r.Put("/", s.handlers.UpdateMyProfile)
+					r.Get("/", s.profile.GetMy)
+					r.Put("/", s.profile.UpdateMy)
 
 					r.Route("/media", func(r chi.Router) {
-						r.Route("/upload", func(r chi.Router) {
-							r.Post("/url", s.handlers.CreateMyProfileUploadMediaLink)
-
-							r.Delete("/avatar", s.handlers.DeleteMyProfileUploadAvatar)
-						})
+						r.Post("/", s.profile.CreateUploadMediaLink)
+						r.Delete("/", s.profile.DeleteUploadMedia)
 					})
 				})
 
-				r.Get("/@{username}", s.handlers.GetProfileByUsername)
-
-				r.Route("/{account_id:[0-9a-fA-F-]{36}}", func(r chi.Router) {
-					r.Get("/", s.handlers.GetProfileByID)
-					r.With(sysmoder).Patch("/official", s.handlers.UpdateProfileOfficial)
-				})
+				r.Get("/@{username}", s.profile.GetByUsername)
+				r.Get("/{account_id:[0-9a-fA-F-]{36}}", s.profile.GetByID)
 			})
 		})
 	})
 
 	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%d", cfg.Port),
+		Addr:              fmt.Sprintf(":%d", config.Port),
 		Handler:           r,
-		ReadTimeout:       cfg.ReadTimeout,
-		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
-		WriteTimeout:      cfg.WriteTimeout,
-		IdleTimeout:       cfg.IdleTimeout,
+		ReadTimeout:       config.ReadTimeout,
+		ReadHeaderTimeout: config.ReadHeaderTimeout,
+		WriteTimeout:      config.WriteTimeout,
+		IdleTimeout:       config.IdleTimeout,
 	}
 
-	log.WithField("port", cfg.Port).Info("starting http service...")
+	s.log.WithField("port", config.Port).Info("starting http service...")
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -115,18 +126,18 @@ func (s *Server) Run(ctx context.Context, log *log.Logger, cfg Config) {
 
 	select {
 	case <-ctx.Done():
-		log.Info("shutting down http service...")
+		s.log.Info("shutting down http service...")
 	case err := <-errCh:
 		if err != nil {
-			log.WithError(err).Error("http server error")
+			s.log.WithError(err).Error("http server error")
 		}
 	}
 
 	shCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shCtx); err != nil {
-		log.WithError(err).Error("failed to shutdown http server gracefully")
+		s.log.WithError(err).Error("failed to shutdown http server gracefully")
 	} else {
-		log.Info("http server shutdown gracefully")
+		s.log.Info("http server shutdown gracefully")
 	}
 }

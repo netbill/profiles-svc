@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**AvatarKey** | **string** | avatar media key | 
+**AvatarKey** | Pointer to **string** | avatar media key | [optional] 
 
 ## Methods
 
 ### NewDeleteUploadProfileAvatarDataAttributes
 
-`func NewDeleteUploadProfileAvatarDataAttributes(avatarKey string, ) *DeleteUploadProfileAvatarDataAttributes`
+`func NewDeleteUploadProfileAvatarDataAttributes() *DeleteUploadProfileAvatarDataAttributes`
 
 NewDeleteUploadProfileAvatarDataAttributes instantiates a new DeleteUploadProfileAvatarDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -44,6 +44,11 @@ and a boolean to check if the value has been set.
 
 SetAvatarKey sets AvatarKey field to given value.
 
+### HasAvatarKey
+
+`func (o *DeleteUploadProfileAvatarDataAttributes) HasAvatarKey() bool`
+
+HasAvatarKey returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

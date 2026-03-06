@@ -256,54 +256,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
-  '/profiles-svc/v1/profiles/{account_id}/official':
-    patch:
-      tags:
-        - Profiles
-      summary: Update profile official status
-      description: |
-        Updates the `official` status of a profile by profile id.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: account_id
-          in: path
-          required: true
-          description: Account id (UUID).
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateProfileOfficial'
-      responses:
-        '200':
-          description: Official status updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profile'
-        '400':
-          description: Bad request (invalid payload / validation error).
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '404':
-          description: Profile for account does not exist.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '500':
-          description: Internal server error.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
 components:
   schemas:
     UpdateProfile:
@@ -338,34 +290,6 @@ components:
                 avatar_key:
                   type: string
                   description: avatar media key
-    UpdateProfileOfficial:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: account id
-            type:
-              type: string
-              enum:
-                - profile
-            attributes:
-              type: object
-              required:
-                - official
-              properties:
-                official:
-                  type: boolean
-                  description: official
     DeleteUploadProfileAvatar:
       type: object
       required:
@@ -388,8 +312,6 @@ components:
                 - profile
             attributes:
               type: object
-              required:
-                - avatar_key
               properties:
                 avatar_key:
                   type: string
@@ -436,10 +358,7 @@ components:
         description:
           type: string
           description: description of profile
-        official:
-          type: boolean
-          description: official mark
-        avatar:
+        avatar_url:
           type: string
           description: avatar key
         version:
