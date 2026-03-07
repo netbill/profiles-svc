@@ -1,7 +1,7 @@
 openapi: 3.1.1
 info:
-  title: NetBill profile service
-  description: profile-svc docs
+  title: netbill profile-svc API
+  description: API documentation for profile-svc
   version: 0.1.0
 
 servers:
@@ -16,18 +16,20 @@ paths:
   /profiles-svc/v1/profiles/me/:
     $ref: "./spec/paths/MyProfile.yaml"
 
-  /profiles-svc/v1/profiles/me/update-session/:
-    $ref: "./spec/paths/UpdateProfileSession.yaml"
-  /profiles-svc/v1/profiles/me/update-session/avatar/:
-    $ref: "./spec/paths/UploadAvatar.yaml"
-  /profiles-svc/v1/profiles/me/update-session/confirm/:
-    $ref: "./spec/paths/ConfirmUpdateProfile.yaml"
+  /profiles-svc/v1/profiles/me/media/:
+    $ref: "./spec/paths/ProfileUploadMedia.yaml"
 
   /profiles-svc/v1/profiles/{account_id}:
     $ref: "./spec/paths/ProfileByID.yaml"
 
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     #requests
     UpdateProfile:

@@ -1,7 +1,7 @@
 /*
-NetBill profile service
+netbill profile-svc API
 
-profile-svc docs
+API documentation for profile-svc
 
 API version: 0.1.0
 */
@@ -28,6 +28,9 @@ func (c contextKey) String() string {
 }
 
 var (
+	// ContextAccessToken takes a string oauth2 access token as authentication for the request.
+	ContextAccessToken = contextKey("accesstoken")
+
 	// ContextServerIndex uses a server configuration from the index.
 	ContextServerIndex = contextKey("serverIndex")
 

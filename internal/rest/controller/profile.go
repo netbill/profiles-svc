@@ -64,8 +64,6 @@ const operationGetMyProfile = "get_my_profile"
 func (c *ProfileController) GetMy(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationGetMyProfile)
 
-	log = log.With("target_account_id", scope.AccountActor(r))
-
 	res, err := c.profile.GetByID(r.Context(), scope.AccountActor(r))
 	switch {
 	case errors.Is(err, errx.ErrorProfileNotExists):
@@ -135,11 +133,18 @@ const operationFilterProfiles = "filter_profiles"
 func (c *ProfileController) Filter(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationFilterProfiles)
 
-	q := r.URL.Query()
 	limit, offset := pagi.GetPagination(r)
+	if limit > 100 {
+		log.Warn("invalid pagination limit")
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
+			"query/size": fmt.Errorf("pagination limit cannot be greater than 100"),
+		})...)
+		return
+	}
 
 	filters := profile.FilterParams{}
 
+	q := r.URL.Query()
 	if text := strings.TrimSpace(q.Get("text")); text != "" {
 		filters.Text = &text
 	}

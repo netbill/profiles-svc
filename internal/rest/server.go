@@ -90,7 +90,7 @@ func (s *Server) Run(ctx context.Context, config Config) {
 
 				r.With(auth).Route("/me", func(r chi.Router) {
 					r.Get("/", s.profile.GetMy)
-					r.Put("/", s.profile.UpdateMy)
+					r.Patch("/", s.profile.UpdateMy)
 
 					r.Route("/media", func(r chi.Router) {
 						r.Post("/", s.profile.CreateUploadMediaLink)

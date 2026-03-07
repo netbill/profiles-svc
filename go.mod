@@ -7,7 +7,6 @@ require (
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.7
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/go-chi/cors v1.2.2
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
@@ -15,8 +14,8 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/netbill/ape v0.1.3
 	github.com/netbill/awsx v0.3.3
-	github.com/netbill/eventbox v0.1.13
-	github.com/netbill/evtypes v0.1.2
+	github.com/netbill/eventbox v0.1.14
+	github.com/netbill/evtypes v0.1.3
 	github.com/netbill/logium v0.3.1
 	github.com/netbill/pgdbx v0.3.1
 	github.com/netbill/restkit v0.2.8
@@ -39,6 +38,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.9 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.13 // indirect

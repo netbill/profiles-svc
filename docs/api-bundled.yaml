@@ -1,7 +1,7 @@
 openapi: 3.1.1
 info:
-  title: NetBill profile service
-  description: profile-svc docs
+  title: netbill profile-svc API
+  description: API documentation for profile-svc
   version: 0.1.0
 servers:
   - url: 'http://localhost:8002'
@@ -14,35 +14,28 @@ paths:
       description: |
         Returns a paginated list of public profiles filtered by optional query parameters. Supports prefix-based filtering for `username` and `pseudonym`.
       parameters:
-        - name: username_like
-          in: query
+        - in: query
+          name: text
           required: false
-          description: Prefix filter for username.
           schema:
             type: string
-            minLength: 1
-        - name: pseudonym
-          in: query
+          description: |
+            Text to filter profiles by. Matches against `username` and `pseudonym` fields using prefix-based filtering.
+        - in: query
+          name: 'page[limit]'
           required: false
-          description: Prefix filter for pseudonym.
-          schema:
-            type: string
-            minLength: 1
-        - name: limit
-          in: query
-          required: false
-          description: Maximum number of items to return.
           schema:
             type: integer
             minimum: 1
             maximum: 100
-        - name: offset
-          in: query
+          description: Max number of items to return (1-100).
+        - in: query
+          name: 'page[offset]'
           required: false
-          description: Number of items to skip.
           schema:
             type: integer
             minimum: 0
+          description: Number of items to skip.
       responses:
         '200':
           description: Profiles list.
@@ -118,71 +111,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
-  /profiles-svc/v1/profiles/me/update-session/:
-    post:
-      tags:
-        - Profiles
-      summary: Open profile update session
-      description: |
-        Creates an upload session for updating the current authenticated user's profile media (e.g. avatar) and returns the session resource along with the current profile state. Requires a valid access token.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Update session opened.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UploadProfileMediaLinks'
-        '401':
-          description: Unauthorized.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '404':
-          description: Profile not found.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '500':
-          description: Internal server error.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-  /profiles-svc/v1/profiles/me/update-session/avatar/:
-    delete:
-      tags:
-        - Profiles
-      summary: Delete uploaded avatar in session
-      description: |
-        Deletes (cancels) the uploaded profile avatar within the current upload session. Requires a valid access token and a valid upload session context.
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Uploaded avatar deleted.
-        '401':
-          description: Unauthorized.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '500':
-          description: Internal server error.
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-  /profiles-svc/v1/profiles/me/update-session/confirm/:
     patch:
       tags:
         - Profiles
       summary: Update my profile
       description: |
-        Updates the current authenticated user's profile fields and applies avatar changes from the current upload session (e.g. delete avatar or commit uploaded avatar). Requires a valid access token and a valid upload session context.
+        Updates the current authenticated user's profile. The request body must contain the same `data.id` as the authenticated account id.
       security:
         - bearerAuth: []
       requestBody:
@@ -199,13 +133,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Profile'
         '400':
-          description: Bad request.
+          description: Bad request (validation error / invalid payload).
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
         '401':
-          description: Unauthorized.
+          description: Unauthorized (missing/invalid token or profile does not exist).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '403':
+          description: Forbidden (user too young).
           content:
             application/problem+json:
               schema:
@@ -214,6 +154,65 @@ paths:
           description: Internal server error.
           content:
             application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /profiles-svc/v1/profiles/me/media/:
+    post:
+      tags:
+        - Profiles
+      summary: Create profile upload media link
+      description: |
+        Creates upload media links for the profile's avatar.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Upload media links successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadProfileMediaLinks'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token, or the authenticated account does not have a profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+    delete:
+      tags:
+        - Profiles
+      summary: Delete profile upload media
+      description: |
+        Deletes a previously uploaded media for the profile's avatar.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUploadProfileAvatar'
+      responses:
+        '200':
+          description: Media successfully deleted.
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token, or the authenticated account does not have a profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Errors'
   '/profiles-svc/v1/profiles/{account_id}':
@@ -257,6 +256,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errors'
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     UpdateProfile:
       type: object

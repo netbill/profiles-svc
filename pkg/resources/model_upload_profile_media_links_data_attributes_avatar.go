@@ -1,7 +1,7 @@
 /*
-NetBill profile service
+netbill profile-svc API
 
-profile-svc docs
+API documentation for profile-svc
 
 API version: 0.1.0
 */

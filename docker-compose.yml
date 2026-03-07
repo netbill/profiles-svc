@@ -2,8 +2,6 @@ services:
   profiles-svc:
     build: .
     container_name: profiles-svc
-    environment:
-      - KV_VIPER_FILE=./config.yaml
     ports:
       - "8002:8000"
     networks:

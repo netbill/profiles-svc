@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/netbill/profiles-svc/internal/core/profile"
 	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/rest/requests"
@@ -58,11 +57,7 @@ func (c *ProfileController) DeleteUploadMedia(w http.ResponseWriter, r *http.Req
 	case errors.Is(err, errx.ErrorProfileNotExists):
 		log.WithError(err).Warn("profile for user does not exist")
 		render.ResponseError(w, problems.Unauthorized())
-	case errors.Is(err, errx.ErrorProfileUploadedAvatarInvalid):
-		log.WithError(err).Warn("avatar key is invalid")
-		render.ResponseError(w, problems.BadRequest(validation.Errors{
-			"avatar": errors.New("avatar key is invalid"),
-		})...)
+
 	case err != nil:
 		log.WithError(err).Error("unexpected error")
 		render.ResponseError(w, problems.InternalError())

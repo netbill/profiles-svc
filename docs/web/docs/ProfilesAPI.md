@@ -7,9 +7,9 @@ Method | HTTP request | Description
 [**ProfilesSvcV1ProfilesAccountIdGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesAccountIdGet) | **Get** /profiles-svc/v1/profiles/{account_id} | Get profile by account id
 [**ProfilesSvcV1ProfilesGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesGet) | **Get** /profiles-svc/v1/profiles/ | Filter profiles
 [**ProfilesSvcV1ProfilesMeGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeGet) | **Get** /profiles-svc/v1/profiles/me/ | Get my profile
-[**ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete) | **Delete** /profiles-svc/v1/profiles/me/update-session/avatar/ | Delete uploaded avatar in session
-[**ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch) | **Patch** /profiles-svc/v1/profiles/me/update-session/confirm/ | Update my profile
-[**ProfilesSvcV1ProfilesMeUpdateSessionPost**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUpdateSessionPost) | **Post** /profiles-svc/v1/profiles/me/update-session/ | Open profile update session
+[**ProfilesSvcV1ProfilesMeMediaDelete**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeMediaDelete) | **Delete** /profiles-svc/v1/profiles/me/media/ | Delete profile upload media
+[**ProfilesSvcV1ProfilesMeMediaPost**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeMediaPost) | **Post** /profiles-svc/v1/profiles/me/media/ | Create profile upload media link
+[**ProfilesSvcV1ProfilesMePatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesMePatch) | **Patch** /profiles-svc/v1/profiles/me/ | Update my profile
 [**ProfilesSvcV1ProfilesUUsernameGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesUUsernameGet) | **Get** /profiles-svc/v1/profiles/u/{username} | Get profile by username
 
 
@@ -86,7 +86,7 @@ No authorization required
 
 ## ProfilesSvcV1ProfilesGet
 
-> ProfilesCollection ProfilesSvcV1ProfilesGet(ctx).UsernameLike(usernameLike).Pseudonym(pseudonym).Limit(limit).Offset(offset).Execute()
+> ProfilesCollection ProfilesSvcV1ProfilesGet(ctx).Text(text).PageLimit(pageLimit).PageOffset(pageOffset).Execute()
 
 Filter profiles
 
@@ -105,14 +105,13 @@ import (
 )
 
 func main() {
-	usernameLike := "usernameLike_example" // string | Prefix filter for username. (optional)
-	pseudonym := "pseudonym_example" // string | Prefix filter for pseudonym. (optional)
-	limit := int32(56) // int32 | Maximum number of items to return. (optional)
-	offset := int32(56) // int32 | Number of items to skip. (optional)
+	text := "text_example" // string | Text to filter profiles by. Matches against `username` and `pseudonym` fields using prefix-based filtering.  (optional)
+	pageLimit := int32(56) // int32 | Max number of items to return (1-100). (optional)
+	pageOffset := int32(56) // int32 | Number of items to skip. (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesGet(context.Background()).UsernameLike(usernameLike).Pseudonym(pseudonym).Limit(limit).Offset(offset).Execute()
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesGet(context.Background()).Text(text).PageLimit(pageLimit).PageOffset(pageOffset).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesGet``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -133,10 +132,9 @@ Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesGetRe
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **usernameLike** | **string** | Prefix filter for username. | 
- **pseudonym** | **string** | Prefix filter for pseudonym. | 
- **limit** | **int32** | Maximum number of items to return. | 
- **offset** | **int32** | Number of items to skip. | 
+ **text** | **string** | Text to filter profiles by. Matches against &#x60;username&#x60; and &#x60;pseudonym&#x60; fields using prefix-based filtering.  | 
+ **pageLimit** | **int32** | Max number of items to return (1-100). | 
+ **pageOffset** | **int32** | Number of items to skip. | 
 
 ### Return type
 
@@ -217,11 +215,75 @@ No authorization required
 [[Back to README]](../README.md)
 
 
-## ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete
+## ProfilesSvcV1ProfilesMeMediaDelete
 
-> ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete(ctx).Execute()
+> ProfilesSvcV1ProfilesMeMediaDelete(ctx).DeleteUploadProfileAvatar(deleteUploadProfileAvatar).Execute()
 
-Delete uploaded avatar in session
+Delete profile upload media
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	deleteUploadProfileAvatar := *openapiclient.NewDeleteUploadProfileAvatar(*openapiclient.NewDeleteUploadProfileAvatarData("TODO", "Type_example", *openapiclient.NewDeleteUploadProfileAvatarDataAttributes())) // DeleteUploadProfileAvatar | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeMediaDelete(context.Background()).DeleteUploadProfileAvatar(deleteUploadProfileAvatar).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeMediaDelete``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeMediaDeleteRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **deleteUploadProfileAvatar** | [**DeleteUploadProfileAvatar**](DeleteUploadProfileAvatar.md) |  | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ProfilesSvcV1ProfilesMeMediaPost
+
+> UploadProfileMediaLinks ProfilesSvcV1ProfilesMeMediaPost(ctx).Execute()
+
+Create profile upload media link
 
 
 
@@ -241,11 +303,13 @@ func main() {
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete(context.Background()).Execute()
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeMediaPost(context.Background()).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionAvatarDelete``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeMediaPost``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
+	// response from `ProfilesSvcV1ProfilesMeMediaPost`: UploadProfileMediaLinks
+	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeMediaPost`: %v\n", resp)
 }
 ```
 
@@ -255,30 +319,30 @@ This endpoint does not need any parameter.
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionAvatarDeleteRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeMediaPostRequest struct via the builder pattern
 
 
 ### Return type
 
- (empty response body)
+[**UploadProfileMediaLinks**](UploadProfileMediaLinks.md)
 
 ### Authorization
 
-No authorization required
+[BearerAuth](../README.md#BearerAuth)
 
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/problem+json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)
 [[Back to README]](../README.md)
 
 
-## ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch
+## ProfilesSvcV1ProfilesMePatch
 
-> Profile ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(ctx).UpdateProfile(updateProfile).Execute()
+> Profile ProfilesSvcV1ProfilesMePatch(ctx).UpdateProfile(updateProfile).Execute()
 
 Update my profile
 
@@ -301,13 +365,13 @@ func main() {
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch(context.Background()).UpdateProfile(updateProfile).Execute()
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMePatch(context.Background()).UpdateProfile(updateProfile).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMePatch``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch`: Profile
-	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionConfirmPatch`: %v\n", resp)
+	// response from `ProfilesSvcV1ProfilesMePatch`: Profile
+	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMePatch`: %v\n", resp)
 }
 ```
 
@@ -317,7 +381,7 @@ func main() {
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionConfirmPatchRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMePatchRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -335,67 +399,6 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## ProfilesSvcV1ProfilesMeUpdateSessionPost
-
-> UploadProfileMediaLinks ProfilesSvcV1ProfilesMeUpdateSessionPost(ctx).Execute()
-
-Open profile update session
-
-
-
-### Example
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"os"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
-)
-
-func main() {
-
-	configuration := openapiclient.NewConfiguration()
-	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost(context.Background()).Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-	// response from `ProfilesSvcV1ProfilesMeUpdateSessionPost`: UploadProfileMediaLinks
-	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUpdateSessionPost`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-This endpoint does not need any parameter.
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUpdateSessionPostRequest struct via the builder pattern
-
-
-### Return type
-
-[**UploadProfileMediaLinks**](UploadProfileMediaLinks.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
 - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
