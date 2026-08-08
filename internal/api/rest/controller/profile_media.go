@@ -7,8 +7,8 @@ import (
 	"github.com/netbill/profiles-svc/internal/api/rest/requests"
 	"github.com/netbill/profiles-svc/internal/api/rest/responses"
 	"github.com/netbill/profiles-svc/internal/api/rest/scope"
-	"github.com/netbill/profiles-svc/internal/core/profile"
 	"github.com/netbill/profiles-svc/internal/errx"
+	"github.com/netbill/profiles-svc/internal/modules/profile"
 	"github.com/netbill/restkit/problems"
 	"github.com/netbill/restkit/render"
 )

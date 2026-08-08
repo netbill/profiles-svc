@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/core/account"
 	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/models"
+	"github.com/netbill/profiles-svc/internal/modules/account"
 )
 
 type AccountRow struct {
