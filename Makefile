@@ -40,11 +40,11 @@ run-server:
 	go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
 	set -a && . ./.env && set +a && ./cmd/profiles-svc/main run service
 
-docker-uo:
-	docker compose up -d
+docker-up:
+	docker compose -f deployment/docker-compose.yml up -d --build
 
 docker-down:
-	docker compose down
+	docker compose -f deployment/docker-compose.yml down
 
 docker-rebuild:
-	docker compose up -d --build --force-recreate
+	docker compose -f deployment/docker-compose.yml up -d --build --force-recreate

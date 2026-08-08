@@ -1,9 +1,11 @@
 services:
   profiles-svc:
-    build: .
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
     container_name: profiles-svc
     env_file:
-      - .env
+      - ../.env
     environment:
       - DATABASE_SQL_URL=postgresql://postgres:postgres@profiles-svc-postgres:5432/postgres?sslmode=disable
     ports:
@@ -33,7 +35,7 @@ services:
     environment:
       - SWAGGER_JSON=/docs/api-bundled.yaml
     volumes:
-      - ./docs:/docs:ro
+      - ../docs:/docs:ro
     ports:
       - "5002:8080"
     networks:

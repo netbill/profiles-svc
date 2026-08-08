@@ -1,0 +1,17 @@
+.idea
+.vscode
+
+.git
+.github
+
+vendor
+
+docs
+*.md
+
+.env
+.env.example
+
+.gitignore
+*.log
+*.tmp
