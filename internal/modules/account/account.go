@@ -17,10 +17,9 @@ type accountMessenger interface {
 }
 
 type Service struct {
-	account   accountRepo
-	profile   profileRepo
-	tombstone tombstoneRepo
-	tx        transaction
+	account accountRepo
+	profile profileRepo
+	tx      transaction
 
 	messenger accountMessenger
 }
@@ -28,7 +27,6 @@ type Service struct {
 type ServiceDeps struct {
 	AccountRepo accountRepo
 	ProfileRepo profileRepo
-	Tombstone   tombstoneRepo
 	Transaction transaction
 
 	Messenger accountMessenger
@@ -36,10 +34,9 @@ type ServiceDeps struct {
 
 func NewAccountModule(deps ServiceDeps) *Service {
 	return &Service{
-		account:   deps.AccountRepo,
-		profile:   deps.ProfileRepo,
-		tombstone: deps.Tombstone,
-		tx:        deps.Transaction,
+		account: deps.AccountRepo,
+		profile: deps.ProfileRepo,
+		tx:      deps.Transaction,
 
 		messenger: deps.Messenger,
 	}
@@ -57,11 +54,11 @@ func (m *Service) Create(
 	ctx context.Context,
 	params CreateAccountParams,
 ) error {
-	buried, err := m.tombstone.AccountIsBuried(ctx, params.ID)
+	deleted, err := m.profile.IsDeleted(ctx, params.ID)
 	if err != nil {
 		return err
 	}
-	if buried {
+	if deleted {
 		return errx.ErrorAccountDeleted.Raise(
 			fmt.Errorf("account with id %s is already deleted", params.ID),
 		)
@@ -108,11 +105,11 @@ func (m *Service) UpdateUsername(
 	accountID uuid.UUID,
 	params UpdateUsernameParams,
 ) error {
-	buried, err := m.tombstone.AccountIsBuried(ctx, accountID)
+	deleted, err := m.profile.IsDeleted(ctx, accountID)
 	if err != nil {
 		return err
 	}
-	if buried {
+	if deleted {
 		return errx.ErrorAccountDeleted.Raise(
 			fmt.Errorf("account with id %s is already deleted", accountID),
 		)
@@ -143,16 +140,9 @@ func (m *Service) UpdateUsername(
 
 func (m *Service) Delete(ctx context.Context, accountID uuid.UUID) error {
 	return m.tx.Transaction(ctx, func(ctx context.Context) error {
-		if err := m.tombstone.BuryAccount(ctx, accountID); err != nil {
-			return err
-		}
-
+		// Soft-deletes profiles.deleted_at, which doubles as the tombstone:
+		// IsDeleted checks it to reject any late-arriving event for this ID.
 		err := m.profile.Delete(ctx, accountID)
-		if err != nil {
-			return err
-		}
-
-		err = m.account.Delete(ctx, accountID)
 		if err != nil {
 			return err
 		}

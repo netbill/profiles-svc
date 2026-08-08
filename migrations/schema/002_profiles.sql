@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE accounts (
     id         UUID        PRIMARY KEY,
-    username   VARCHAR(32) NOT NULL UNIQUE,
+    username   VARCHAR(32) NOT NULL,
     role       VARCHAR     NOT NULL,
     version    INTEGER     NOT NULL DEFAULT 1 CHECK ( version > 0 ),
 
@@ -20,19 +20,10 @@ CREATE TABLE profiles (
     version     INTEGER NOT NULL DEFAULT 1 CHECK ( version > 0 ),
 
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE tombstones (
-    id           UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
-    entity_type  VARCHAR(64) NOT NULL,
-    entity_id    UUID        NOT NULL,
-    deleted_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    UNIQUE (entity_type, entity_id)
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at  TIMESTAMPTZ
 );
 
 -- +migrate Down
 DROP TABLE IF EXISTS accounts CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
-DROP TABLE IF EXISTS tombstones CASCADE;

@@ -90,7 +90,6 @@ func (a *App) Run(ctx context.Context) error {
 
 	profileRepo := pg.NewProfileRepo(db)
 	accountRepo := pg.NewAccountRepo(db)
-	tombstoneRepo := pg.NewTombstoneRepo(db)
 
 	profileModule := profile.NewProfileModule(profile.ServiceDeps{
 		Repo:      profileRepo,
@@ -102,7 +101,6 @@ func (a *App) Run(ctx context.Context) error {
 	accountModule := account.NewAccountModule(account.ServiceDeps{
 		AccountRepo: accountRepo,
 		ProfileRepo: profileRepo,
-		Tombstone:   tombstoneRepo,
 		Transaction: db,
 
 		Messenger: outbound,

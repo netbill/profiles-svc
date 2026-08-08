@@ -22,6 +22,8 @@ const (
 // sync over Kafka (see internal/modules/account). source_created_at/
 // source_updated_at come from the upstream event; replica_updated_at is
 // this mirror's own bookkeeping column and never leaves this package.
+// Rows are never deleted here — deletion state lives on profiles.deleted_at
+// (see ProfileRepo), so a deleted account's mirror row just goes stale.
 type AccountRepo struct {
 	db *pgdbx.DB
 }
@@ -91,14 +93,4 @@ func (r *AccountRepo) UpdateUsername(
 	}
 
 	return acc, nil
-}
-
-func (r *AccountRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
-	const query = `DELETE FROM ` + accountsTable + ` WHERE id = $1`
-
-	if _, err := r.db.Exec(ctx, query, accountID); err != nil {
-		return fmt.Errorf("failed to delete account %s, cause: %w", accountID, err)
-	}
-
-	return nil
 }

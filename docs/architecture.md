@@ -16,8 +16,8 @@ read-реплика базовых полей аккаунта, синхрони
 
 - **Go 1.25**, чистая слоистая архитектура без DI-фреймворков — сборка руками в
   `internal/build/app/run.go`.
-- **Postgres** (`jackc/pgx`) — единственное хранилище: профили, локальная реплика
-  аккаунтов, tombstones, inbox/outbox таблицы.
+- **Postgres** (`jackc/pgx`) — единственное хранилище: профили (soft-delete через
+  `deleted_at`), локальная реплика аккаунтов, inbox/outbox таблицы.
 - **Kafka** (`netbill/eventbox` поверх `kafka-go`) — сервис сам продюсер (`profiles_v1`)
   и сам консьюмер (`accounts_v1`), в отличие от auth-svc, где Kafka трогает только
   внешний CDC (Debezium), а сервис лишь пишет в outbox-таблицу.
@@ -52,11 +52,11 @@ internal/
   modules/                бизнес-логика, транспорт-агностична
     profile/                  чтение/поиск/обновление профиля, аватар (media.go)
     account/                  локальная реплика аккаунта: Create/UpdateUsername/Delete,
-                               держит tombstone-проверки и каскадно правит profile
+                               гейтит события через profile.IsDeleted и каскадно правит profile
 
   repo/
     pg/                   Postgres-репозитории на чистом pgx (без query-builder):
-                          AccountRepo, ProfileRepo, TombstoneRepo
+                          AccountRepo, ProfileRepo
 
   messenger/              Kafka-обвязка поверх netbill/eventbox
     producer.go, consumer.go   продюсер (profiles_v1) и консьюмер (accounts_v1)
@@ -74,7 +74,7 @@ pkg/                      переиспользуемые, не завязан�
   oapi/                    generated — Go-типы из OpenAPI-схемы (не редактировать руками)
   log/                     структурный логгер
 
-migrations/schema/        SQL-миграции (rubenv/sql-migrate): profiles/accounts/tombstones,
+migrations/schema/        SQL-миграции (rubenv/sql-migrate): accounts/profiles,
                            inbox_events/outbox_events
 docs/
   rest/                    OpenAPI-спека (docs/rest/api.yaml + spec/**), Swagger UI, сгенерённый
@@ -99,7 +99,7 @@ flowchart LR
     end
 
     subgraph Data["Postgres"]
-        PG[("profiles / accounts<br/>/ tombstones")]
+        PG[("profiles (deleted_at)<br/>/ accounts")]
         Outbox[("outbox_events")]
         Inbox[("inbox_events")]
     end
@@ -158,15 +158,26 @@ flowchart LR
 accounts-svc, обновляемое исключительно Kafka-событиями, не REST-запросами напрямую.
 Профиль (`profiles`) создаётся автоматически при получении `AccountCreated`
 (`account.Service.Create` создаёт и account-реплику, и profile в одной транзакции).
+Строка `accounts` никогда не удаляется и не переиспользуется под другой ID — состояние
+"удалён" целиком живёт в `profiles.deleted_at` (см. ниже), поэтому у `accounts.username`
+больше нет `UNIQUE` (мёртвая реплика после удаления всё равно не участвует ни в каких
+выборках по имени — `GetByUsername` есть только у `profiles`).
 
-### Tombstones — защита от неупорядоченной доставки
+### Soft-delete через `profiles.deleted_at` — защита от неупорядоченной доставки
 
-Таблица `tombstones` фиксирует удалённые account/profile ID. `account.Service.Create`
-проверяет `tombstone.AccountIsBuried` до вставки — если `AccountDeleted` пришёл раньше
-(или гонка) отставшего/передоставленного `AccountCreated`, создание молча отклоняется
-вместо "воскрешения" удалённого аккаунта. `UpdateUsername` дополнительно защищён по
-версии (`if account.Version >= params.Version { return nil }`) — устаревшее/повторное
-событие просто игнорируется.
+Раньше эту роль играла отдельная таблица `tombstones`; теперь то же самое даёт
+`profiles.deleted_at` (`ProfileRepo.IsDeleted`, `internal/repo/pg/profiles.go`).
+`account.Service.Create`/`UpdateUsername` проверяют `profile.IsDeleted` до применения
+события — если `AccountDeleted` пришёл раньше (или гонка) отставшего/передоставленного
+`AccountCreated`/`AccountUsernameUpdated`, событие молча отклоняется вместо
+"воскрешения" удалённого аккаунта. `UpdateUsername` дополнительно защищён по версии
+(`if account.Version >= params.Version { return nil }`) — устаревшее/повторное событие
+просто игнорируется. `account.Service.Delete` сам не трогает `accounts` — только
+`profile.Delete` (soft-delete), чего достаточно: строка `profiles` не исчезает, а
+`deleted_at`/анонимизированный `username` остаются постоянной меткой для будущих
+проверок `IsDeleted`. `username` при этом заменяется на `deleted_user<rand20hex>`
+(влезает в `VARCHAR(32)`), чтобы освободить реальное имя под возможное переиспользование
+— тот же приём, что у `accounts.username` в auth-svc.
 
 ### Аватарки — S3 presigned upload flow
 
@@ -201,10 +212,9 @@ accounts-svc, обновляемое исключительно Kafka-событ
 - **Кэша нет** — каждый читающий запрос идёт в Postgres напрямую.
 - **Kafka не поднят в `deployment/docker-compose.yml`** — предполагается общий брокер
   экосистемы на сети `netbill-net`, здесь не описан.
-- `internal/repo/pg.TombstoneRepo.ProfileIsBuried` объявлен, но нигде не вызывается —
-  унаследованный мёртвый метод, не тронут при переходе репозитория на raw SQL.
-- `account.Service.Delete` явно удаляет `profile` перед удалением `account`, хотя
-  `profiles.account_id` уже `ON DELETE CASCADE` на `accounts.id` — избыточно, но не баг.
+- **Нет фоновой очистки старых soft-deleted профилей** — `profiles` со временем копится
+  мёртвыми строками; если объём когда-нибудь станет проблемой, потребуется отдельный
+  cron/job на архивацию или физическое удаление давно удалённых записей.
 
 ## Как поднять локально
 

@@ -21,8 +21,6 @@ type accountRepo interface {
 		accountID uuid.UUID,
 		params UpdateUsernameParams,
 	) (models.Account, error)
-
-	Delete(ctx context.Context, accountID uuid.UUID) error
 }
 
 type profileRepo interface {
@@ -35,6 +33,11 @@ type profileRepo interface {
 	GetByID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error)
 
+	// IsDeleted reports whether this account was already deleted (soft-delete
+	// on profiles.deleted_at), so a late/redelivered AccountCreated or
+	// AccountUsernameUpdated event doesn't resurrect it.
+	IsDeleted(ctx context.Context, accountID uuid.UUID) (bool, error)
+
 	UpdateUsername(
 		ctx context.Context,
 		accountID uuid.UUID,
@@ -42,11 +45,6 @@ type profileRepo interface {
 	) (models.Profile, error)
 
 	Delete(ctx context.Context, accountID uuid.UUID) error
-}
-
-type tombstoneRepo interface {
-	BuryAccount(ctx context.Context, accountID uuid.UUID) error
-	AccountIsBuried(ctx context.Context, accountID uuid.UUID) (bool, error)
 }
 
 type transaction interface {

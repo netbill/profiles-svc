@@ -77,7 +77,7 @@ func (r *ProfileRepo) Create(ctx context.Context, accountID uuid.UUID, username 
 }
 
 func (r *ProfileRepo) GetByID(ctx context.Context, accountID uuid.UUID) (models.Profile, error) {
-	const query = `SELECT ` + profilesCols + ` FROM ` + profilesTable + ` WHERE account_id = $1`
+	const query = `SELECT ` + profilesCols + ` FROM ` + profilesTable + ` WHERE account_id = $1 AND deleted_at IS NULL`
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, accountID))
 	if err != nil {
@@ -90,7 +90,7 @@ func (r *ProfileRepo) GetByID(ctx context.Context, accountID uuid.UUID) (models.
 }
 
 func (r *ProfileRepo) ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	const query = `SELECT EXISTS (SELECT 1 FROM ` + profilesTable + ` WHERE account_id = $1)`
+	const query = `SELECT EXISTS (SELECT 1 FROM ` + profilesTable + ` WHERE account_id = $1 AND deleted_at IS NULL)`
 
 	var exists bool
 	if err := r.db.QueryRow(ctx, query, accountID).Scan(&exists); err != nil {
@@ -100,8 +100,23 @@ func (r *ProfileRepo) ExistsByID(ctx context.Context, accountID uuid.UUID) (bool
 	return exists, nil
 }
 
+// IsDeleted reports whether a profile for this account ID was created and
+// then soft-deleted. Used to reject a late/redelivered AccountCreated (or
+// AccountUsernameUpdated) event that arrives after the account was already
+// deleted — a missing row means "never seen", a deleted row means "reject".
+func (r *ProfileRepo) IsDeleted(ctx context.Context, accountID uuid.UUID) (bool, error) {
+	const query = `SELECT EXISTS (SELECT 1 FROM ` + profilesTable + ` WHERE account_id = $1 AND deleted_at IS NOT NULL)`
+
+	var deleted bool
+	if err := r.db.QueryRow(ctx, query, accountID).Scan(&deleted); err != nil {
+		return false, fmt.Errorf("failed to check profile deletion state by account id %s, cause: %w", accountID, err)
+	}
+
+	return deleted, nil
+}
+
 func (r *ProfileRepo) GetByUsername(ctx context.Context, username string) (models.Profile, error) {
-	const query = `SELECT ` + profilesCols + ` FROM ` + profilesTable + ` WHERE username = $1`
+	const query = `SELECT ` + profilesCols + ` FROM ` + profilesTable + ` WHERE username = $1 AND deleted_at IS NULL`
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, username))
 	if err != nil {
@@ -136,7 +151,7 @@ func (r *ProfileRepo) Update(
 
 	args = append(args, accountID)
 	query := `UPDATE ` + profilesTable + ` SET ` + strings.Join(sets, ", ") +
-		fmt.Sprintf(" WHERE account_id = $%d RETURNING ", len(args)) + profilesCols
+		fmt.Sprintf(" WHERE account_id = $%d AND deleted_at IS NULL RETURNING ", len(args)) + profilesCols
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, args...))
 	if err != nil {
@@ -156,7 +171,7 @@ func (r *ProfileRepo) UpdateUsername(
 	const query = `
 		UPDATE ` + profilesTable + `
 		SET username = $1, updated_at = now(), version = version + 1
-		WHERE account_id = $2
+		WHERE account_id = $2 AND deleted_at IS NULL
 		RETURNING ` + profilesCols
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, username, accountID))
@@ -181,7 +196,7 @@ func (r *ProfileRepo) Filter(
 		limit = 10
 	}
 
-	var where string
+	where := " WHERE deleted_at IS NULL"
 	var args []interface{}
 
 	if params.Text != nil && *params.Text != "" {
@@ -189,7 +204,7 @@ func (r *ProfileRepo) Filter(
 		like := "%" + term + "%"
 		prefix := term + "%"
 
-		where = ` WHERE username ILIKE $1 OR pseudonym ILIKE $1`
+		where += ` AND (username ILIKE $1 OR pseudonym ILIKE $1)`
 		args = []interface{}{like, term, prefix}
 	}
 
@@ -243,9 +258,25 @@ func (r *ProfileRepo) Filter(
 	}, nil
 }
 
+// Delete soft-deletes the profile: the row is kept (so IsDeleted can later
+// reject a replayed AccountCreated for the same account), and username is
+// anonymized to free it up for reuse despite the UNIQUE constraint — same
+// trick auth-svc uses on its accounts.username. Idempotent: a second call
+// against an already-deleted row matches zero rows and is a no-op.
 func (r *ProfileRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
-	const query = `DELETE FROM ` + profilesTable + ` WHERE account_id = $1`
+	// username is VARCHAR(32): "deleted_user" (12) + 20 hex chars fits exactly.
+	const query = `
+		UPDATE ` + profilesTable + `
+		SET
+			username   = 'deleted_user' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 20),
+			deleted_at = now(),
+			updated_at = now(),
+			version    = version + 1
+		WHERE account_id = $1 AND deleted_at IS NULL`
 
-	_, err := r.db.Exec(ctx, query, accountID)
-	return err
+	if _, err := r.db.Exec(ctx, query, accountID); err != nil {
+		return fmt.Errorf("failed to delete profile for account id %s, cause: %w", accountID, err)
+	}
+
+	return nil
 }
