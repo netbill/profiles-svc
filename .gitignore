@@ -7,6 +7,5 @@ docs/node_modules
 
 cmd/*/main
 
-config*.yaml
-!config.example.yaml
+.env
 

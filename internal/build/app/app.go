@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/netbill/profiles-svc/internal/config"
+	"github.com/netbill/profiles-svc/internal/build/config"
 	"github.com/netbill/profiles-svc/pkg/log"
 )
 

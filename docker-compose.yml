@@ -2,8 +2,14 @@ services:
   profiles-svc:
     build: .
     container_name: profiles-svc
+    env_file:
+      - .env
+    environment:
+      - DATABASE_SQL_URL=postgresql://postgres:postgres@profiles-svc-postgres:5432/postgres?sslmode=disable
     ports:
-      - "8002:8000"
+      - "${REST_PORT:-8002}:8002"
+    depends_on:
+      - profiles-svc-postgres
     networks:
       - netbill-net
 

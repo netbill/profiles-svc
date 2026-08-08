@@ -7,8 +7,8 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/netbill/profiles-svc/internal/app"
-	"github.com/netbill/profiles-svc/internal/config"
+	"github.com/netbill/profiles-svc/internal/build/app"
+	"github.com/netbill/profiles-svc/internal/build/config"
 )
 
 func Run(args []string) {

@@ -24,8 +24,5 @@ WORKDIR /service
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /service/main .
-COPY config.yaml .
-
-ENV KV_VIPER_FILE=/service/config.yaml
 
 CMD ["./main", "run", "service"]

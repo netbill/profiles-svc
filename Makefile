@@ -1,6 +1,4 @@
-DB_URL=postgresql://postgres:postgres@localhost:7000/postgres?sslmode=disable
 OPENAPI_GENERATOR := java -jar ~/openapi-generator-cli.jar
-CONFIG_FILE := ./config.yaml
 API_SRC := ./docs/api.yaml
 API_BUNDLED := ./docs/api-bundled.yaml
 DOCS_OUTPUT_DIR := ./docs/web
@@ -28,19 +26,19 @@ generate-models:
 	find $(RESOURCES_DIR) -type f -name "*_test.go" -delete
 
 build:
-	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
+	go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
 
 migrate-up:
-	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
-	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate up
+	go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
+	set -a && . ./.env && set +a && ./cmd/profiles-svc/main migrate up
 
 migrate-down:
-	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
-	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main migrate down
+	go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
+	set -a && . ./.env && set +a && ./cmd/profiles-svc/main migrate down
 
 run-server:
-	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
-	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/profiles-svc/main run service
+	go build -o ./cmd/profiles-svc/main ./cmd/profiles-svc/main.go
+	set -a && . ./.env && set +a && ./cmd/profiles-svc/main run service
 
 docker-uo:
 	docker compose up -d
