@@ -20,9 +20,8 @@ import (
 	"github.com/netbill/profiles-svc/internal/messenger/publisher"
 	"github.com/netbill/profiles-svc/internal/modules/account"
 	"github.com/netbill/profiles-svc/internal/modules/profile"
-	"github.com/netbill/profiles-svc/internal/repository"
-	"github.com/netbill/profiles-svc/internal/repository/pg"
-	"github.com/netbill/profiles-svc/internal/tokenmanager"
+	"github.com/netbill/profiles-svc/internal/repo/pg"
+	"github.com/netbill/profiles-svc/pkg/tokenmanager"
 )
 
 func (a *App) Run(ctx context.Context) error {
@@ -89,9 +88,9 @@ func (a *App) Run(ctx context.Context) error {
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
 	})
 
-	profileRepo := repository.NewProfileRepo(pg.NewProfilesQ(db))
-	accountRepo := repository.NewAccountRepo(pg.NewAccountsQ(db))
-	tombstoneRepo := pg.NewTombstonesQ(db)
+	profileRepo := pg.NewProfileRepo(db)
+	accountRepo := pg.NewAccountRepo(db)
+	tombstoneRepo := pg.NewTombstoneRepo(db)
 
 	profileModule := profile.NewProfileModule(profile.ServiceDeps{
 		Repo:      profileRepo,

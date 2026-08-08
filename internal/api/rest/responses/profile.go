@@ -5,21 +5,21 @@ import (
 
 	"github.com/netbill/profiles-svc/internal/api/rest/scope"
 	"github.com/netbill/profiles-svc/internal/models"
-	"github.com/netbill/profiles-svc/pkg/resources"
+	"github.com/netbill/profiles-svc/pkg/oapi"
 	"github.com/netbill/restkit/pagi"
 )
 
-func Profile(r *http.Request, m models.Profile) resources.Profile {
-	return resources.Profile{
+func Profile(r *http.Request, m models.Profile) oapi.Profile {
+	return oapi.Profile{
 		Data: profileData(r, m),
 	}
 }
 
-func profileData(r *http.Request, m models.Profile) resources.ProfileData {
-	res := resources.ProfileData{
+func profileData(r *http.Request, m models.Profile) oapi.ProfileData {
+	res := oapi.ProfileData{
 		Id:   m.AccountID,
 		Type: "profile",
-		Attributes: resources.ProfileAttributes{
+		Attributes: oapi.ProfileAttributes{
 			Username:    m.Username,
 			Pseudonym:   m.Pseudonym,
 			Description: m.Description,
@@ -36,17 +36,17 @@ func profileData(r *http.Request, m models.Profile) resources.ProfileData {
 	return res
 }
 
-func ProfileCollection(r *http.Request, page pagi.Page[[]models.Profile]) resources.ProfilesCollection {
-	data := make([]resources.ProfileData, len(page.Data))
+func ProfileCollection(r *http.Request, page pagi.Page[[]models.Profile]) oapi.ProfilesCollection {
+	data := make([]oapi.ProfileData, len(page.Data))
 	for i, profile := range page.Data {
 		data[i] = profileData(r, profile)
 	}
 
 	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
 
-	return resources.ProfilesCollection{
+	return oapi.ProfilesCollection{
 		Data: data,
-		Links: resources.PaginationData{
+		Links: oapi.PaginationData{
 			First: links.First,
 			Last:  links.Last,
 			Prev:  links.Prev,
@@ -56,28 +56,28 @@ func ProfileCollection(r *http.Request, page pagi.Page[[]models.Profile]) resour
 	}
 }
 
-func UploadProfileMediaLinks(r *http.Request, profile models.Profile, links models.UploadProfileMediaLinks) resources.UploadProfileMediaLinks {
-	return resources.UploadProfileMediaLinks{
-		Data: resources.UploadProfileMediaLinksData{
+func UploadProfileMediaLinks(r *http.Request, profile models.Profile, links models.UploadProfileMediaLinks) oapi.UploadProfileMediaLinks {
+	return oapi.UploadProfileMediaLinks{
+		Data: oapi.UploadProfileMediaLinksData{
 			Id:   profile.AccountID,
 			Type: "profile_upload_links",
-			Attributes: resources.UploadProfileMediaLinksDataAttributes{
-				Avatar: resources.UploadProfileMediaLinksDataAttributesAvatar{
+			Attributes: oapi.UploadProfileMediaLinksDataAttributes{
+				Avatar: oapi.UploadProfileMediaLinksDataAttributesAvatar{
 					Key:        links.Avatar.Key,
 					UploadUrl:  links.Avatar.UploadURL,
 					PreloadUrl: links.Avatar.PreloadUrl,
 				},
 			},
-			Relationships: resources.UploadProfileMediaLinksDataRelationships{
-				Profile: &resources.UploadProfileMediaLinksDataRelationshipsProfile{
-					Data: resources.UploadProfileMediaLinksDataRelationshipsProfileData{
+			Relationships: oapi.UploadProfileMediaLinksDataRelationships{
+				Profile: &oapi.UploadProfileMediaLinksDataRelationshipsProfile{
+					Data: oapi.UploadProfileMediaLinksDataRelationshipsProfileData{
 						Id:   profile.AccountID,
 						Type: "profile",
 					},
 				},
 			},
 		},
-		Included: []resources.ProfileData{
+		Included: []oapi.ProfileData{
 			profileData(r, profile),
 		},
 	}

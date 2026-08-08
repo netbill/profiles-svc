@@ -1,11 +1,11 @@
 OPENAPI_GENERATOR := java -jar ~/openapi-generator-cli.jar
-API_SRC := ./docs/api.yaml
-API_BUNDLED := ./docs/api-bundled.yaml
-DOCS_OUTPUT_DIR := ./docs/web
-DOCS_INTERNAL_DIR := ./docs/web/docs
-RESOURCES_DIR := ./pkg/resources
+API_SRC := ./docs/rest/api.yaml
+API_BUNDLED := ./docs/rest/api-bundled.yaml
+DOCS_OUTPUT_DIR := ./docs/rest/web
+DOCS_INTERNAL_DIR := ./docs/rest/web/docs
+RESOURCES_DIR := ./pkg/oapi
 
-generate-models:
+bundle-oapi:
 	test -d $(RESOURCES_DIR) || mkdir -p $(RESOURCES_DIR)
 	test -d $(dir $(API_SRC)) || mkdir -p $(dir $(API_SRC))
 	test -d $(dir $(API_BUNDLED)) || mkdir -p $(dir $(API_BUNDLED))
@@ -18,7 +18,7 @@ generate-models:
 	$(OPENAPI_GENERATOR) generate \
 		-i $(API_BUNDLED) -g go \
 		-o $(DOCS_OUTPUT_DIR) \
-		--additional-properties=packageName=resources \
+		--additional-properties=packageName=oapi \
 		--import-mappings uuid.UUID=github.com/google/uuid --type-mappings string+uuid=uuid.UUID
 
 	mkdir -p $(RESOURCES_DIR)

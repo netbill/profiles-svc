@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/netbill/profiles-svc/pkg/resources"
+	"github.com/netbill/profiles-svc/pkg/oapi"
 	"github.com/netbill/restkit"
 )
 
-func DeleteUploadProfileAvatar(r *http.Request) (req resources.DeleteUploadProfileAvatar, err error) {
+func DeleteUploadProfileAvatar(r *http.Request) (req oapi.DeleteUploadProfileAvatar, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)
 		return
@@ -24,7 +24,7 @@ func DeleteUploadProfileAvatar(r *http.Request) (req resources.DeleteUploadProfi
 	return req, errs.Filter()
 }
 
-func UpdateProfile(r *http.Request) (req resources.UpdateProfile, err error) {
+func UpdateProfile(r *http.Request) (req oapi.UpdateProfile, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)
 		return
