@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/netbill/profiles-svc/internal/rest/scope"
+	"github.com/netbill/profiles-svc/internal/api/rest/scope"
 	"github.com/netbill/restkit/headers"
 	"github.com/netbill/restkit/problems"
 	"github.com/netbill/restkit/render"

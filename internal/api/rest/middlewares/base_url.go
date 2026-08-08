@@ -3,8 +3,8 @@ package middlewares
 import (
 	"net/http"
 
+	"github.com/netbill/profiles-svc/internal/api/rest/scope"
 	"github.com/netbill/profiles-svc/internal/media"
-	"github.com/netbill/profiles-svc/internal/rest/scope"
 )
 
 func (p *Provider) ResolverUrl(resolver *media.Resolver) func(next http.Handler) http.Handler {

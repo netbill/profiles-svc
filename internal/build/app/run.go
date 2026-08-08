@@ -11,6 +11,9 @@ import (
 	"github.com/netbill/eventbox"
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
+	"github.com/netbill/profiles-svc/internal/api/rest"
+	"github.com/netbill/profiles-svc/internal/api/rest/controller"
+	"github.com/netbill/profiles-svc/internal/api/rest/middlewares"
 	"github.com/netbill/profiles-svc/internal/core/account"
 	"github.com/netbill/profiles-svc/internal/core/profile"
 	"github.com/netbill/profiles-svc/internal/media"
@@ -19,9 +22,6 @@ import (
 	"github.com/netbill/profiles-svc/internal/messenger/publisher"
 	"github.com/netbill/profiles-svc/internal/repository"
 	"github.com/netbill/profiles-svc/internal/repository/pg"
-	"github.com/netbill/profiles-svc/internal/rest"
-	"github.com/netbill/profiles-svc/internal/rest/controller"
-	"github.com/netbill/profiles-svc/internal/rest/middlewares"
 	"github.com/netbill/profiles-svc/internal/tokenmanager"
 )
 

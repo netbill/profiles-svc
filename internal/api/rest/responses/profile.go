@@ -3,8 +3,8 @@ package responses
 import (
 	"net/http"
 
+	"github.com/netbill/profiles-svc/internal/api/rest/scope"
 	"github.com/netbill/profiles-svc/internal/models"
-	"github.com/netbill/profiles-svc/internal/rest/scope"
 	"github.com/netbill/profiles-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
