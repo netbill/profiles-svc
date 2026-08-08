@@ -22,8 +22,10 @@ const (
 // sync over Kafka (see internal/modules/account). source_created_at/
 // source_updated_at come from the upstream event; replica_updated_at is
 // this mirror's own bookkeeping column and never leaves this package.
-// Rows are never deleted here — deletion state lives on profiles.deleted_at
-// (see ProfileRepo), so a deleted account's mirror row just goes stale.
+// Rows are never physically deleted — deletion state lives on
+// profiles.deleted_at (see ProfileRepo) — but Delete still anonymizes
+// username so a freed username can be reissued without tripping the
+// UNIQUE constraint on a stale mirror row.
 type AccountRepo struct {
 	db *pgdbx.DB
 }
@@ -93,4 +95,23 @@ func (r *AccountRepo) UpdateUsername(
 	}
 
 	return acc, nil
+}
+
+// Delete anonymizes the mirror row's username instead of removing it —
+// deletion state itself lives on profiles.deleted_at (ProfileRepo.Delete),
+// this only frees the UNIQUE username slot. Same trick, same width budget
+// as ProfileRepo.Delete: "deleted_user" (12) + 20 hex chars = 32.
+func (r *AccountRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
+	const query = `
+		UPDATE ` + accountsTable + `
+		SET
+			username           = 'deleted_user' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 20),
+			replica_updated_at = now()
+		WHERE id = $1`
+
+	if _, err := r.db.Exec(ctx, query, accountID); err != nil {
+		return fmt.Errorf("failed to delete account %s, cause: %w", accountID, err)
+	}
+
+	return nil
 }

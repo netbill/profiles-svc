@@ -158,10 +158,12 @@ flowchart LR
 accounts-svc, обновляемое исключительно Kafka-событиями, не REST-запросами напрямую.
 Профиль (`profiles`) создаётся автоматически при получении `AccountCreated`
 (`account.Service.Create` создаёт и account-реплику, и profile в одной транзакции).
-Строка `accounts` никогда не удаляется и не переиспользуется под другой ID — состояние
-"удалён" целиком живёт в `profiles.deleted_at` (см. ниже), поэтому у `accounts.username`
-больше нет `UNIQUE` (мёртвая реплика после удаления всё равно не участвует ни в каких
-выборках по имени — `GetByUsername` есть только у `profiles`).
+Строка `accounts` физически никогда не удаляется — состояние "удалён" целиком живёт в
+`profiles.deleted_at` (см. ниже) — но `username` у неё всё равно остаётся `UNIQUE`:
+это инвариант, унаследованный от источника правды (`accounts-svc`), и он должен ловить
+реальные баги синхронизации, а не молчать. Поэтому `account.Service.Delete` анонимизирует
+`accounts.username` точно так же, как `profiles.username` (см. ниже) — обе таблицы
+остаются симметричными и обе освобождают имя под возможное переиспользование.
 
 ### Soft-delete через `profiles.deleted_at` — защита от неупорядоченной доставки
 
@@ -172,12 +174,11 @@ accounts-svc, обновляемое исключительно Kafka-событ
 `AccountCreated`/`AccountUsernameUpdated`, событие молча отклоняется вместо
 "воскрешения" удалённого аккаунта. `UpdateUsername` дополнительно защищён по версии
 (`if account.Version >= params.Version { return nil }`) — устаревшее/повторное событие
-просто игнорируется. `account.Service.Delete` сам не трогает `accounts` — только
-`profile.Delete` (soft-delete), чего достаточно: строка `profiles` не исчезает, а
-`deleted_at`/анонимизированный `username` остаются постоянной меткой для будущих
-проверок `IsDeleted`. `username` при этом заменяется на `deleted_user<rand20hex>`
-(влезает в `VARCHAR(32)`), чтобы освободить реальное имя под возможное переиспользование
-— тот же приём, что у `accounts.username` в auth-svc.
+просто игнорируется. `account.Service.Delete` в одной транзакции: soft-делит `profiles`
+(`deleted_at` + анонимизированный `username` — постоянная метка для будущих проверок
+`IsDeleted`) и анонимизирует `accounts.username` (сама строка `accounts` не удаляется).
+В обоих случаях `username` заменяется на `deleted_user<rand20hex>` (влезает в
+`VARCHAR(32)`) — тот же приём, что у `accounts.username` в auth-svc.
 
 ### Аватарки — S3 presigned upload flow
 

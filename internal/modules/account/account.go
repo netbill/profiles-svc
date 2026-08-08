@@ -147,6 +147,13 @@ func (m *Service) Delete(ctx context.Context, accountID uuid.UUID) error {
 			return err
 		}
 
+		// Frees up the mirror row's username slot (see AccountRepo.Delete);
+		// deletion state itself lives solely on profiles.deleted_at above.
+		err = m.account.Delete(ctx, accountID)
+		if err != nil {
+			return err
+		}
+
 		err = m.messenger.WriteProfileDeleted(ctx, accountID)
 		if err != nil {
 			return err

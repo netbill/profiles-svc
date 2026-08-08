@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE accounts (
     id         UUID        PRIMARY KEY,
-    username   VARCHAR(32) NOT NULL,
+    username   VARCHAR(32) NOT NULL UNIQUE,
     role       VARCHAR     NOT NULL,
     version    INTEGER     NOT NULL DEFAULT 1 CHECK ( version > 0 ),
 

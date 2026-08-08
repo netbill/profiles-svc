@@ -21,6 +21,8 @@ type accountRepo interface {
 		accountID uuid.UUID,
 		params UpdateUsernameParams,
 	) (models.Account, error)
+
+	Delete(ctx context.Context, accountID uuid.UUID) error
 }
 
 type profileRepo interface {
