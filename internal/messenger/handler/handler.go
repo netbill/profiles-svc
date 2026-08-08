@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/profiles-svc/internal/modules/account"
+	"github.com/netbill/profiles-svc/internal/models"
 	"github.com/netbill/profiles-svc/pkg/log"
 )
 
@@ -25,11 +25,6 @@ func New(log *log.Logger, modules Modules) *Handler {
 }
 
 type accountModule interface {
-	Create(ctx context.Context, params account.CreateAccountParams) error
-	UpdateUsername(
-		ctx context.Context,
-		accountID uuid.UUID,
-		module account.UpdateUsernameParams,
-	) error
+	Create(ctx context.Context, account models.Account) error
 	Delete(ctx context.Context, accountID uuid.UUID) error
 }

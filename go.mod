@@ -14,7 +14,7 @@ require (
 	github.com/netbill/ape v0.1.3
 	github.com/netbill/awsx v0.3.3
 	github.com/netbill/eventbox v0.1.14
-	github.com/netbill/evtypes v0.1.3
+	github.com/netbill/evtypes v0.1.4
 	github.com/netbill/logium v0.3.1
 	github.com/netbill/pgdbx v0.3.1
 	github.com/netbill/restkit v0.2.8
@@ -55,3 +55,7 @@ require (
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/netbill/evtypes => ../evtypes
+
+replace github.com/netbill/eventbox => ../eventbox

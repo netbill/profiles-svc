@@ -16,6 +16,9 @@ paths:
   /profiles-svc/v1/profiles/me/:
     $ref: "./spec/paths/MyProfile.yaml"
 
+  /profiles-svc/v1/profiles/me/username/:
+    $ref: "./spec/paths/MyProfileUsername.yaml"
+
   /profiles-svc/v1/profiles/me/media/:
     $ref: "./spec/paths/ProfileUploadMedia.yaml"
 
@@ -34,6 +37,8 @@ components:
     #requests
     UpdateProfile:
       $ref: './spec/components/schemas/requests/UpdateProfile.yaml'
+    UpdateProfileUsername:
+      $ref: './spec/components/schemas/requests/UpdateProfileUsername.yaml'
     DeleteUploadProfileAvatar:
       $ref: './spec/components/schemas/requests/DeleteUploadProfileAvatar.yaml'
 

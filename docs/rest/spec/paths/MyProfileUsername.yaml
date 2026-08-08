@@ -1,0 +1,46 @@
+patch:
+  tags:
+    - Profiles
+  summary: Update my username
+  description: >
+    Updates the current authenticated user's username.
+    The request body must contain the same `data.id` as the authenticated account id.
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/schemas/requests/UpdateProfileUsername.yaml"
+  responses:
+    "200":
+      description: Username updated.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/responses/Profile.yaml"
+    "400":
+      description: Bad request (validation error / invalid payload).
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "401":
+      description: Unauthorized (missing/invalid token or profile does not exist).
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "409":
+      description: Conflict (username already taken).
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"
+    "500":
+      description: Internal server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "../components/schemas/responses/Errors.yaml"

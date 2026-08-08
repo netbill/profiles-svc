@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/models"
 
 	"github.com/netbill/restkit/pagi"
@@ -14,11 +15,16 @@ type profileMessenger interface {
 	WriteProfileUpdated(ctx context.Context, profile models.Profile) error
 }
 
+type usernameValidator interface {
+	Validate(username string) error
+}
+
 type Service struct {
 	repo      profileRepo
 	tx        transaction
 	messenger profileMessenger
 	bucket    media
+	username  usernameValidator
 }
 
 type ServiceDeps struct {
@@ -26,6 +32,7 @@ type ServiceDeps struct {
 	Tx        transaction
 	Messenger profileMessenger
 	Bucket    media
+	Username  usernameValidator
 }
 
 func NewProfileModule(deps ServiceDeps) *Service {
@@ -34,6 +41,7 @@ func NewProfileModule(deps ServiceDeps) *Service {
 		tx:        deps.Tx,
 		messenger: deps.Messenger,
 		bucket:    deps.Bucket,
+		username:  deps.Username,
 	}
 }
 
@@ -131,6 +139,47 @@ func (s *Service) Update(
 		}
 
 		return nil
+	}); err != nil {
+		return models.Profile{}, err
+	}
+
+	return profile, nil
+}
+
+func (s *Service) UpdateUsername(
+	ctx context.Context,
+	actor models.AccountActor,
+	newUsername string,
+) (models.Profile, error) {
+	if err := s.username.Validate(newUsername); err != nil {
+		return models.Profile{}, err
+	}
+
+	current, err := s.repo.GetByID(ctx, actor)
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	if current.Username == newUsername {
+		return current, nil
+	}
+
+	unavalible, err := s.repo.ExistByUsername(ctx, newUsername)
+	if err != nil {
+		return models.Profile{}, err
+	}
+	if unavalible {
+		return models.Profile{}, errx.ErrorProfileUsernameTaken
+	}
+
+	var profile models.Profile
+	if err = s.tx.Transaction(ctx, func(ctx context.Context) error {
+		profile, err = s.repo.UpdateUsername(ctx, actor, newUsername)
+		if err != nil {
+			return err
+		}
+
+		return s.messenger.WriteProfileUpdated(ctx, profile)
 	}); err != nil {
 		return models.Profile{}, err
 	}

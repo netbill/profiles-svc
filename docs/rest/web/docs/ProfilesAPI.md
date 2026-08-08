@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**ProfilesSvcV1ProfilesMeMediaDelete**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeMediaDelete) | **Delete** /profiles-svc/v1/profiles/me/media/ | Delete profile upload media
 [**ProfilesSvcV1ProfilesMeMediaPost**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeMediaPost) | **Post** /profiles-svc/v1/profiles/me/media/ | Create profile upload media link
 [**ProfilesSvcV1ProfilesMePatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesMePatch) | **Patch** /profiles-svc/v1/profiles/me/ | Update my profile
+[**ProfilesSvcV1ProfilesMeUsernamePatch**](ProfilesAPI.md#ProfilesSvcV1ProfilesMeUsernamePatch) | **Patch** /profiles-svc/v1/profiles/me/username/ | Update my username
 [**ProfilesSvcV1ProfilesUUsernameGet**](ProfilesAPI.md#ProfilesSvcV1ProfilesUUsernameGet) | **Get** /profiles-svc/v1/profiles/u/{username} | Get profile by username
 
 
@@ -387,6 +388,72 @@ Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMePat
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **updateProfile** | [**UpdateProfile**](UpdateProfile.md) |  | 
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ProfilesSvcV1ProfilesMeUsernamePatch
+
+> Profile ProfilesSvcV1ProfilesMeUsernamePatch(ctx).UpdateProfileUsername(updateProfileUsername).Execute()
+
+Update my username
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	updateProfileUsername := *openapiclient.NewUpdateProfileUsername(*openapiclient.NewUpdateProfileUsernameData("TODO", "Type_example", *openapiclient.NewUpdateProfileUsernameDataAttributes("Username_example"))) // UpdateProfileUsername | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.ProfilesAPI.ProfilesSvcV1ProfilesMeUsernamePatch(context.Background()).UpdateProfileUsername(updateProfileUsername).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `ProfilesAPI.ProfilesSvcV1ProfilesMeUsernamePatch``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `ProfilesSvcV1ProfilesMeUsernamePatch`: Profile
+	fmt.Fprintf(os.Stdout, "Response from `ProfilesAPI.ProfilesSvcV1ProfilesMeUsernamePatch`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiProfilesSvcV1ProfilesMeUsernamePatchRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **updateProfileUsername** | [**UpdateProfileUsername**](UpdateProfileUsername.md) |  | 
 
 ### Return type
 

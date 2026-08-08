@@ -156,6 +156,52 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Errors'
+  /profiles-svc/v1/profiles/me/username/:
+    patch:
+      tags:
+        - Profiles
+      summary: Update my username
+      description: |
+        Updates the current authenticated user's username. The request body must contain the same `data.id` as the authenticated account id.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileUsername'
+      responses:
+        '200':
+          description: Username updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Bad request (validation error / invalid payload).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '401':
+          description: Unauthorized (missing/invalid token or profile does not exist).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '409':
+          description: Conflict (username already taken).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
   /profiles-svc/v1/profiles/me/media/:
     post:
       tags:
@@ -294,6 +340,34 @@ components:
                 avatar_key:
                   type: string
                   description: avatar media key
+    UpdateProfileUsername:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: account id
+            type:
+              type: string
+              enum:
+                - profile_username
+            attributes:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  description: new username
     DeleteUploadProfileAvatar:
       type: object
       required:

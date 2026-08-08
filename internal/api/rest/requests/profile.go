@@ -38,3 +38,18 @@ func UpdateProfile(r *http.Request) (req oapi.UpdateProfile, err error) {
 
 	return req, errs.Filter()
 }
+
+func UpdateProfileUsername(r *http.Request) (req oapi.UpdateProfileUsername, err error) {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
+		err = restkit.NewDecodeError("body", err)
+		return
+	}
+
+	errs := validation.Errors{
+		"data/id":                  validation.Validate(req.Data.Id, validation.Required),
+		"data/type":                validation.Validate(req.Data.Type, validation.Required, validation.In("profile_username")),
+		"data/attributes/username": validation.Validate(req.Data.Attributes.Username, validation.Required),
+	}
+
+	return req, errs.Filter()
+}

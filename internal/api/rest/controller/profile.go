@@ -37,6 +37,12 @@ type profileModule interface {
 		params profile.UpdateParams,
 	) (profile models.Profile, err error)
 
+	UpdateUsername(
+		ctx context.Context,
+		actor models.AccountActor,
+		username string,
+	) (models.Profile, error)
+
 	CreateUploadMediaLinks(
 		ctx context.Context,
 		actor models.AccountActor,
@@ -198,6 +204,43 @@ func (c *ProfileController) UpdateMy(w http.ResponseWriter, r *http.Request) {
 		render.ResponseError(w, problems.InternalError())
 	default:
 		log.Debug("profile updated")
+		render.Response(w, http.StatusOK, responses.Profile(r, res))
+	}
+}
+
+const operationUpdateMyProfileUsername = "update_my_profile_username"
+
+func (c *ProfileController) UpdateUsername(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationUpdateMyProfileUsername)
+
+	req, err := requests.UpdateProfileUsername(r)
+	if err != nil {
+		log.WithError(err).Warn("invalid request body")
+		render.ResponseError(w, problems.BadRequest(err)...)
+
+		return
+	}
+
+	log = log.With("target_account_id", scope.AccountActor(r))
+
+	res, err := c.profile.UpdateUsername(r.Context(), scope.AccountActor(r), req.Data.Attributes.Username)
+	switch {
+	case errors.Is(err, errx.ErrorProfileNotExists):
+		log.WithError(err).Warn("profile for user does not exist")
+		render.ResponseError(w, problems.NotFound("profile for user does not exist"))
+	case errors.Is(err, errx.ErrorProfileUsernameNotValid):
+		log.WithError(err).Warn("username is invalid")
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
+			"username": err,
+		})...)
+	case errors.Is(err, errx.ErrorProfileUsernameTaken):
+		log.WithError(err).Warn("username is already taken")
+		render.ResponseError(w, problems.Conflict("username is already taken"))
+	case err != nil:
+		log.WithError(err).Error("failed to update username")
+		render.ResponseError(w, problems.InternalError())
+	default:
+		log.Debug("username updated")
 		render.Response(w, http.StatusOK, responses.Profile(r, res))
 	}
 }

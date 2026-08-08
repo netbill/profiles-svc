@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/models"
@@ -20,13 +21,6 @@ const (
 	profilesCols  = "account_id, username, pseudonym, description, avatar_key, version, created_at, updated_at, deleted_at"
 )
 
-// ProfileRepo backs both internal/modules/profile (public profile CRUD) and
-// internal/modules/account (profile side-effects of account sync).
-//
-// Every mutating query filters "AND deleted_at IS NULL" in its own WHERE
-// clause rather than relying on a separate pre-check — a pre-check-then-act
-// pair is a TOCTOU race against a concurrent Delete; folding the condition
-// into the same statement makes the check-and-mutate atomic.
 type ProfileRepo struct {
 	db *pgdbx.DB
 }
@@ -74,6 +68,13 @@ func (r *ProfileRepo) Create(ctx context.Context, accountID uuid.UUID, username 
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, accountID, username))
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" && pgErr.ConstraintName != "profiles_pkey" {
+			// account_id conflict means a genuine duplicate/replayed
+			// AccountCreated (caller's problem, not ours); a username
+			// conflict is the caller's cue to regenerate and retry.
+			return models.Profile{}, errx.ErrorProfileUsernameTaken.Raise(err)
+		}
 		return models.Profile{}, fmt.Errorf(
 			"failed to insert profile for account id %s, cause: %w", accountID, err,
 		)
@@ -106,6 +107,17 @@ func (r *ProfileRepo) GetByUsername(ctx context.Context, username string) (model
 	}
 
 	return res, nil
+}
+
+func (r *ProfileRepo) ExistByUsername(ctx context.Context, username string) (bool, error) {
+	const query = `SELECT EXISTS(SELECT 1 FROM ` + profilesTable + ` WHERE username = $1 AND deleted_at IS NULL)`
+
+	var exists bool
+	if err := r.db.QueryRow(ctx, query, username).Scan(&exists); err != nil {
+		return false, fmt.Errorf("failed to check profile existence by username %s, cause: %w", username, err)
+	}
+
+	return exists, nil
 }
 
 func (r *ProfileRepo) Update(
@@ -156,6 +168,10 @@ func (r *ProfileRepo) UpdateUsername(
 
 	res, err := scanProfile(r.db.QueryRow(ctx, query, username, accountID))
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return models.Profile{}, errx.ErrorProfileUsernameTaken.Raise(err)
+		}
 		return models.Profile{}, fmt.Errorf(
 			"failed to update profile username by account id %s, cause: %w", accountID, err,
 		)

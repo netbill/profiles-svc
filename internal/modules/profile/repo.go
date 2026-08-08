@@ -12,10 +12,18 @@ type profileRepo interface {
 	GetByID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 	GetByUsername(ctx context.Context, username string) (models.Profile, error)
 
+	ExistByUsername(ctx context.Context, username string) (bool, error)
+
 	Update(
 		ctx context.Context,
 		accountID uuid.UUID,
 		params UpdateParams,
+	) (models.Profile, error)
+
+	UpdateUsername(
+		ctx context.Context,
+		accountID uuid.UUID,
+		username string,
 	) (models.Profile, error)
 
 	Filter(

@@ -1,11 +1,11 @@
 package messenger
 
 import (
+	"context"
 	"time"
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/profiles-svc/pkg/log"
 )
 
 type ConsumerConfig struct {
@@ -26,12 +26,22 @@ type ConsumeKafkaConfig struct {
 	QueueCapacity int           `json:"queue_capacity"`
 }
 
+type handlers interface {
+	AccountCreated(
+		ctx context.Context,
+		event eventbox.OutboxEvent,
+	) error
+	AccountDeleted(
+		ctx context.Context,
+		event eventbox.OutboxEvent,
+	) error
+}
+
 func NewConsumer(
-	logger *log.Logger,
-	inbox eventbox.Inbox,
+	handlers handlers,
 	config ConsumerConfig,
 ) *eventbox.Consumer {
-	consumer := eventbox.NewConsumer(logger, inbox, eventbox.ConsumerConfig{
+	consumer := eventbox.NewConsumer(eventbox.ConsumerConfig{
 		MinBackoff: config.MinBackoff,
 		MaxBackoff: config.MaxBackoff,
 	})
@@ -46,6 +56,9 @@ func NewConsumer(
 		MaxBytes:      config.AccountsV1.MaxBytes,
 		QueueCapacity: config.AccountsV1.QueueCapacity,
 	})
+
+	consumer.Route(evtypes.AccountCreatedEvent, handlers.AccountCreated)
+	consumer.Route(evtypes.AccountDeletedEvent, handlers.AccountDeleted)
 
 	return consumer
 }

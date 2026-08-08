@@ -77,6 +77,7 @@ Class | Method | HTTP request | Description
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMeMediaDelete**](docs/ProfilesAPI.md#profilessvcv1profilesmemediadelete) | **Delete** /profiles-svc/v1/profiles/me/media/ | Delete profile upload media
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMeMediaPost**](docs/ProfilesAPI.md#profilessvcv1profilesmemediapost) | **Post** /profiles-svc/v1/profiles/me/media/ | Create profile upload media link
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesMePatch**](docs/ProfilesAPI.md#profilessvcv1profilesmepatch) | **Patch** /profiles-svc/v1/profiles/me/ | Update my profile
+*ProfilesAPI* | [**ProfilesSvcV1ProfilesMeUsernamePatch**](docs/ProfilesAPI.md#profilessvcv1profilesmeusernamepatch) | **Patch** /profiles-svc/v1/profiles/me/username/ | Update my username
 *ProfilesAPI* | [**ProfilesSvcV1ProfilesUUsernameGet**](docs/ProfilesAPI.md#profilessvcv1profilesuusernameget) | **Get** /profiles-svc/v1/profiles/u/{username} | Get profile by username
 
 
@@ -95,6 +96,9 @@ Class | Method | HTTP request | Description
  - [UpdateProfile](docs/UpdateProfile.md)
  - [UpdateProfileData](docs/UpdateProfileData.md)
  - [UpdateProfileDataAttributes](docs/UpdateProfileDataAttributes.md)
+ - [UpdateProfileUsername](docs/UpdateProfileUsername.md)
+ - [UpdateProfileUsernameData](docs/UpdateProfileUsernameData.md)
+ - [UpdateProfileUsernameDataAttributes](docs/UpdateProfileUsernameDataAttributes.md)
  - [UploadProfileMediaLinks](docs/UploadProfileMediaLinks.md)
  - [UploadProfileMediaLinksData](docs/UploadProfileMediaLinksData.md)
  - [UploadProfileMediaLinksDataAttributes](docs/UploadProfileMediaLinksDataAttributes.md)

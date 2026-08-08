@@ -8,8 +8,6 @@ import (
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/netbill/awsx"
-	"github.com/netbill/eventbox"
-	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/api/rest"
 	"github.com/netbill/profiles-svc/internal/api/rest/controller"
@@ -17,11 +15,11 @@ import (
 	"github.com/netbill/profiles-svc/internal/media"
 	"github.com/netbill/profiles-svc/internal/messenger"
 	"github.com/netbill/profiles-svc/internal/messenger/handler"
-	"github.com/netbill/profiles-svc/internal/messenger/publisher"
 	"github.com/netbill/profiles-svc/internal/modules/account"
 	"github.com/netbill/profiles-svc/internal/modules/profile"
 	"github.com/netbill/profiles-svc/internal/repo/pg"
 	"github.com/netbill/profiles-svc/pkg/tokenmanager"
+	"github.com/netbill/profiles-svc/pkg/username"
 )
 
 func (a *App) Run(ctx context.Context) error {
@@ -65,24 +63,6 @@ func (a *App) Run(ctx context.Context) error {
 		ProfileAvatar: a.config.S3.Media.Resources.Profile.Avatar,
 	})
 
-	outbox := eventpg.NewOutbox(db)
-	inbox := eventpg.NewInbox(db)
-
-	producer := messenger.NewProducer(a.log, messenger.ProducerConfig{
-		Producer: a.config.Kafka.Identity,
-		Brokers:  a.config.Kafka.Brokers,
-		ProfilesV1: messenger.ProduceKafkaConfig{
-			RequiredAcks: a.config.Kafka.Produce.Topics.ProfilesV1.RequiredAcks,
-			Compression:  a.config.Kafka.Produce.Topics.ProfilesV1.Compression,
-			Balancer:     a.config.Kafka.Produce.Topics.ProfilesV1.Balancer,
-			BatchSize:    a.config.Kafka.Produce.Topics.ProfilesV1.BatchSize,
-			BatchTimeout: a.config.Kafka.Produce.Topics.ProfilesV1.BatchTimeout,
-		},
-	})
-	defer producer.Close()
-
-	outbound := publisher.New(a.config.Kafka.Identity, outbox, producer)
-
 	tokenManager := tokenmanager.New(tokenmanager.Config{
 		Issuer:   a.config.Auth.Tokens.Issuer,
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
@@ -90,20 +70,23 @@ func (a *App) Run(ctx context.Context) error {
 
 	profileRepo := pg.NewProfileRepo(db)
 	accountRepo := pg.NewAccountRepo(db)
+	outbox := pg.NewOutboxRepo(db, a.config.Kafka.Identity)
+	usernameValidator := username.NewValidator()
 
 	profileModule := profile.NewProfileModule(profile.ServiceDeps{
 		Repo:      profileRepo,
 		Bucket:    s3,
-		Messenger: outbound,
+		Messenger: outbox,
 		Tx:        db,
+		Username:  usernameValidator,
 	})
 
 	accountModule := account.NewAccountModule(account.ServiceDeps{
 		AccountRepo: accountRepo,
 		ProfileRepo: profileRepo,
 		Transaction: db,
-
-		Messenger: outbound,
+		Messenger:   outbox,
+		Username:    usernameValidator,
 	})
 
 	ctrl := controller.New(profileModule)
@@ -125,41 +108,11 @@ func (a *App) Run(ctx context.Context) error {
 		})
 	})
 
-	outboxWorker := messenger.NewOutboxWorker(a.log, outbox, producer, eventbox.OutboxWorkerConfig{
-		Routines:       a.config.Kafka.Outbox.Routines,
-		Slots:          a.config.Kafka.Outbox.Slots,
-		BatchSize:      a.config.Kafka.Outbox.BatchSize,
-		Sleep:          a.config.Kafka.Outbox.Sleep,
-		MinNextAttempt: a.config.Kafka.Outbox.MinNextAttempt,
-		MaxNextAttempt: a.config.Kafka.Outbox.MaxNextAttempt,
-		MaxAttempts:    a.config.Kafka.Outbox.MaxAttempts,
-	})
-	defer outboxWorker.Clean()
-
-	run(func() {
-		outboxWorker.Run(ctx)
-	})
-
 	inbound := handler.New(a.log, handler.Modules{
 		Account: accountModule,
 	})
 
-	inboxWorker := messenger.NewInboxWorker(a.log, inbox, eventbox.InboxWorkerConfig{
-		Routines:       a.config.Kafka.Inbox.Routines,
-		Slots:          a.config.Kafka.Inbox.Slots,
-		BatchSize:      a.config.Kafka.Inbox.BatchSize,
-		Sleep:          a.config.Kafka.Inbox.Sleep,
-		MinNextAttempt: a.config.Kafka.Inbox.MinNextAttempt,
-		MaxNextAttempt: a.config.Kafka.Inbox.MaxNextAttempt,
-		MaxAttempts:    a.config.Kafka.Inbox.MaxAttempts,
-	}, inbound)
-	defer inboxWorker.Clean()
-
-	run(func() {
-		inboxWorker.Run(ctx)
-	})
-
-	consumer := messenger.NewConsumer(a.log, inbox, messenger.ConsumerConfig{
+	consumer := messenger.NewConsumer(inbound, messenger.ConsumerConfig{
 		GroupID:    a.config.Kafka.Identity,
 		Brokers:    a.config.Kafka.Brokers,
 		MinBackoff: a.config.Kafka.Consume.Backoff.Min,

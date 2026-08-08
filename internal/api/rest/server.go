@@ -21,6 +21,7 @@ type profileController interface {
 	Filter(w http.ResponseWriter, r *http.Request)
 
 	UpdateMy(w http.ResponseWriter, r *http.Request)
+	UpdateUsername(w http.ResponseWriter, r *http.Request)
 
 	CreateUploadMediaLink(w http.ResponseWriter, r *http.Request)
 	DeleteUploadMedia(w http.ResponseWriter, r *http.Request)
@@ -91,6 +92,7 @@ func (s *Server) Run(ctx context.Context, config Config) {
 				r.With(auth).Route("/me", func(r chi.Router) {
 					r.Get("/", s.profile.GetMy)
 					r.Patch("/", s.profile.UpdateMy)
+					r.Patch("/username", s.profile.UpdateUsername)
 
 					r.Route("/media", func(r chi.Router) {
 						r.Post("/", s.profile.CreateUploadMediaLink)

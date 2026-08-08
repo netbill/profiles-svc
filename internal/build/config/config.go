@@ -140,9 +140,6 @@ type KafkaConfig struct {
 
 	Consume KafkaConsumeConfig
 	Produce KafkaProduceConfig
-
-	Inbox  KafkaBoxConfig
-	Outbox KafkaBoxConfig
 }
 
 type Config struct {
@@ -248,24 +245,6 @@ func LoadConfig() *Config {
 						BatchTimeout: envDurationOr("KAFKA_PRODUCE_PROFILES_V1_BATCH_TIMEOUT", 10*time.Millisecond),
 					},
 				},
-			},
-			Inbox: KafkaBoxConfig{
-				Routines:       envIntOr("KAFKA_INBOX_ROUTINES", 10),
-				Slots:          envIntOr("KAFKA_INBOX_SLOTS", 40),
-				BatchSize:      envIntOr("KAFKA_INBOX_BATCH_SIZE", 100),
-				Sleep:          envDurationOr("KAFKA_INBOX_SLEEP", 100*time.Millisecond),
-				MinNextAttempt: envDurationOr("KAFKA_INBOX_MIN_NEXT_ATTEMPT", time.Minute),
-				MaxNextAttempt: envDurationOr("KAFKA_INBOX_MAX_NEXT_ATTEMPT", 10*time.Minute),
-				MaxAttempts:    envInt32Or("KAFKA_INBOX_MAX_ATTEMPTS", 0),
-			},
-			Outbox: KafkaBoxConfig{
-				Routines:       envIntOr("KAFKA_OUTBOX_ROUTINES", 10),
-				Slots:          envIntOr("KAFKA_OUTBOX_SLOTS", 40),
-				BatchSize:      envIntOr("KAFKA_OUTBOX_BATCH_SIZE", 100),
-				Sleep:          envDurationOr("KAFKA_OUTBOX_SLEEP", 100*time.Millisecond),
-				MinNextAttempt: envDurationOr("KAFKA_OUTBOX_MIN_NEXT_ATTEMPT", time.Minute),
-				MaxNextAttempt: envDurationOr("KAFKA_OUTBOX_MAX_NEXT_ATTEMPT", 10*time.Minute),
-				MaxAttempts:    envInt32Or("KAFKA_OUTBOX_MAX_ATTEMPTS", 0),
 			},
 		},
 	}

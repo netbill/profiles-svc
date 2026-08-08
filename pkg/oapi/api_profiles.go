@@ -13,21 +13,20 @@ package oapi
 import (
 	"bytes"
 	"context"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"net/url"
-	"github.com/google/uuid"
 	"strings"
 )
-
 
 // ProfilesAPIService ProfilesAPI service
 type ProfilesAPIService service
 
 type ApiProfilesSvcV1ProfilesAccountIdGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *ProfilesAPIService
-	accountId uuid.UUID
+	accountId  uuid.UUID
 }
 
 func (r ApiProfilesSvcV1ProfilesAccountIdGetRequest) Execute() (*Profile, *http.Response, error) {
@@ -39,27 +38,27 @@ ProfilesSvcV1ProfilesAccountIdGet Get profile by account id
 
 Returns a public profile by `account_id` (UUID). If the profile does not exist, responds with 404.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param accountId Account id (UUID).
- @return ApiProfilesSvcV1ProfilesAccountIdGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param accountId Account id (UUID).
+	@return ApiProfilesSvcV1ProfilesAccountIdGetRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGet(ctx context.Context, accountId uuid.UUID) ApiProfilesSvcV1ProfilesAccountIdGetRequest {
 	return ApiProfilesSvcV1ProfilesAccountIdGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		accountId: accountId,
+		ctx:        ctx,
+		accountId:  accountId,
 	}
 }
 
 // Execute executes the request
-//  @return Profile
+//
+//	@return Profile
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfilesSvcV1ProfilesAccountIdGetRequest) (*Profile, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Profile
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Profile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesAccountIdGet")
@@ -120,8 +119,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -131,8 +130,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -142,8 +141,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -161,14 +160,14 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesAccountIdGetExecute(r ApiProfi
 }
 
 type ApiProfilesSvcV1ProfilesGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *ProfilesAPIService
-	text *string
-	pageLimit *int32
+	text       *string
+	pageLimit  *int32
 	pageOffset *int32
 }
 
-// Text to filter profiles by. Matches against &#x60;username&#x60; and &#x60;pseudonym&#x60; fields using prefix-based filtering. 
+// Text to filter profiles by. Matches against &#x60;username&#x60; and &#x60;pseudonym&#x60; fields using prefix-based filtering.
 func (r ApiProfilesSvcV1ProfilesGetRequest) Text(text string) ApiProfilesSvcV1ProfilesGetRequest {
 	r.text = &text
 	return r
@@ -195,25 +194,25 @@ ProfilesSvcV1ProfilesGet Filter profiles
 
 Returns a paginated list of public profiles filtered by optional query parameters. Supports prefix-based filtering for `username` and `pseudonym`.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesGetRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesGet(ctx context.Context) ApiProfilesSvcV1ProfilesGetRequest {
 	return ApiProfilesSvcV1ProfilesGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return ProfilesCollection
+//
+//	@return ProfilesCollection
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesGetExecute(r ApiProfilesSvcV1ProfilesGetRequest) (*ProfilesCollection, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ProfilesCollection
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ProfilesCollection
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesGet")
@@ -282,8 +281,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesGetExecute(r ApiProfilesSvcV1P
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -301,7 +300,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesGetExecute(r ApiProfilesSvcV1P
 }
 
 type ApiProfilesSvcV1ProfilesMeGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *ProfilesAPIService
 }
 
@@ -314,25 +313,25 @@ ProfilesSvcV1ProfilesMeGet Get my profile
 
 Returns the current authenticated user's profile. Requires a valid access token.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesMeGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesMeGetRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGet(ctx context.Context) ApiProfilesSvcV1ProfilesMeGetRequest {
 	return ApiProfilesSvcV1ProfilesMeGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Profile
+//
+//	@return Profile
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV1ProfilesMeGetRequest) (*Profile, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Profile
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Profile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeGet")
@@ -392,8 +391,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -403,8 +402,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -422,8 +421,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeGetExecute(r ApiProfilesSvcV
 }
 
 type ApiProfilesSvcV1ProfilesMeMediaDeleteRequest struct {
-	ctx context.Context
-	ApiService *ProfilesAPIService
+	ctx                       context.Context
+	ApiService                *ProfilesAPIService
 	deleteUploadProfileAvatar *DeleteUploadProfileAvatar
 }
 
@@ -441,23 +440,22 @@ ProfilesSvcV1ProfilesMeMediaDelete Delete profile upload media
 
 Deletes a previously uploaded media for the profile's avatar.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesMeMediaDeleteRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesMeMediaDeleteRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaDelete(ctx context.Context) ApiProfilesSvcV1ProfilesMeMediaDeleteRequest {
 	return ApiProfilesSvcV1ProfilesMeMediaDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaDeleteExecute(r ApiProfilesSvcV1ProfilesMeMediaDeleteRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeMediaDelete")
@@ -522,8 +520,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaDeleteExecute(r ApiProf
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -533,8 +531,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaDeleteExecute(r ApiProf
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -543,7 +541,7 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaDeleteExecute(r ApiProf
 }
 
 type ApiProfilesSvcV1ProfilesMeMediaPostRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *ProfilesAPIService
 }
 
@@ -556,25 +554,25 @@ ProfilesSvcV1ProfilesMeMediaPost Create profile upload media link
 
 Creates upload media links for the profile's avatar.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesMeMediaPostRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesMeMediaPostRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaPost(ctx context.Context) ApiProfilesSvcV1ProfilesMeMediaPostRequest {
 	return ApiProfilesSvcV1ProfilesMeMediaPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return UploadProfileMediaLinks
+//
+//	@return UploadProfileMediaLinks
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaPostExecute(r ApiProfilesSvcV1ProfilesMeMediaPostRequest) (*UploadProfileMediaLinks, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *UploadProfileMediaLinks
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UploadProfileMediaLinks
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeMediaPost")
@@ -634,8 +632,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaPostExecute(r ApiProfil
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -645,8 +643,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaPostExecute(r ApiProfil
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -664,8 +662,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeMediaPostExecute(r ApiProfil
 }
 
 type ApiProfilesSvcV1ProfilesMePatchRequest struct {
-	ctx context.Context
-	ApiService *ProfilesAPIService
+	ctx           context.Context
+	ApiService    *ProfilesAPIService
 	updateProfile *UpdateProfile
 }
 
@@ -683,25 +681,25 @@ ProfilesSvcV1ProfilesMePatch Update my profile
 
 Updates the current authenticated user's profile. The request body must contain the same `data.id` as the authenticated account id.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiProfilesSvcV1ProfilesMePatchRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesMePatchRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatch(ctx context.Context) ApiProfilesSvcV1ProfilesMePatchRequest {
 	return ApiProfilesSvcV1ProfilesMePatchRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Profile
+//
+//	@return Profile
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSvcV1ProfilesMePatchRequest) (*Profile, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Profile
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Profile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMePatch")
@@ -766,8 +764,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSv
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -777,8 +775,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSv
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -788,8 +786,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSv
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -799,8 +797,162 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSv
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiProfilesSvcV1ProfilesMeUsernamePatchRequest struct {
+	ctx                   context.Context
+	ApiService            *ProfilesAPIService
+	updateProfileUsername *UpdateProfileUsername
+}
+
+func (r ApiProfilesSvcV1ProfilesMeUsernamePatchRequest) UpdateProfileUsername(updateProfileUsername UpdateProfileUsername) ApiProfilesSvcV1ProfilesMeUsernamePatchRequest {
+	r.updateProfileUsername = &updateProfileUsername
+	return r
+}
+
+func (r ApiProfilesSvcV1ProfilesMeUsernamePatchRequest) Execute() (*Profile, *http.Response, error) {
+	return r.ApiService.ProfilesSvcV1ProfilesMeUsernamePatchExecute(r)
+}
+
+/*
+ProfilesSvcV1ProfilesMeUsernamePatch Update my username
+
+Updates the current authenticated user's username. The request body must contain the same `data.id` as the authenticated account id.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiProfilesSvcV1ProfilesMeUsernamePatchRequest
+*/
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUsernamePatch(ctx context.Context) ApiProfilesSvcV1ProfilesMeUsernamePatchRequest {
+	return ApiProfilesSvcV1ProfilesMeUsernamePatchRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return Profile
+func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMeUsernamePatchExecute(r ApiProfilesSvcV1ProfilesMeUsernamePatchRequest) (*Profile, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Profile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesMeUsernamePatch")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/profiles-svc/v1/profiles/me/username/"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.updateProfileUsername == nil {
+		return localVarReturnValue, nil, reportError("updateProfileUsername is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json", "application/problem+json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateProfileUsername
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 409 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v Errors
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -818,9 +970,9 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesMePatchExecute(r ApiProfilesSv
 }
 
 type ApiProfilesSvcV1ProfilesUUsernameGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *ProfilesAPIService
-	username string
+	username   string
 }
 
 func (r ApiProfilesSvcV1ProfilesUUsernameGetRequest) Execute() (*Profile, *http.Response, error) {
@@ -832,27 +984,27 @@ ProfilesSvcV1ProfilesUUsernameGet Get profile by username
 
 Returns a public profile by `username`. If the profile does not exist, responds with 404.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param username Username of the profile owner.
- @return ApiProfilesSvcV1ProfilesUUsernameGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param username Username of the profile owner.
+	@return ApiProfilesSvcV1ProfilesUUsernameGetRequest
 */
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGet(ctx context.Context, username string) ApiProfilesSvcV1ProfilesUUsernameGetRequest {
 	return ApiProfilesSvcV1ProfilesUUsernameGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		username: username,
+		ctx:        ctx,
+		username:   username,
 	}
 }
 
 // Execute executes the request
-//  @return Profile
+//
+//	@return Profile
 func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGetExecute(r ApiProfilesSvcV1ProfilesUUsernameGetRequest) (*Profile, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Profile
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Profile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProfilesAPIService.ProfilesSvcV1ProfilesUUsernameGet")
@@ -916,8 +1068,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGetExecute(r ApiProfi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -927,8 +1079,8 @@ func (a *ProfilesAPIService) ProfilesSvcV1ProfilesUUsernameGetExecute(r ApiProfi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
