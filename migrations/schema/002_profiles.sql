@@ -8,7 +8,8 @@ CREATE TABLE accounts (
     source_created_at  TIMESTAMPTZ NOT NULL,
     source_updated_at  TIMESTAMPTZ NOT NULL,
     replica_created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    replica_updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    replica_updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at         TIMESTAMPTZ
 );
 
 CREATE TABLE profiles (

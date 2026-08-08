@@ -13,16 +13,17 @@ type accountRepo interface {
 		params CreateAccountParams,
 	) (models.Account, error)
 
-	GetByID(ctx context.Context, accountID uuid.UUID) (models.Account, error)
-	ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error)
-
+	// UpdateUsername and Delete filter "deleted_at IS NULL" (and, for
+	// UpdateUsername, "version < params.Version") in their own WHERE clause,
+	// so a stale/replayed event or a concurrent Delete atomically yields
+	// errx.ErrorAccountNotExists instead of a separate check-then-act race.
 	UpdateUsername(
 		ctx context.Context,
 		accountID uuid.UUID,
 		params UpdateUsernameParams,
 	) (models.Account, error)
 
-	Delete(ctx context.Context, accountID uuid.UUID) error
+	Delete(ctx context.Context, accountID uuid.UUID) (models.Account, error)
 }
 
 type profileRepo interface {
@@ -32,21 +33,15 @@ type profileRepo interface {
 		username string,
 	) (models.Profile, error)
 
-	GetByID(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
-	ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error)
-
-	// IsDeleted reports whether this account was already deleted (soft-delete
-	// on profiles.deleted_at), so a late/redelivered AccountCreated or
-	// AccountUsernameUpdated event doesn't resurrect it.
-	IsDeleted(ctx context.Context, accountID uuid.UUID) (bool, error)
-
+	// UpdateUsername and Delete filter "deleted_at IS NULL" in their own
+	// WHERE clause — see accountRepo.
 	UpdateUsername(
 		ctx context.Context,
 		accountID uuid.UUID,
 		username string,
 	) (models.Profile, error)
 
-	Delete(ctx context.Context, accountID uuid.UUID) error
+	Delete(ctx context.Context, accountID uuid.UUID) (models.Profile, error)
 }
 
 type transaction interface {

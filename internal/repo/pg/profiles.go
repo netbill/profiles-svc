@@ -17,11 +17,16 @@ import (
 
 const (
 	profilesTable = "profiles"
-	profilesCols  = "account_id, username, pseudonym, description, avatar_key, version, created_at, updated_at"
+	profilesCols  = "account_id, username, pseudonym, description, avatar_key, version, created_at, updated_at, deleted_at"
 )
 
 // ProfileRepo backs both internal/modules/profile (public profile CRUD) and
 // internal/modules/account (profile side-effects of account sync).
+//
+// Every mutating query filters "AND deleted_at IS NULL" in its own WHERE
+// clause rather than relying on a separate pre-check — a pre-check-then-act
+// pair is a TOCTOU race against a concurrent Delete; folding the condition
+// into the same statement makes the check-and-mutate atomic.
 type ProfileRepo struct {
 	db *pgdbx.DB
 }
@@ -40,6 +45,7 @@ func scanProfile(row pgx.Row) (p models.Profile, err error) {
 		&p.Version,
 		&p.CreatedAt,
 		&p.UpdatedAt,
+		&p.DeletedAt,
 	)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
@@ -87,32 +93,6 @@ func (r *ProfileRepo) GetByID(ctx context.Context, accountID uuid.UUID) (models.
 	}
 
 	return res, nil
-}
-
-func (r *ProfileRepo) ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	const query = `SELECT EXISTS (SELECT 1 FROM ` + profilesTable + ` WHERE account_id = $1 AND deleted_at IS NULL)`
-
-	var exists bool
-	if err := r.db.QueryRow(ctx, query, accountID).Scan(&exists); err != nil {
-		return false, fmt.Errorf("failed to check account existence by id %s, cause: %w", accountID, err)
-	}
-
-	return exists, nil
-}
-
-// IsDeleted reports whether a profile for this account ID was created and
-// then soft-deleted. Used to reject a late/redelivered AccountCreated (or
-// AccountUsernameUpdated) event that arrives after the account was already
-// deleted — a missing row means "never seen", a deleted row means "reject".
-func (r *ProfileRepo) IsDeleted(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	const query = `SELECT EXISTS (SELECT 1 FROM ` + profilesTable + ` WHERE account_id = $1 AND deleted_at IS NOT NULL)`
-
-	var deleted bool
-	if err := r.db.QueryRow(ctx, query, accountID).Scan(&deleted); err != nil {
-		return false, fmt.Errorf("failed to check profile deletion state by account id %s, cause: %w", accountID, err)
-	}
-
-	return deleted, nil
 }
 
 func (r *ProfileRepo) GetByUsername(ctx context.Context, username string) (models.Profile, error) {
@@ -258,12 +238,14 @@ func (r *ProfileRepo) Filter(
 	}, nil
 }
 
-// Delete soft-deletes the profile: the row is kept (so IsDeleted can later
-// reject a replayed AccountCreated for the same account), and username is
-// anonymized to free it up for reuse despite the UNIQUE constraint — same
-// trick auth-svc uses on its accounts.username. Idempotent: a second call
-// against an already-deleted row matches zero rows and is a no-op.
-func (r *ProfileRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
+// Delete soft-deletes the profile: the row is kept (so a later replayed
+// AccountCreated for the same account is recognized as a conflict, see
+// AccountRepo.Create), and username is anonymized to free it up for reuse
+// despite the UNIQUE constraint — same trick as AccountRepo.Delete. A
+// second call against an already-deleted row matches zero rows and
+// surfaces as errx.ErrorProfileNotExists, which the caller treats as
+// "already deleted, nothing to do" for idempotency against event replay.
+func (r *ProfileRepo) Delete(ctx context.Context, accountID uuid.UUID) (models.Profile, error) {
 	// username is VARCHAR(32): "deleted_user" (12) + 20 hex chars fits exactly.
 	const query = `
 		UPDATE ` + profilesTable + `
@@ -272,11 +254,15 @@ func (r *ProfileRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
 			deleted_at = now(),
 			updated_at = now(),
 			version    = version + 1
-		WHERE account_id = $1 AND deleted_at IS NULL`
+		WHERE account_id = $1 AND deleted_at IS NULL
+		RETURNING ` + profilesCols
 
-	if _, err := r.db.Exec(ctx, query, accountID); err != nil {
-		return fmt.Errorf("failed to delete profile for account id %s, cause: %w", accountID, err)
+	res, err := scanProfile(r.db.QueryRow(ctx, query, accountID))
+	if err != nil {
+		return models.Profile{}, fmt.Errorf(
+			"failed to delete profile for account id %s, cause: %w", accountID, err,
+		)
 	}
 
-	return nil
+	return res, nil
 }

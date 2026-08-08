@@ -14,8 +14,9 @@ type Profile struct {
 	AvatarKey   *string   `json:"avatar_key,omitempty"`
 	Version     int32     `json:"version"`
 
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	CreatedAt time.Time  `json:"created_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
 type UploadProfileMediaLinks struct {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/profiles-svc/internal/errx"
 	"github.com/netbill/profiles-svc/internal/models"
@@ -15,17 +16,18 @@ import (
 
 const (
 	accountsTable = "accounts"
-	accountsCols  = "id, username, role, version, source_created_at, source_updated_at"
+	accountsCols  = "id, username, role, version, source_created_at, source_updated_at, deleted_at"
 )
 
 // AccountRepo is the local read-mirror of accounts-svc's accounts, kept in
 // sync over Kafka (see internal/modules/account). source_created_at/
 // source_updated_at come from the upstream event; replica_updated_at is
 // this mirror's own bookkeeping column and never leaves this package.
-// Rows are never physically deleted — deletion state lives on
-// profiles.deleted_at (see ProfileRepo) — but Delete still anonymizes
-// username so a freed username can be reissued without tripping the
-// UNIQUE constraint on a stale mirror row.
+//
+// Every mutating query filters "AND deleted_at IS NULL" in its own WHERE
+// clause rather than relying on a separate pre-check — a pre-check-then-act
+// pair is a TOCTOU race against a concurrent Delete; folding the condition
+// into the same statement makes the check-and-mutate atomic.
 type AccountRepo struct {
 	db *pgdbx.DB
 }
@@ -35,7 +37,15 @@ func NewAccountRepo(db *pgdbx.DB) *AccountRepo {
 }
 
 func scanAccount(row pgx.Row) (a models.Account, err error) {
-	err = row.Scan(&a.ID, &a.Username, &a.Role, &a.Version, &a.CreatedAt, &a.UpdatedAt)
+	err = row.Scan(
+		&a.ID,
+		&a.Username,
+		&a.Role,
+		&a.Version,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+		&a.DeletedAt,
+	)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return models.Account{}, errx.ErrorAccountNotExists.Raise(err)
@@ -53,29 +63,25 @@ func (r *AccountRepo) Create(ctx context.Context, params account.CreateAccountPa
 
 	acc, err := scanAccount(r.db.QueryRow(ctx, query, params.ID, params.Username, params.Role, params.CreatedAt))
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			// Same conflict either way, whether the row is still active or
+			// was soft-deleted — id is never reused, so any existing row
+			// means this is a duplicate/replayed AccountCreated.
+			return models.Account{}, errx.ErrorAccountAlreadyExists.Raise(err)
+		}
 		return models.Account{}, fmt.Errorf("insert account, cause: %w", err)
 	}
 
 	return acc, nil
 }
 
-func (r *AccountRepo) GetByID(ctx context.Context, accountID uuid.UUID) (models.Account, error) {
-	const query = `SELECT ` + accountsCols + ` FROM ` + accountsTable + ` WHERE id = $1`
-
-	return scanAccount(r.db.QueryRow(ctx, query, accountID))
-}
-
-func (r *AccountRepo) ExistsByID(ctx context.Context, accountID uuid.UUID) (bool, error) {
-	const query = `SELECT EXISTS (SELECT 1 FROM ` + accountsTable + ` WHERE id = $1)`
-
-	var exists bool
-	if err := r.db.QueryRow(ctx, query, accountID).Scan(&exists); err != nil {
-		return false, fmt.Errorf("check account existence by id %s, cause: %w", accountID, err)
-	}
-
-	return exists, nil
-}
-
+// UpdateUsername applies params.Version unconditionally as the new stored
+// version (it comes from the upstream event, not a client-read version),
+// but only if it's actually newer than what's stored and the row is still
+// active — both folded into the WHERE so a stale/replayed event or a
+// concurrent Delete atomically yields zero rows / ErrorAccountNotExists
+// instead of racing.
 func (r *AccountRepo) UpdateUsername(
 	ctx context.Context,
 	accountID uuid.UUID,
@@ -84,7 +90,7 @@ func (r *AccountRepo) UpdateUsername(
 	const query = `
 		UPDATE ` + accountsTable + `
 		SET username = $1, version = $2, source_updated_at = $3, replica_updated_at = now()
-		WHERE id = $4
+		WHERE id = $4 AND version < $2 AND deleted_at IS NULL
 		RETURNING ` + accountsCols
 
 	acc, err := scanAccount(r.db.QueryRow(ctx, query, params.Username, params.Version, params.UpdatedAt, accountID))
@@ -97,21 +103,25 @@ func (r *AccountRepo) UpdateUsername(
 	return acc, nil
 }
 
-// Delete anonymizes the mirror row's username instead of removing it —
-// deletion state itself lives on profiles.deleted_at (ProfileRepo.Delete),
-// this only frees the UNIQUE username slot. Same trick, same width budget
-// as ProfileRepo.Delete: "deleted_user" (12) + 20 hex chars = 32.
-func (r *AccountRepo) Delete(ctx context.Context, accountID uuid.UUID) error {
+// Delete anonymizes username (freeing the UNIQUE slot for reuse) and sets
+// deleted_at. It never removes the row: deletion state has to survive so a
+// later replayed AccountCreated for the same id can be recognized as a
+// conflict (see Create). Idempotent — a second call matches zero rows.
+func (r *AccountRepo) Delete(ctx context.Context, accountID uuid.UUID) (models.Account, error) {
+	// username is VARCHAR(32): "deleted_user" (12) + 20 hex chars fits exactly.
 	const query = `
 		UPDATE ` + accountsTable + `
 		SET
-			username           = 'deleted_user' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 20),
+			username   = 'deleted_user' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 20),
+			deleted_at = now(),
 			replica_updated_at = now()
-		WHERE id = $1`
+		WHERE id = $1 AND deleted_at IS NULL
+		RETURNING ` + accountsCols
 
-	if _, err := r.db.Exec(ctx, query, accountID); err != nil {
-		return fmt.Errorf("failed to delete account %s, cause: %w", accountID, err)
+	acc, err := scanAccount(r.db.QueryRow(ctx, query, accountID))
+	if err != nil {
+		return models.Account{}, fmt.Errorf("delete account %s, cause: %w", accountID, err)
 	}
 
-	return nil
+	return acc, nil
 }

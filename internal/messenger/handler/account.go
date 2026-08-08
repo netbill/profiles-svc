@@ -33,10 +33,10 @@ func (h *Handler) AccountCreated(
 		CreatedAt: payload.CreatedAt,
 	})
 	switch {
-	case errors.Is(err, errx.ErrorAccountDeleted):
-		log.Debug("received account already deleted account")
-		return nil
 	case errors.Is(err, errx.ErrorAccountAlreadyExists):
+		// Covers both a genuine duplicate and a replayed AccountCreated for
+		// an account that was since deleted — id is never reused, so either
+		// way there's already a row and nothing to do.
 		log.Debug("received account created event for already existing account")
 		return nil
 	case err != nil:
@@ -64,13 +64,12 @@ func (h *Handler) AccountDeleted(
 
 	err := h.modules.Account.Delete(ctx, payload.AccountID)
 	switch {
-	case errors.Is(err, errx.ErrorAccountDeleted):
-		log.Debug("received account deleted event for already deleted account")
-		return nil
 	case err != nil:
 		log.WithError(err).Error("failed to delete account: %v", err)
 		return err
 	default:
+		// Also covers a redelivered AccountDeleted for an already-deleted
+		// account — Service.Delete treats that as a silent no-op.
 		log.Debug("account deleted successfully")
 		return nil
 	}
@@ -96,13 +95,12 @@ func (h *Handler) AccountUsernameUpdated(
 		UpdatedAt: payload.UpdatedAt,
 	})
 	switch {
-	case errors.Is(err, errx.ErrorAccountDeleted):
-		log.Debug("received account username updated event for already deleted account")
-		return nil
 	case err != nil:
 		log.WithError(err).Error("failed to update account username: %v", err)
 		return err
 	default:
+		// Also covers a deleted account or a stale/replayed event — both are
+		// silently skipped inside Service.UpdateUsername.
 		log.Debug("account username updated successfully")
 		return nil
 	}

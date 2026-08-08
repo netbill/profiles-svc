@@ -18,8 +18,6 @@ type profileRepo interface {
 		params UpdateParams,
 	) (models.Profile, error)
 
-	Delete(ctx context.Context, accountID uuid.UUID) error
-
 	Filter(
 		ctx context.Context,
 		params FilterParams,

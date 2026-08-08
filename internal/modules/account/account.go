@@ -2,7 +2,7 @@ package account
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,32 +50,15 @@ type CreateAccountParams struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Create relies on accounts.id's PRIMARY KEY to reject a duplicate/replayed
+// AccountCreated atomically (see AccountRepo.Create) — id is never reused,
+// so any existing row, active or soft-deleted, means "already applied".
 func (m *Service) Create(
 	ctx context.Context,
 	params CreateAccountParams,
 ) error {
-	deleted, err := m.profile.IsDeleted(ctx, params.ID)
-	if err != nil {
-		return err
-	}
-	if deleted {
-		return errx.ErrorAccountDeleted.Raise(
-			fmt.Errorf("account with id %s is already deleted", params.ID),
-		)
-	}
-
-	exist, err := m.account.ExistsByID(ctx, params.ID)
-	if err != nil {
-		return err
-	}
-	if exist {
-		return errx.ErrorAccountAlreadyExists.Raise(
-			fmt.Errorf("account with id %s already exists", params.ID),
-		)
-	}
-
 	return m.tx.Transaction(ctx, func(ctx context.Context) error {
-		_, err = m.account.Create(ctx, params)
+		_, err := m.account.Create(ctx, params)
 		if err != nil {
 			return err
 		}
@@ -85,12 +68,7 @@ func (m *Service) Create(
 			return err
 		}
 
-		err = m.messenger.WriteProfileCreated(ctx, profile)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.WriteProfileCreated(ctx, profile)
 	})
 }
 
@@ -100,32 +78,21 @@ type UpdateUsernameParams struct {
 	UpdatedAt time.Time
 }
 
+// UpdateUsername applies the update only if AccountRepo.UpdateUsername's own
+// WHERE (version < params.Version AND deleted_at IS NULL) matches — a stale/
+// replayed event or an account deleted concurrently both surface as
+// errx.ErrorAccountNotExists and are silently skipped, same as before.
 func (m *Service) UpdateUsername(
 	ctx context.Context,
 	accountID uuid.UUID,
 	params UpdateUsernameParams,
 ) error {
-	deleted, err := m.profile.IsDeleted(ctx, accountID)
-	if err != nil {
-		return err
-	}
-	if deleted {
-		return errx.ErrorAccountDeleted.Raise(
-			fmt.Errorf("account with id %s is already deleted", accountID),
-		)
-	}
-
-	account, err := m.account.GetByID(ctx, accountID)
-	if err != nil {
-		return err
-	}
-	if account.Version >= params.Version {
-		return nil
-	}
-
 	return m.tx.Transaction(ctx, func(ctx context.Context) error {
-		_, err = m.account.UpdateUsername(ctx, accountID, params)
-		if err != nil {
+		_, err := m.account.UpdateUsername(ctx, accountID, params)
+		switch {
+		case errors.Is(err, errx.ErrorAccountNotExists):
+			return nil
+		case err != nil:
 			return err
 		}
 
@@ -138,27 +105,23 @@ func (m *Service) UpdateUsername(
 	})
 }
 
+// Delete soft-deletes both mirror rows. profile.Delete gates the whole
+// operation: if it reports errx.ErrorProfileNotExists (already deleted by
+// an earlier delivery of the same event), the rest is skipped as a no-op.
 func (m *Service) Delete(ctx context.Context, accountID uuid.UUID) error {
 	return m.tx.Transaction(ctx, func(ctx context.Context) error {
-		// Soft-deletes profiles.deleted_at, which doubles as the tombstone:
-		// IsDeleted checks it to reject any late-arriving event for this ID.
-		err := m.profile.Delete(ctx, accountID)
-		if err != nil {
+		_, err := m.profile.Delete(ctx, accountID)
+		switch {
+		case errors.Is(err, errx.ErrorProfileNotExists):
+			return nil
+		case err != nil:
 			return err
 		}
 
-		// Frees up the mirror row's username slot (see AccountRepo.Delete);
-		// deletion state itself lives solely on profiles.deleted_at above.
-		err = m.account.Delete(ctx, accountID)
-		if err != nil {
+		if _, err = m.account.Delete(ctx, accountID); err != nil {
 			return err
 		}
 
-		err = m.messenger.WriteProfileDeleted(ctx, accountID)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.WriteProfileDeleted(ctx, accountID)
 	})
 }

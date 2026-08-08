@@ -16,8 +16,8 @@ read-реплика базовых полей аккаунта, синхрони
 
 - **Go 1.25**, чистая слоистая архитектура без DI-фреймворков — сборка руками в
   `internal/build/app/run.go`.
-- **Postgres** (`jackc/pgx`) — единственное хранилище: профили (soft-delete через
-  `deleted_at`), локальная реплика аккаунтов, inbox/outbox таблицы.
+- **Postgres** (`jackc/pgx`) — единственное хранилище: профили и локальная реплика
+  аккаунтов (обе таблицы soft-delete через свой `deleted_at`), inbox/outbox таблицы.
 - **Kafka** (`netbill/eventbox` поверх `kafka-go`) — сервис сам продюсер (`profiles_v1`)
   и сам консьюмер (`accounts_v1`), в отличие от auth-svc, где Kafka трогает только
   внешний CDC (Debezium), а сервис лишь пишет в outbox-таблицу.
@@ -52,7 +52,8 @@ internal/
   modules/                бизнес-логика, транспорт-агностична
     profile/                  чтение/поиск/обновление профиля, аватар (media.go)
     account/                  локальная реплика аккаунта: Create/UpdateUsername/Delete,
-                               гейтит события через profile.IsDeleted и каскадно правит profile
+                               каскадно правит profile; вся защита от гонок/повторов — в SQL
+                               репозитория (deleted_at IS NULL в WHERE), не в pre-check'ах тут
 
   repo/
     pg/                   Postgres-репозитории на чистом pgx (без query-builder):
@@ -99,7 +100,7 @@ flowchart LR
     end
 
     subgraph Data["Postgres"]
-        PG[("profiles (deleted_at)<br/>/ accounts")]
+        PG[("profiles / accounts<br/>(оба с deleted_at)")]
         Outbox[("outbox_events")]
         Inbox[("inbox_events")]
     end
@@ -158,27 +159,40 @@ flowchart LR
 accounts-svc, обновляемое исключительно Kafka-событиями, не REST-запросами напрямую.
 Профиль (`profiles`) создаётся автоматически при получении `AccountCreated`
 (`account.Service.Create` создаёт и account-реплику, и profile в одной транзакции).
-Строка `accounts` физически никогда не удаляется — состояние "удалён" целиком живёт в
-`profiles.deleted_at` (см. ниже) — но `username` у неё всё равно остаётся `UNIQUE`:
-это инвариант, унаследованный от источника правды (`accounts-svc`), и он должен ловить
-реальные баги синхронизации, а не молчать. Поэтому `account.Service.Delete` анонимизирует
-`accounts.username` точно так же, как `profiles.username` (см. ниже) — обе таблицы
-остаются симметричными и обе освобождают имя под возможное переиспользование.
+Обе таблицы, `accounts` и `profiles`, никогда не удаляются физически — обе soft-delete
+через свой `deleted_at`, и `username` у обеих остаётся `UNIQUE` (тот же приём, что у
+`accounts.username` в auth-svc): `Delete` анонимизирует `username` в обе стороны
+(`deleted_user<rand20hex>`, влезает в `VARCHAR(32)`), освобождая имя под переиспользование,
+вместо того чтобы снимать constraint, который иначе ловил бы реальные баги синхронизации.
 
-### Soft-delete через `profiles.deleted_at` — защита от неупорядоченной доставки
+### Soft-delete + `deleted_at IS NULL` в каждом WHERE — защита от гонок и неупорядоченной доставки
 
-Раньше эту роль играла отдельная таблица `tombstones`; теперь то же самое даёт
-`profiles.deleted_at` (`ProfileRepo.IsDeleted`, `internal/repo/pg/profiles.go`).
-`account.Service.Create`/`UpdateUsername` проверяют `profile.IsDeleted` до применения
-события — если `AccountDeleted` пришёл раньше (или гонка) отставшего/передоставленного
-`AccountCreated`/`AccountUsernameUpdated`, событие молча отклоняется вместо
-"воскрешения" удалённого аккаунта. `UpdateUsername` дополнительно защищён по версии
-(`if account.Version >= params.Version { return nil }`) — устаревшее/повторное событие
-просто игнорируется. `account.Service.Delete` в одной транзакции: soft-делит `profiles`
-(`deleted_at` + анонимизированный `username` — постоянная метка для будущих проверок
-`IsDeleted`) и анонимизирует `accounts.username` (сама строка `accounts` не удаляется).
-В обоих случаях `username` заменяется на `deleted_user<rand20hex>` (влезает в
-`VARCHAR(32)`) — тот же приём, что у `accounts.username` в auth-svc.
+Раньше от "воскрешения" удалённого аккаунта защищала отдельная таблица `tombstones`;
+затем — метод `ProfileRepo.IsDeleted` с pre-check в сервисе. Оба подхода имели общий
+изъян: между "проверили — удалён ли" и "применили изменение" всегда есть окно для гонки
+(TOCTOU) — конкурентный `Delete` мог закоммититься ровно в этом окне, и `UpdateUsername`
+задним числом обновил бы уже удалённую запись.
+
+Теперь `deleted_at IS NULL` — это условие прямо в `WHERE` каждого мутирующего запроса
+(`internal/repo/pg/accounts.go`, `internal/repo/pg/profiles.go`), а не отдельная
+SELECT-проверка до него:
+
+- `AccountRepo.UpdateUsername`: `WHERE id = $4 AND version < $2 AND deleted_at IS NULL`
+  — в одном атомарном UPDATE сразу и "аккаунт активен", и "входящая версия из события
+  новее сохранённой" (защита от устаревших/повторных событий, раньше — отдельная проверка
+  `if account.Version >= params.Version`). Ноль обновлённых строк = `errx.ErrorAccountNotExists`,
+  `account.Service.UpdateUsername` ловит эту ошибку и молча пропускает событие.
+- `ProfileRepo.Delete`/`AccountRepo.Delete`: `WHERE id = $1 AND deleted_at IS NULL`, тоже
+  атомарно. Повторная доставка `AccountDeleted` не находит строк для обновления,
+  `account.Service.Delete` ловит `errx.ErrorProfileNotExists` и тоже молча пропускает.
+- `AccountRepo.Create`: здесь атомарность защищает `PRIMARY KEY` на `accounts.id` —
+  строка никогда физически не удаляется и `id` не переиспользуется, так что INSERT с
+  уже существующим `id` (активным или удалённым — не важно) всегда падает на
+  unique-конфликте (`pgconn.PgError`, код `23505`), который `Create` ловит и превращает
+  в `errx.ErrorAccountAlreadyExists`. Отдельного pre-check "существует ли" тоже нет.
+
+Итог: в `account.Service` не осталось ни одной SELECT-проверки перед мутацией — только
+сама мутация и разбор её результата.
 
 ### Аватарки — S3 presigned upload flow
 
